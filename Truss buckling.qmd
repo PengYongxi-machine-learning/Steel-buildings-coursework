@@ -187,7 +187,7 @@ Ned =3000000
 
 if Nrd > Ned:
   symbol = '>'
-  outputn('The section is safe in compression')
+  outputn=('The section is safe in compression')
 else:
   symbol = '<'
   outputn('The section is not safe in compression')
@@ -245,7 +245,7 @@ Ntrd = min(Nplrd, Nurd)
 Nted = 3000000
 if Ntrd > Nted:
   symbol = '>'
-  outputt('The section is safe in tension')
+  outputt=('The section is safe in tension')
 else:
   symbol = '<'
   outputt('The section is not safe in tension')
@@ -255,6 +255,6 @@ else:
   \item[Gross area tension resistance, $N_{pl,RD}$] = $\frac{A\cdot f_{y}}{\gamma_{1}}$ = `{python} Nplrd` N
 Assume the net area is 90\% of the gross area, then
   \item[Net area tension resistance, $N_{u,RD}$] = `{python} area_reduction`$\frac{\cdot A_{net}\cdot f_{u}}{\gamma_{0}}$ = `{python} Nurd` N
-\end{description
+\end{description}
 Maximum axial tensile force is `{python} Nted` N.
 Since $N_{t,RD}$ `{python} symbol` $N_{t,ED}$, `{python} outputt`
