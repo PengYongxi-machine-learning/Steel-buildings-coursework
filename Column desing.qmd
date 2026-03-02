@@ -61,7 +61,10 @@ format:
 hcol = 6
 lx = 8.5
 ly = 13.5
-Af = lx*ly
+Af1 = lx*ly/4
+Af2 = lx*ly/4
+Af3 = lx*ly/4
+Af4 = lx*ly/4
 
 # floor loads
 gt_f = 0.7
@@ -87,20 +90,26 @@ qimp_r = 1.5
 Gtyp_f = round(gt_f + gs_f + gc_f + gste_f + gser_f,4)
 Qtyp_f = round(qpar_f + qimp_f + qclad,4)
 wtyp_f = round(1.35*Gtyp_f + 1.5*Qtyp_f,4)
-vtyp_f = round(wtyp_f*Af,4)
+vtyp_f = round(wtyp_f*(Af1 + Af2 + Af3 + Af4),4)
 
 # ULS roof load
 Gtyp_r = round(gt_r + gs_r + gc_r + gste_r + gser_r,4)
 Qtyp_r = round(qimp_r,4)
 wtyp_r = round(1.35*Gtyp_r + 1.5*Qtyp_r,4)
-vtyp_r = round(wtyp_r*Af,4)
+vtyp_r = round(wtyp_r*(Af1 + Af2 + Af3 + Af4),4)
 
 # Moment and total load of first floor
-Ned = round(7.5*vtyp_f + vtyp_r,4)
+floor = 1
+num_floor = 9 - floor
+if num_floor == 8:
+    n =7.5
+else: 
+    n = num_floor
+Ned = round(n*vtyp_f + vtyp_r,4)
 levery = 0
 leverz =0
-Myed = round(Ned*ly,4)
-Mzed = round(Ned*lx,4)
+Myed = round(Ned*levery,4)
+Mzed = round(Ned*leverz,4)
 ```
 
 #
@@ -149,11 +158,12 @@ Mzed = round(Ned*lx,4)
     \item[Column height, $h_{col}$] = `{python} hcol` $m$
     \item[Horizontal distance, $L_{x}$] = `{python} lx` $m$
     \item[Horizontal distance, $L_{y}$] = `{python} ly` $m$
-    \item[Floor area, $A_{f}$] = `{python} Af` $m^2$
+    \item[Floor area, $A_{f}$] = $A_1 + A_2 + A_3 + A_4$ = `{python} Af1 + Af2 + Af3 + Af4` $m^2$
 \end{description}
 
-# Total Axial load and momenton column
+# Total Axial load and momenton column (half the load for first floor)
 \begin{description}
+    \item[Number of floors above, n] = `{python} num_floor`
     \item[Single floor load, $v_{typ,f}$] = $w_{typ,f}\cdot A_{f}$ = `{python} vtyp_f` kN
     \item[Roof load, $v_{typ,r}$] = $w_{typ,r}\cdot A_{f}$ = `{python} vtyp_r` kN
     \item[Vertical load on column, $V_{ed1}$] = $7.5\cdot v_{typ,f} + v_{typ,r}$ = `{python} Ned` kN
