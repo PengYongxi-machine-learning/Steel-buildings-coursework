@@ -8,7 +8,7 @@ format:
       - left=5mm
       - right=5mm
       - bottom=20mm
-      - headheight=40mm 
+      - headheight=35mm 
       - headsep=5mm 
       - includehead=true 
     include-in-header:
@@ -40,28 +40,28 @@ format:
                 SKEMPTON BUILDING, IMPERIAL COLLEGE\\
                 LONDON, SOUTH KENSINGTON CAMPUS,\\
                 LONDON SW7 2AZ.\\[3mm]
-                \normalsize\textbf{CALCULATION SHIT}
+                \normalsize\textbf{CALCULATION SHEET}
             }
             & \textbf{Job No.} & & \textbf{Sheet} & \textbf{Ref} \\ \cline{2-5}
             & \textbf{Job Title} & Steel Design Coursework & \multicolumn{2}{l|}{\thepage\ of \pageref{LastPage}} \\ \cline{2-5}
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Design of Internal Columns}
+                \centerline{Design of Columns}
                 \vspace*{1mm}
             } \\ \cline{2-5}
-            & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Stuid shit & \multicolumn{2}{l|}{\textbf{Date} \quad 30/02/2077} \\ \cline{3-5}
-            & & \textbf{Checked by} \quad Even more stupid shit & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
+            & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 30/02/2077} \\ \cline{3-5}
+            & & \textbf{Checked by} \quad  & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
             \end{tabularx}
             \egroup
           }
 ---
 ```{python}
-%precision 6
+%precision 2
 # Floor area and height
-hcol = 6
-lx = 8.5
-ly = 13.5
+hcol = 6000
+lx = 8500
+ly = 13500
 Af1 = lx*ly/4
 Af2 = lx*ly/4
 Af3 = lx*ly/4
@@ -88,16 +88,16 @@ gser_r = 1.0
 qimp_r = 1.5
 
 # ULS floor load
-Gtyp_f = round(gt_f + gs_f + gc_f + gste_f + gser_f,4)
-Qtyp_f = round(qpar_f + qimp_f + qclad,4)
-wtyp_f = round(1.35*Gtyp_f + 1.5*Qtyp_f,4)
-vtyp_f = round(wtyp_f*(Af1 + Af2 + Af3 + Af4),4)
+Gtyp_f = gt_f + gs_f + gc_f + gste_f + gser_f
+Qtyp_f = qpar_f + qimp_f + qclad
+wtyp_f = 1.35*Gtyp_f + 1.5*Qtyp_f
+vtyp_f = wtyp_f*(Af1 + Af2 + Af3 + Af4)/1000**2
 
 # ULS roof load
-Gtyp_r = round(gt_r + gs_r + gc_r + gste_r + gser_r,4)
-Qtyp_r = round(qimp_r,4)
-wtyp_r = round(1.35*Gtyp_r + 1.5*Qtyp_r,4)
-vtyp_r = round(wtyp_r*(Af1 + Af2 + Af3 + Af4),4)
+Gtyp_r = gt_r + gs_r + gc_r + gste_r + gser_r
+Qtyp_r = qimp_r
+wtyp_r = 1.35*Gtyp_r + 1.5*Qtyp_r
+vtyp_r = wtyp_r*(Af1 + Af2 + Af3 + Af4)/1000**2
 
 # Moment and total load of first floor
 floor = 1
@@ -106,72 +106,72 @@ if num_floor == 8:
     n =7.5
 else: 
     n = num_floor
-Ned = round(n*vtyp_f + vtyp_r,4)
+Ned = n*vtyp_f + vtyp_r
 levery = 0
 leverz =0
-Myed = round(Ned*levery,4)
-Mzed = round(Ned*leverz,4)
+Myed = Ned*levery
+Mzed = Ned*leverz
 ```
-
 #
-# Floor Loads
+
+## Floor Loads
 \begin{description}
-    \item[$G_{tiles}$] = `{python} gt_f` $kN/m^2$
-    \item[$G_{steel}$] = `{python} gste_f` $kN/m^2$
-    \item[$G_{cladding}$] = `{python} gc_f` $kN/m^2$
-    \item[$G_{slab}$] = `{python} gs_f` $kN/m^2$
-    \item[$G_{services}$] = `{python} gser_f` $kN/m^2$
-    \item[$Q_{partitions}$] = `{python} qpar_f` $kN/m^2$
-    \item[$Q_{imposed}$] = `{python} qimp_f` $kN/m^2$
-    \item[$Q_{cladding}$] = `{python} qclad` $kN/m^2$
+    \item[]$G_{tiles}$ = `{python} gt_f` $kN/m^2$
+    \item[]$G_{steel}$ = `{python} gste_f` $kN/m^2$
+    \item[]$G_{cladding}$ = `{python} gc_f` $kN/m^2$
+    \item[]$G_{slab}$ = `{python} gs_f` $kN/m^2$
+    \item[]$G_{services}$ = `{python} gser_f` $kN/m^2$
+    \item[]$Q_{partitions}$ = `{python} qpar_f` $kN/m^2$
+    \item[]$Q_{imposed}$ = `{python} qimp_f` $kN/m^2$
+    \item[]$Q_{cladding}$ = `{python} qclad` $kN/m^2$
 \end{description}
 
-# Roof Loads
+## Roof Loads
 \begin{description}
-    \item[$G_{tiles}$] = `{python} gt_r` $kN/m^2$
-    \item[$G_{steel}$] = `{python} gste_r` $kN/m^2$
-    \item[$G_{cladding}$] = `{python} gc_r` $kN/m^2$
-    \item[$G_{slab}$] = `{python} gs_r` $kN/m^2$
-    \item[$G_{services}$] = `{python} gser_r` $kN/m^2$
-    \item[$Q_{imposed}$] = `{python} qimp_r` $kN/m^2$
+    \item[]$G_{tiles}$ = `{python} gt_r` $kN/m^2$
+    \item[]$G_{steel}$ = `{python} gste_r` $kN/m^2$
+    \item[]$G_{cladding}$ = `{python} gc_r` $kN/m^2$
+    \item[]$G_{slab}$ = `{python} gs_r` $kN/m^2$
+    \item[]$G_{services}$ = `{python} gser_r` $kN/m^2$
+    \item[]$Q_{imposed}$ = `{python} qimp_r` $kN/m^2$
 \end{description}
 
-# ULS floor uniform distributed load
+## ULS floor uniform distributed load
 \begin{description}
-    \item[Typical dead load, $G_{typ}$] = $G_{tiles} + G_{steel} + G_{cladding} + G_{slab} + G_{services}$ = `{python} Gtyp_f` $kN/m^2$
-    \item[Typical imposed load, $Q_{typ}$] = $Q_{partitions} + Q_{imposed} + Q_{cladding}$ = `{python} Qtyp_f` $kN/m^2$
-    \item[Typical load, $w_{typ}$] = $1.35\cdot G_{typ} + 1.5 \cdot Q_{typ}$ = `{python} wtyp_f` $kN/m^2$
+    \item[]Typical dead load, $G_{typ}$ = $G_{tiles} + G_{steel} + G_{cladding} + G_{slab} + G_{services}$ = `{python} Gtyp_f` $kN/m^2$
+    \item[]Typical imposed load, $Q_{typ}$ = $Q_{partitions} + Q_{imposed} + Q_{cladding}$ = `{python} Qtyp_f` $kN/m^2$
+    \item[]Typical load, $W_{typ}$ = $1.35\cdot G_{typ} + 1.5 \cdot Q_{typ}$ = `{python} wtyp_f` $kN/m^2$
 \end{description}
 
 <pagebreak>
 
 #
 
-# ULS roof uniform distributed load
+## ULS roof uniform distributed load
 \begin{description}
-    \item[Typical dead load, $G_{typ}$] = $G_{tiles} + G_{steel} + G_{cladding} + G_{slab} + G_{services}$ = `{python} Gtyp_r` $kN/m^2$
-    \item[Typical imposed load, $Q_{typ}$] = $Q_{imposed}$ = `{python} Qtyp_r` $kN/m^2$
-    \item[Typical load, $w_{typ}$] = $1.35\cdot G_{typ} + 1.5 \cdot Q_{typ}$ = `{python} wtyp_r` $kN/m^2$
+    \item[]Typical dead load, $G_{typ}$ = $G_{tiles} + G_{steel} + G_{cladding} + G_{slab} + G_{services}$ = `{python} Gtyp_r` $kN/m^2$
+    \item[]Typical imposed load, $Q_{typ}$ = $Q_{imposed}$ = `{python} Qtyp_r` $kN/m^2$
+    \item[]Typical load, $W_{typ}$ = $1.35\cdot G_{typ} + 1.5 \cdot Q_{typ}$ = `{python} wtyp_r` $kN/m^2$
 \end{description}
 
-# Load areas
+## Load areas
 \begin{description}
-    \item[Column height, $h_{col}$] = `{python} hcol` $m$
-    \item[Horizontal distance, $L_{x}$] = `{python} lx` $m$
-    \item[Horizontal distance, $L_{y}$] = `{python} ly` $m$
-    \item[Floor area, $A_{f}$] = $A_1 + A_2 + A_3 + A_4$ = `{python} Af1 + Af2 + Af3 + Af4` $m^2$
+    \item[]Column height, $h_{col}$ = `{python} hcol` $mm$
+    \item[]Horizontal distance, $L_{x}$ = `{python} lx` $mm$
+    \item[]Horizontal distance, $L_{y}$ = `{python} ly` $mm$
+    \item[]Floor area, $A_{f}$ = $A_1 + A_2 + A_3 + A_4$ = `{python} Af1 + Af2 + Af3 + Af4` $mm^2$
 \end{description}
 
-# Total Axial load and momenton column (half the load for first floor)
+## Total Axial load and momenton column (half the load for first floor)
 \begin{description}
-    \item[Number of floors above, n] = `{python} num_floor`
-    \item[Single floor load, $v_{typ,f}$] = $w_{typ,f}\cdot A_{f}$ = `{python} vtyp_f` kN
-    \item[Roof load, $v_{typ,r}$] = $w_{typ,r}\cdot A_{f}$ = `{python} vtyp_r` kN
-    \item[Vertical load on column, $V_{ed1}$] = $7.5\cdot v_{typ,f} + v_{typ,r}$ = `{python} Ned` kN
-    \item[Lever arm about y-axis, $L_{y}$] = `{python} ly` m
-    \item[Lever arm about z-axis, $L_{x}$] = `{python} lx` m
-    \item[Moment about y-axis, $M_{y}$] = $V_{ed1}\cdot L_{y}/2$ = `{python} Myed` kNm
-    \item[Moment about z-axis, $M_{z}$] = $V_{ed1}\cdot L_{x}/2$ = `{python} Mzed` kNm
+    \item[]Number of floors above, n = `{python} num_floor`
+    \item[]Single floor load, $V_{typ,f}$ = $W_{typ,f}\cdot A_{f}$ = `{python} vtyp_f` kN
+    \item[]Roof load, $V_{typ,r}$ = $W_{typ,r}\cdot A_{f}$ = `{python} vtyp_r` kN
+    \item[]Vertical load on column, $V_{ed1}$ = $7.5\cdot V_{typ,f} + V_{typ,r}$ = `{python} Ned` kN
+    \item[]Lever arm about y-axis, $L_{y}$ = `{python} levery` m
+    \item[]Lever arm about z-axis, $L_{x}$ = `{python} leverz` m
+    \item[]Moment about y-axis, $M_{y}$ = $V_{ed1}\cdot \frac{L_{y}}{2}$ = `{python} Myed` kNm
+    \item[]Moment about z-axis, $M_{z}$ = $V_{ed1}\cdot \frac{L_{x}}{2}$ = `{python} Mzed` kNm
 \end{description}
 
 
@@ -199,12 +199,12 @@ r= float(df['r(mm)'].iloc[0])
 A = float(df['A (mm^2)'].iloc[0])
 Iy = float(df['Iy (mm^4)'].iloc[0])
 Iz = float(df['Iz (mm^4)'].iloc[0])
-Ry = float(df['R_y (mm)'].iloc[0])
-Rz = float(df['R_z (mm)'].iloc[0])
-Ey = float(df['W_el,y (mm^3)'].iloc[0])
-Ez = float(df['W_el,z (mm^3)'].iloc[0])
-Py = float(df['W_pl,y (mm3)'].iloc[0])
-Pz = float(df['W,pl,z (mm^3)'].iloc[0])
+Ry = float(df['Ry (mm)'].iloc[0])
+Rz = float(df['Rz (mm)'].iloc[0])
+Wey = float(df['W_el,y (mm^3)'].iloc[0])
+Wez = float(df['W_el,z (mm^3)'].iloc[0])
+Wpy = float(df['W_pl,y (mm3)'].iloc[0])
+Wpz = float(df['W_pl,z (mm^3)'].iloc[0])
 Iw = float(df['I_w (mm^6)'].iloc[0])
 It = float(df['I_T (mm^4)'].iloc[0])
 
@@ -223,186 +223,198 @@ else:
   else:
     ay = 0.70
     az = 0.70
-
-span = 6
 ```
+
 <pagebreak>
 
 #  
 
-# Effective length of column about y-y
+## Effective length of column about y-y
 
 \begin{description}
-  \item[Ultimate strength:] $f_{u}$ = `{python} fy` $N\cdot mm^{-2}$  
-  \item[Yield strength:] $f_{y}$ = `{python} fu` $N \cdot mm^{-2}$  
-  \item[Young modulus:] E = `{python} E` $N\cdot mm^{-2}$  
-  \item[Shear modulus:] G = `{python} G` $N\cdot mm^{-2}$
+  \item[]Ultimate strength: $f_{u}$ = `{python} fu` $N\cdot mm^{-2}$  
+  \item[]Yield strength: $f_{y}$ = `{python} fy` $N \cdot mm^{-2}$  
+  \item[]Young modulus: E = `{python} E` $N\cdot mm^{-2}$  
+  \item[]Shear modulus: G = `{python} G` $N\cdot mm^{-2}$
 \end{description}
 
-# 
+<pagebreak>
 
-# Section Properties of 356 x 406 x 634
+#
+
+## Section Properties of 356 x 406 x 634
 
 \begin{description}
-  \item[Overall depth, h] = `{python} h` mm  
-  \item[Width of section, b] = `{python} b` mm  
-  \item[Web thickness, $t_{w}$] = `{python} tw`  mm  
-  \item[Flange thickness, $t_{f}$] = `{python} tf` mm  
-  \item[De pth between fillet, $h_{w}$] = `{python} d` mm  
-  \item[Root radius, r] = `{python} r` mm  
-  \item[Area of section, $A$] = `{python} A`  $mm^{2}$   
-  \item[2nd moment area Major axis, $I_{y}$] = `{python} Iy` $mm^{4}$  
-  \item[2nd moment area minor axis, $I_{z}$] = `{python} Iz` $mm^{4}$  
-  \item[Radius of gyration major axis $i_{y}$] = `{python} Ry` mm  
-  \item[Radius of gyration minor axis, $i_{z}$] = `{python} Rz` mm  
-  \item[Elastic modulus major axis, $W_{el,y}$] = `{python} Ey` $mm^{3}$  
-  \item[Elastic modulus minor axis, $W_{el,z}$] = `{python} Ez` $mm^{3}$  
-  \item[Plastic modulus major axis, $W_{pl,y}$] = `{python} Py` $mm^{3}$  
-  \item[Plastic modulus minor axis, $W_{pl,z}$] = `{python} Pz` $mm^{3}$  
-  \item[Warping Constant, $I_{w}$] = `{python} Iw` $mm^{6}$  
-  \item[Torsional constant, $I_{t}$] = `{python} It` $mm^{4}$  
+  \item[]Overall depth, h = `{python} h` mm  
+  \item[]Width of section, b = `{python} b` mm  
+  \item[]Web thickness, $t_{w}$ = `{python} tw`  mm  
+  \item[]Flange thickness, $t_{f}$ = `{python} tf` mm  
+  \item[]Depth between fillet, $h_{w}$ = `{python} d` mm  
+  \item[]Root radius, r = `{python} r` mm  
+  \item[]Area of section, $A$ = `{python} A`  $mm^{2}$   
+  \item[]2nd moment area Major axis, $I_{y}$ = `{python} Iy` $mm^{4}$  
+  \item[]2nd moment area minor axis, $I_{z}$ = `{python} Iz` $mm^{4}$  
+  \item[]Radius of gyration major axis $i_{y}$ = `{python} Ry` mm  
+  \item[]Radius of gyration minor axis, $i_{z}$ = `{python} Rz` mm  
+  \item[]Elastic modulus major axis, $W_{el,y}$ = `{python} Wey` $mm^{3}$  
+  \item[]Elastic modulus minor axis, $W_{el,z}$ = `{python} Wez` $mm^{3}$  
+  \item[]Plastic modulus major axis, $W_{pl,y}$ = `{python} Wpy` $mm^{3}$  
+  \item[]Plastic modulus minor axis, $W_{pl,z}$ = `{python} Wpz` $mm^{3}$  
+  \item[]Warping Constant, $I_{w}$ = `{python} Iw` $mm^{6}$  
+  \item[]Torsional constant, $I_{t}$ = `{python} It` $mm^{4}$  
 \end{description}
 
 ```{python}
 import math
-def rd (number):
-  number = round(number,4)
-  return number
-ep = math.sqrt(235/fy)
-crf = rd(9*ep)
-crw = rd(33*ep)
+ep = 235/fy
+crf = 9*ep
+crw = 28*ep
 cw = d
-c1 = rd(cw/tw)
-cf = rd((b-tw-2*r)/2)
-c2 = rd(cf/tf)
+c1 = cw/tw
+cf = (b-tw-2*r)/2
+c2 = cf/tf
 ```
+
 {{<pagebreak>}}
 
 #
 
-# Section Classification
+## Section Classification
 
 \begin{description}
-  \item[$\epsilon$] = $\sqrt{\frac{235}{f_{y}}}$ = `{python} ep`  
-  \item[$c_{w}$] = $\frac{(b-t_{w}-2\cdot r)}{2}$ = `{python} cw`  
-\end{description}
-Web class number = $\frac{c_{w}}{t_{w}}$ = `{python} c1`
-\begin{description}
-  \item[$c_{f}$] = Depth between filet = `{python} cf` 
-\end{description}  
-Flange class number = $\frac{c_{f}}{t_{f}}$ = `{python} c2` 
-Since `{python} c1` < `{python} crw` and `{python} c2` < `{python} crf`, the section belongs to class 1  
+  \item[]$\epsilon$ = $\sqrt{\frac{235}{f_{y}}}$ = `{python} ep` --- (EN 1993-1-1 :2022, Eq 5.1)
+  \item[]Web Classification: 
+  \item[]$c_{w}$ = $\frac{(b-t_{w}-2\cdot r)}{2}$ = `{python} cw` 
+  \item[]$\frac{c_{w}}{t_{w}}$ = `{python} c1`
+  \item[]Class 1 criteria $\leq$ $28\epsilon$ = `{python} crw` --- (EN 1993-1-1 :2022, Table 7.3)
+  \item[]Flange Classification: 
+  \item[]$c_{f}$ = Depth between filet = `{python} cf` --- (EN 1993-1-1 :2022, Table 7.4)
+  \item[]$\frac{c_{f}}{t_{f}}$ = `{python} c2` 
+  \item[]Class 1 criteria $\leq$ $9\epsilon$ = `{python} crf` 
+  \item[]Since $\frac{c_{w}}{t_{w}}$ < $28\epsilon$ and $\frac{c_{f}}{t_{f}}$ < $9\epsilon$, the section belongs to class 1  
+\end{description}   
 
 ```{python}
 def buckle (Lcr, I, E, A, fy, a):
-  Ncr = (math.pi**2 * E * I) / ((1000*Lcr)**2)
-  lam = math.sqrt(( A*fy / Ncr ))
+  Ncr = (math.pi**2 * E * I) / ((Lcr)**2)*1e-3
+  lam = math.sqrt(( A*fy / (Ncr*1e3) ))
   phi = 0.5*(1 + a*(lam - 0.2) + lam**2)
   chi = min(1/(phi + math.sqrt(phi**2 - lam**2)),1)
-  return rd(Ncr), rd(lam), rd(ratio), rd(phi), rd(chi)
-
-Lcr = span/2
+  return Ncr, lam, ratio, phi, chi
+span = hcol
+Lcr = hcol/2
 Ncry, lamy, ratio, phiy, chiy = buckle(Lcr, Iy, E, A, fy, ay)
 Ncrz, lamz, ratio, phiz, chiz = buckle(Lcr, Iz, E, A, fy, az)
 
 gamma1 = 1.0
 chi = min([chiy,chiz])
-Nrd = rd(chi*A*fy/gamma1)
+Nrd = chi*A*fy/gamma1/1000
 
 if Nrd > Ned:
+  symbol = '>'
   output = 'safe in resisting axial load'
 else:
+  symbol = '<'
   output = 'Not safe in resisting axial load'
 ```
-# Buckling resistance 
+
+## Buckling resistance about y-y axis
 
 \begin{description}
-  \item[Span] = `{python} span`
-  \item[$L_{cr,y}$] = $\frac{span}{2}$ = `{python} Lcr`
-  \item[$N_{cr,y}$] = $\frac{\pi^{2}\cdot E\cdot I_{y}}{{L_{cr,y}}^{2}}$ = `{python} Ncry` kN
-  \item[$\lambda_{y}$] = $\sqrt{\frac{(A\cdot f_{y})}{N_{cr,y}}}$ = `{python} lamy`
-  \item[$\frac{h}{b}$] = `{python} ratio` < 1.2
-  \item[$t_{f}$] = `{python} tf` mm < 100~mm
+  \item[]span = `{python} span` mm
+  \item[]$L_{cr,y}$ = $\frac{span}{2}$ = `{python} Lcr` mm
+  \item[]$N_{cr,y}$ = $\frac{\pi^{2}\cdot E\cdot I_{y}}{{L_{cr,y}}^{2}}$ = `{python} Ncry` kN
+  \item[]$\lambda_{y}$ =  $\sqrt{\frac{N_{Rk}}{N_{cr,y}}}$ = $\sqrt{\frac{A\cdot f_{y}}{N_{cr,y}}}$ = `{python} lamy` --- (EN 1993-1-1 :2022, Eq 8.69)
+  \item[]$\frac{h}{b}$ = `{python} ratio` < 1.2
+  \item[]$t_{f}$ = `{python} tf` mm < 100~mm
+  \item[]Use buckling curve B,  $\alpha_{y}$ = `{python} ay` --- (EN 1993-1-1 :2022, Table 8.2)
+  \item[]$\phi_{y}$ = $0.5 \cdot (1 + \alpha_{y} \cdot (\lambda_{y} - 0.2) + {\lambda_{y}}^{2})$ = `{python} phiy` --- (EN 1993-1-1 :2022, Eq 8.74)
+  \item[]$\chi_{y}$ = $\frac{1}{\phi_{y} + \sqrt{{\phi_{y}}^{2} - {\lambda_{y}}^{2}}}$ = `{python} chiy` --- (EN 1993-1-1 :2022, Eq 8.73)
 \end{description}
 
 {{<pagebreak>}}
 
 #
-Use buckling curve B,  $\alpha_{y}$ = `{python} ay`
-\begin{description}
-  \item[$\phi_{y}$] = $0.5 \cdot (1 + \alpha_{y} \cdot (\lambda_{y} - 0.2) + {\lambda_{y}}^{2})$ = `{python} phiy`
-  \item[$\chi_{y}$] = $\frac{1}{\phi_{y} + \sqrt{{\phi_{y}}^{2} - {\lambda_{y}}^{2}}}$ = `{python} chiy`
-\end{description}
 
+## Buckling resistance about z-z axis
 \begin{description}
-  \item[$L_{cr,z}$] = $\frac{span}{2}$ = `{python} Lcr`
-  \item[$N_{cr,z}$] = $\frac{\pi^{2}\cdot E\cdot I_{z}}{{L_{cr,z}}^{2}}$ = `{python} Ncrz` kN
-  \item[$\lambda_{z}$] = $\sqrt{\frac{(A\cdot f_{y})}{N_{cr,z}}}$ = `{python} lamz`
-  \item[$\frac{h}{b}$] = `{python} ratio` < 1.2
-  \item[$t_{f}$] = `{python} tf` mm < 100~mm
+  \item[]$L_{cr,z}$ = $\frac{span}{2}$ = `{python} Lcr` mm
+  \item[]$N_{cr,z}$ = $\frac{\pi^{2}\cdot E\cdot I_{z}}{{L_{cr,z}}^{2}}$ = `{python} Ncrz` kN
+  \item[]$\lambda_{z}$ = $\sqrt{\frac{N_{Rk}}{N_{cr,z}}}$ = $\sqrt{\frac{A\cdot f_{y}}{N_{cr,z}}}$ = `{python} lamz` --- (EN 1993-1-1 :2022, Eq 8.69)
+  \item[]$\frac{h}{b}$ = `{python} ratio` < 1.2
+  \item[]$t_{f}$ = `{python} tf` mm < 100~mm
+  \item[]Use buckling curve C,  $\alpha_{z}$ = `{python} az` --- (EN 1993-1-1 :2022, Table 8.2)
+  \item[]$\phi_{z}$ = $0.5 \cdot (1 + \alpha_{z} \cdot (\lambda_{z} - 0.2) + {\lambda_{z}}^{2})$ = `{python} phiz` --- (EN 1993-1-1 :2022, Eq 8.74)
+  \item[]$\chi_{z}$ = $\frac{1}{\phi_{z} + \sqrt{{\phi_{z}}^{2} - {\lambda_{z}}^{2}}}$ = `{python} chiz` --- (EN 1993-1-1 :2022, Eq 8.73)
+  
 \end{description}
-
-
-Use buckling curve C,  $\alpha_{z}$ = `{python} az`
+  
+## Buckling resistance
 \begin{description}
-  \item[$\phi_{z}$] = $0.5 \cdot (1 + \alpha_{z} \cdot (\lambda_{z} - 0.2) + {\lambda_{z}}^{2})$ = `{python} phiz`
-  \item[$\chi_{z}$] = $\frac{1}{\phi_{z} + \sqrt{{\phi_{z}}^{2} - {\lambda_{z}}^{2}}}$ = `{python} chiz`
+  \item[]$\chi$ = min($\chi_{y},\chi_{z}$) = `{python} chi`
+  \item[]$N_{RD}$ = $\chi\cdot A\cdot f_{y}$ = `{python} Nrd` kN --- (EN 1993-1-1 :2022, Eq 8.68)
+  \item[]Maximum axial compressive force is `{python} Ned` kN.
+  \item[]Since $N_{RD}$ `{python} symbol` $N_{ED}$, `{python} output`
 \end{description}
-
-\begin{description}
-  \item[$\chi$] = min($\chi_{y},\chi_{z}$) = `{python} chi`
-  \item[$N_{RD}$] = $\frac{\chi\cdot A\cdot f_{y}}{\gamma_1}$ = `{python} Nrd`
-\end{description}
-Status of column : `{python} output`
 
 ```{python}
 Lcr = hcol
-Nrk = fy*A
-Mcr = ((math.pi**2 * E * Iz) / ((1000*Lcr)**2)) * (Iw/Iz + (G * It * (1000*Lcr)**2)/ (math.pi**2 * E * It))
+Nrk = fy*A**1e-3
+Mcr = ((math.pi**2 * E * Iz) / Lcr**2) * (Iw/Iz + (G * It * (Lcr)**2)/ (math.pi**2 * E * It)) **1e-6
 
 if ratio > 1.2:
     if tf <= 40:
-        alt = min(0.12*math.sqrt(Ey/Ez), 0.34)
+        alt = min(0.12*math.sqrt(Wey/Wez), 0.34)
     else:
-        alt = min(0.16*math.sqrt(Ey/Ez), 0.49)
+        alt = min(0.16*math.sqrt(Wey/Wez), 0.49)
 else:
-    alt = min(0.16*math.sqrt(Ey/Ez), 0.49)
+    alt = min(0.16*math.sqrt(Wey/Wez), 0.49)
 
 phi_lt = 0.5*(1 + alt*(min(lamy,lamz) - 0.2) + min(lamy,lamz)**2)
 chi_lt = min(1/(phi_lt + math.sqrt(phi_lt**2 - min(lamy,lamz)**2)),1)
 
-Myrk = Py*fy
-Mzrk = Pz*fy
-Mbrd = chi_lt*Myrk/gamma1
-Mcrdz = Mzrk/gamma1
-if Mbrd > Myed and Mcrdz > Mzed:
-    outputm = 'Safe in resisting bending'
-else:
-    outputm = 'Not safe in resisting bending'
+Myrk = Wpy*fy*1e-6
+Mzrk = Wpz*fy*1e-6
+Mbrd = chi_lt*Myrk*1e-6/gamma1
+Mcrdz = Mzrk*1e-6/gamma1
 
-int_ratio = rd(Ned/Nrk + Myed/Mbrd + Mzed/Mcrdz)
-if int_ratio < 1.0:
-    outputi = 'Safe in resisting interaction'
+if Mbrd > Myed and Mcrdz > Mzed:
+    symbolm = '>'
+    outputm = 'safe in resisting bending'
 else:
-    outputi = 'Not safe in resisting interaction'
+    symbolm = '<'
+    outputm = 'not safe in resisting bending'
+
+int_ratio = Ned/Nrk + Myed/Mbrd + Mzed/Mcrdz
+if int_ratio < 1.0:
+    symboli = '<'
+    outputi = 'safe in resisting interaction'
+else:
+    symboli = '>'
+    outputi = 'not safe in resisting interaction'
 ```
 
-# Lateral torsional buckling check
-For $\frac{h}{b}$ > 1.2, use buckling curve B, $\alpha_{LT}$ = min($0.12\cdot \sqrt{\frac{W_{el,y}}{W_{el,z}}}$, 0.34)
+## Lateral torsional buckling check
+
 \begin{description}
-    \item[Critical moment, $M_{cr}$] = $\frac{\pi^{2} \cdot E \cdot I_{z}}{L_{cr}^{2}} \cdot \left( \frac{I_{w}}{I_{z}} + \frac{G \cdot I_{t} \cdot L_{cr}^{2}}{\pi^{2} \cdot E \cdot I_{t}} \right)$ = `{python} Mcr` kNm
-    \item[$\phi_{LT}$] = $0.5*(1 + alt*(min(\lambda_y,\lambda_z) - 0.2) + min(\lambda_y,\lambda_z)^{2})$ = `{python} phi_lt`
-    \item[$\chi_{LT}$] = $min(1/(\phi_{LT} + \sqrt{\phi_{LT}^{2} - min(\lambda_y,\lambda_z)^{2}}),1)$ = `{python} chi_lt`
-    \item[Moment resistance, $M_{brd}$] = $\frac{\chi_{LT} \cdot W_{pl,y} \cdot f_{y}}{\gamma_1}$ = `{python} Mbrd` kNm
-    \item[Moment resistance about z-axis, $M_{cr,dz}$] = $\frac{W_{pl,z} \cdot f_{y}}{\gamma_1}$ = `{python} Mcrdz` kNm
+    \item[]Critical moment, $M_{cr}$= $\frac{\pi^{2} \cdot E \cdot I_{z}}{L_{cr}^{2}} \cdot \left( \frac{I_{w}}{I_{z}} + \frac{G \cdot I_{t} \cdot L_{cr}^{2}}{\pi^{2} \cdot E \cdot I_{t}} \right)$ = `{python} Mcr` kNm
+    \item[]For $\frac{h}{b}$ > 1.2 and $t_{f}$ <= 40 mm, $\alpha_{LT}$ = min($0.12\cdot \sqrt{\frac{W_{el,y}}{W_{el,z}}}$, 0.34) = `{python} alt` --- (EN 1993-1-1 :2022, Table 8.5)
+    \item[]$\phi_{LT}$ = $0.5\cdot(1 + alt\cdot(min(\lambda_y,\lambda_z) - 0.2) + min(\lambda_y,\lambda_z)^{2})$ = `{python} phi_lt` --- (EN 1993-1-1 :2022, Eq 8.82)
+    \item[]$\chi_{LT}$ = $min(\frac{1}{\phi_{LT} + \sqrt{\phi_{LT}^{2} - min(\lambda_y,\lambda_z)^{2}}},1)$ = `{python} chi_lt` --- (EN 1993-1-1 :2022, Eq 8.81)
+    \item[]Moment resistance, $M_{brd}$ = $\frac{\chi_{LT} \cdot W_{pl,y} \cdot f_{y}}{\gamma_1}$ = `{python} Mbrd` kNm --- (EN 1993-1-1 :2022, Eq 8.79)
+    \item[]Moment resistance about z-axis, $M_{cr,dz}$ = $\frac{W_{pl,z} \cdot f_{y}}{\gamma_1}$ = `{python} Mcrdz` kNm --- (EN 1993-1-1 :2022, Eq 8.20)
+    \item[] Since $M_{brd}$ `{python} symbolm` $M_{y,ed}$ and $M_{cr,dz}$ `{python} symbolm` $M_{z,ed}$, `{python} outputm`
 \end{description}
 <pagebreak>
 
 #
 
-Status of column in bending : `{python} outputm`
+## Axial and bending interaction check
+
 \begin{description}
-    \item[Interaction ratio] = $\frac{N_{ed}}{N_{rk}} + \frac{M_{y}}{M_{brd}} + \frac{M_{z}}{M_{cr,dz}}$ = `{python} int_ratio`
+    \item[]Assume simple construction and refer to EN 1993-1-1 :2022, Eq 8.59 
+    \item[]Interaction ratio = $\frac{N_{ed}}{N_{rk}} + \frac{M_{y}}{M_{brd}} + \frac{M_{z}}{M_{cr,dz}}$ = `{python} int_ratio`
+    \item[]Since interaction ratio `{python} symboli` 1.0, the section is `{python} outputi`
 \end{description}
-Status of column in interaction : `{python} outputi` 
+ 
  

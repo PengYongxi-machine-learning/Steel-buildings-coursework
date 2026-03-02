@@ -160,9 +160,9 @@ c2 = cf/tf
 \begin{description}
   \item[]$\epsilon$ = $\sqrt{\frac{235}{f_{y}}}$ = `{python} ep` --- (EN 1993-1-1 :2022, Eq 5.1)
   \item[]Web Classification: 
-  \item[]Class 1 criteria $\leq$ $28\epsilon$ = `{python} crw` --- (EN 1993-1-1 :2022, Table 7.3)
+  \item[]$c_{w}$ = $\frac{(b-t_{w}-2\cdot r)}{2}$ = `{python} cw`
   \item[]$\frac{c_{w}}{t_{w}}$ = `{python} c1`
-  \item[]$c_{w}$ = $\frac{(b-t_{w}-2\cdot r)}{2}$ = `{python} cw` 
+  \item[]Class 1 criteria $\leq$ $28\epsilon$ = `{python} crw` --- (EN 1993-1-1 :2022, Table 7.3)
   \item[]Flange Classification: 
   \item[]$c_{f}$ = Depth between filet = `{python} cf` --- (EN 1993-1-1 :2022, Table 7.4)
   \item[]$\frac{c_{f}}{t_{f}}$ = `{python} c2` 
