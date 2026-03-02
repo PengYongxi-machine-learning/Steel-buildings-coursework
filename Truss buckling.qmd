@@ -183,6 +183,14 @@ Ncrz, lamz, ratio, phiz, chiz = buckle(Lcr, Iz, E, A, fy, az)
 
 chi = min([chiy,chiz])
 Nrd = rd(chi*A*fy)
+Ned =3000000
+
+if Nrd > Ned:
+  symbol = '>'
+  outputn('The section is safe in compression')
+else:
+  symbol = '<'
+  outputn('The section is not safe in compression')
 ```
 # Buckling resistance 
 
@@ -224,3 +232,29 @@ Use buckling curve C,  $\alpha_{z}$ = `{python} az`
   \item[$N_{RD}$] = $\chi\cdot A\cdot f_{y}$ = `{python} Nrd`
 \end{description}
 
+Maximum axial compressive force is `{python} Ned` N. 
+Since $N_{RD}$ `{python} symbol` $N_{ED}$, `{python} outputn`
+
+```{python}
+gamma1 = 1.0
+gamma0 = 1.25
+area_reduction = 0.9
+Nplrd = A*fy
+Nurd = area_reduction*A*fu/gamma0
+Ntrd = min(Nplrd, Nurd)
+Nted = 3000000
+if Ntrd > Nted:
+  symbol = '>'
+  outputt('The section is safe in tension')
+else:
+  symbol = '<'
+  outputt('The section is not safe in tension')
+```
+
+\begin{description}
+  \item[Gross area tension resistance, $N_{pl,RD}$] = $\frac{A\cdot f_{y}}{\gamma_{1}}$ = `{python} Nplrd` N
+Assume the net area is 90\% of the gross area, then
+  \item[Net area tension resistance, $N_{u,RD}$] = `{python} area_reduction`$\frac{\cdot A_{net}\cdot f_{u}}{\gamma_{0}}$ = `{python} Nurd` N
+\end{description
+Maximum axial tensile force is `{python} Nted` N.
+Since $N_{t,RD}$ `{python} symbol` $N_{t,ED}$, `{python} outputt`

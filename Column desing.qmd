@@ -379,7 +379,7 @@ if Mbrd > Myed and Mcrdz > Mzed:
 else:
     outputm = 'Not safe in resisting bending'
 
-int_ratio = Ned/Nrk + Myed/Mbrd + Mzed/Mcrdz
+int_ratio = rd(Ned/Nrk + Myed/Mbrd + Mzed/Mcrdz)
 if int_ratio < 1.0:
     outputi = 'Safe in resisting interaction'
 else:
