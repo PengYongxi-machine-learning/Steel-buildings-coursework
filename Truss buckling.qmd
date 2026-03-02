@@ -4,9 +4,9 @@ format:
   pdf:
     echo: false
     geometry:
-      - top=10mm        
-      - left=10mm
-      - right=10mm
+      - top=5mm        
+      - left=5mm
+      - right=5mm
       - bottom=20mm
       - headheight=40mm 
       - headsep=5mm 
@@ -56,13 +56,11 @@ format:
             \egroup
           }
 ---
-#
-
 ```{python}
 #material
 fu= 500.0
 fy = 355.0
-E = 210*10**3
+E = 210000
 
 import pandas as pd
 df_all = pd.read_csv('section_mm.csv')
@@ -89,9 +87,28 @@ Py = float(df['W_pl,y (mm3)'].iloc[0])
 Pz = float(df['W,pl,z (mm^3)'].iloc[0])
 Iw = float(df['I_w (mm^6)'].iloc[0])
 It = float(df['I_T (mm^4)'].iloc[0])
-```
 
-## Effective length of column about y-y
+ratio = h/b
+if ratio > 1.2:
+  if tf <= 40:
+    ay = 0.21
+    az = 0.34
+  else:
+    ay = 0.34
+    az = 0.49
+else:
+  if tf <= 100:
+    ay = 0.34
+    az = 0.49
+  else:
+    ay = 0.70
+    az = 0.70
+
+span = 6
+```
+#
+
+# Effective length of column about y-y
 
 \begin{description}
   \item[Ultimate strength:] $f_{u}$ = `{python} fy` $N\cdot mm^{-2}$  
@@ -99,7 +116,7 @@ It = float(df['I_T (mm^4)'].iloc[0])
   \item[Young modulus:] E = `{python} E` $N\cdot mm^{-2}$  
 \end{description}
 
-## Section Properties
+# Section Properties of 356 x 406 x 634
 
 \begin{description}
   \item[Overall depth, h] = `{python} h` mm  
@@ -134,74 +151,76 @@ c1 = rd(cw/tw)
 cf = rd((b-tw-2*r)/2)
 c2 = rd(cf/tf)
 ```
+{{<pagebreak>}}
 
-## Section Classification
+#
+
+# Section Classification
 
 \begin{description}
-  \item[$\epsilon$] = $\sqrt{\frac{235}{f_{y}}}$ = `{python} ep` \\[2ex]  
-  \item[$c_{w}$] = $\frac{(b-t_{w}-2\cdot r)}{2}$ = `{python} cw` \\[2ex]  
-  \item[Web class number] = $\frac{c}{t_{f}}$ = `{python} c1`  \\[2ex]   
-  \item[$c_{f}$] = Depth between filet = `{python cf}`  \\[2ex]  
-  \item[Flange class number] = $\frac{c_{star}}{t_{w}}$ = `{python} c2`  \\[2ex]
+  \item[$\epsilon$] = $\sqrt{\frac{235}{f_{y}}}$ = `{python} ep`  
+  \item[$c_{w}$] = $\frac{(b-t_{w}-2\cdot r)}{2}$ = `{python} cw`  
 \end{description}
-  Since `{python} c1` < `{python} crw` and `{python} c2` < `{python} crf`, the section belongs to class 1  
+Web class number= $\frac{c_{w}}{t_{w}}$ = `{python} c1`
+\begin{description}
+  \item[$c_{f}$] = Depth between filet = `{python} cf` 
+\end{description}  
+Flange class number = $\frac{c_{f}}{t_{f}}$ = `{python} c2` 
+Since `{python} c1` < `{python} crw` and `{python} c2` < `{python} crf`, the section belongs to class 1  
 
 ```{python}
-def buckle (Lcr, I, E, A, fy, a, h, b):
-  Lcr = 6
-  Ncr = (math.pi**2 * E * I) / (Lcr**2)
+def buckle (Lcr, I, E, A, fy, a):
+  Ncr = (math.pi**2 * E * I) / ((1000*Lcr)**2)
   lam = math.sqrt(( A*fy / Ncr ))
-  ratio = h/b
-  if ratio <= 1.2:
-    phi = 0.5*(1 + a*(lam - 0.2) + lam**2)
-    chi = 1/(phi + math.sqrt(phi**2 - lam**2))
-  return Ncr, lam, ratio, phi, chi
+  phi = 0.5*(1 + a*(lam - 0.2) + lam**2)
+  chi = min(1/(phi + math.sqrt(phi**2 - lam**2)),1)
+  print(round(Ncr,4))
+  return rd(Ncr), rd(lam), rd(ratio), rd(phi), rd(chi)
 
-Lcry = 3
-ay = 0.34
-Ncry, lamy, ratio, phiy, chiy = buckle(Lcry, Iy, E, A, fy, ay, h, b)
-
-Lcrz = 3
-az = 0.49
-Ncrz, lamz, ratio, phiz, chiz = buckle(Lcrz, Iz, E, A, fy, az, h, b)
+Lcr = span/2
+Ncry, lamy, ratio, phiy, chiy = buckle(Lcr, Iy, E, A, fy, ay)
+Ncrz, lamz, ratio, phiz, chiz = buckle(Lcr, Iz, E, A, fy, az)
 
 chi = min([chiy,chiz])
-Nrd = chi*A*fy
+Nrd = rd(chi*A*fy)
 ```
-## Buckling resistance 
+# Buckling resistance 
 
 \begin{description}
-  \item[$L_{cr,y}$] = $\frac{6}{2}$ = `{python} Lcry`
-  \item[$N_{cr,y}$] = $\frac{(\pi^{2}\cdot E\cdot I_{y})}{{L_{cr,y}}^{2}}$ = `{python} Ncry` kN
+  \item[Span] = `{python} span`
+  \item[$L_{cr,y}$] = $\frac{span}{2}$ = `{python} Lcr`
+  \item[$N_{cr,y}$] = $\frac{\pi^{2}\cdot E\cdot I_{y}}{{L_{cr,y}}^{2}}$ = `{python} Ncry` kN
   \item[$\lambda_{y}$] = $\sqrt{\frac{(A\cdot f_{y})}{N_{cr,y}}}$ = `{python} lamy`
   \item[$\frac{h}{b}$] = `{python} ratio` < 1.2
   \item[$t_{f}$] = `{python} tf` mm < 100~mm
-\end{description}
-Use buckling curve B,  $\alpha_{y}$ = `{python} ay`
-\begine{description}
-  \item[$\phi_{y}$] = $0.5 \cdot (1 + \alpha_{y} \cdot (\lambda_{y} - 0.2) + {\lambda_{y}}^{2})$ = `{python} phiy`
-  \item[$\chi_{y}$] = $\frac{1}{\phi_{y} + \sqrt{{\phi_{y}}^{2} - {\lambda_{y}}^{2}}}$ = `{python} chiy`
-\end{description}
-
-\begin{description}
-  \item[$L_{cr,z}$] = $\frac{6}{2}$ = `{python} Lcrz`
-  \item[$N_{cr,z}$] = $\frac{(\pi^{2}\cdot E\cdot I_{z})}{{L_{cr,z}}^{2}}$ = `{python} Ncrz` kN
-  \item[$\lambda_{z}$] = $\sqrt{\frac{(A\cdot f_{y})}{N_{cr,z}}}$ = `{python} lamz`
-  \item[$\frac{h}{b}$] = `{python} ratio` < 1.2
-  \item[$t_{f}$] = `{python} tf` mm < 100~mm
-\end{description}
-Use buckling curve C,  $\alpha_{z}$ = `{python} az`
-\begine{description}
-  \item[$\phi_{z}$] = $0.5 \cdot (1 + \alpha_{z} \cdot (\lambda_{z} - 0.2) + {\lambda_{z}}^{2})$ = `{python} phiz`
-  \item[$\chi_{z}$] = $\frac{1}{\phi_{z} + \sqrt{{\phi_{z}}^{2} - {\lambda_{z}}^{2}}}$ = `{python} chiz`
 \end{description}
 
 {{<pagebreak>}}
 
 #
+Use buckling curve B,  $\alpha_{y}$ = `{python} ay`
+\begin{description}
+  \item[$\phi_{y}$] = $0.5 \cdot (1 + \alpha_{y} \cdot (\lambda_{y} - 0.2) + {\lambda_{y}}^{2})$ = `{python} phiy`
+  \item[$\chi_{y}$] = $\frac{1}{\phi_{y} + \sqrt{{\phi_{y}}^{2} - {\lambda_{y}}^{2}}}$ = `{python} chiy`
+\end{description}
 
-\begine{description}
-  \item[$\chi$] = min($\chi_{y},\chi_{z}$) = `{python} chi}`
-  \item[$N_{RD\_634\_6m}$] = $\chi\cdot A\cdot f_{y}$ = `{python} Nrd`
+\begin{description}
+  \item[$L_{cr,z}$] = $\frac{span}{2}$ = `{python} Lcr`
+  \item[$N_{cr,z}$] = $\frac{\pi^{2}\cdot E\cdot I_{z}}{{L_{cr,z}}^{2}}$ = `{python} Ncrz` kN
+  \item[$\lambda_{z}$] = $\sqrt{\frac{(A\cdot f_{y})}{N_{cr,z}}}$ = `{python} lamz`
+  \item[$\frac{h}{b}$] = `{python} ratio` < 1.2
+  \item[$t_{f}$] = `{python} tf` mm < 100~mm
+\end{description}
+
+
+Use buckling curve C,  $\alpha_{z}$ = `{python} az`
+\begin{description}
+  \item[$\phi_{z}$] = $0.5 \cdot (1 + \alpha_{z} \cdot (\lambda_{z} - 0.2) + {\lambda_{z}}^{2})$ = `{python} phiz`
+  \item[$\chi_{z}$] = $\frac{1}{\phi_{z} + \sqrt{{\phi_{z}}^{2} - {\lambda_{z}}^{2}}}$ = `{python} chiz`
+\end{description}
+
+\begin{description}
+  \item[$\chi$] = min($\chi_{y},\chi_{z}$) = `{python} chi`
+  \item[$N_{RD}$] = $\chi\cdot A\cdot f_{y}$ = `{python} Nrd`
 \end{description}
 
