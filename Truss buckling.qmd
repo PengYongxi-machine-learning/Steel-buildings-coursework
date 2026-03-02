@@ -49,8 +49,8 @@ format:
                 \centerline{Truss Sizing and Connection Calculations}
                 \vspace*{1mm}
             } \\ \cline{2-5}
-            & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  & \multicolumn{2}{l|}{\textbf{Date} \quad 29/03/2023} \\ \cline{3-5}
-            & & \textbf{Checked by} & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
+            & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 29/03/2023} \\ \cline{3-5}
+            & & \textbf{Checked by} \quad & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
             \end{tabularx}
             \egroup
           }
@@ -118,7 +118,7 @@ span = 6000
   \item[]Young's modulus, $E$ = `{python} E` $N\cdot mm^{-2}$  
 \end{description}
 
-## Section Properties of 356 x 406 x 634
+## Section Properties of `{python} section`
 
 \begin{description}
   \item[]Overall depth, $h$ = `{python} h` mm  
@@ -231,7 +231,7 @@ else:
   \item[]$\chi$ = min($\chi_{y},\chi_{z}$) = `{python} chi`
   \item[]$N_{RD}$ = $\chi\cdot A\cdot f_{y}$ = `{python} Nrd` kN --- (EN 1993-1-1 :2022, Eq 8.68)
   \item[]Maximum axial compressive force is `{python} Ned` kN.
-  \item[]Since $N_{RD}$ `{python} symbol` $N_{ED}$, `{python} outputn`
+  \item[]Since $N_{RD} `{python} symbol` N_{ED}$, `{python} outputn`
 \end{description}
 
 
@@ -261,6 +261,6 @@ else:
   \item[]Net area tension resistance :
   \item[]$N_{u,RD}$ = `{python} area_reduction`$\frac{k\cdot A_{net}\cdot f_{u}}{\gamma_{0}}$ = `{python} Nurd` kN --- (EN 1993-1-1 :2022, Eq 8.15)
   \item[]Maximum axial tensile force is `{python} Nted` kN.
-  \item[]Since $N_{t,RD}$ `{python} symbol` $N_{t,ED}$, `{python} outputt`
+  \item[]Since $N_{t,RD} `{python} symbol` N_{t,ED}$, `{python} outputt`
 \end{description}
 
