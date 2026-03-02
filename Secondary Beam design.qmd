@@ -1,0 +1,408 @@
+---
+jupyter: python3
+format: 
+  pdf:
+    echo: false
+    geometry:
+      - top=5mm        
+      - left=5mm
+      - right=5mm
+      - bottom=20mm
+      - headheight=40mm 
+      - headsep=5mm 
+      - includehead=true 
+    include-in-header:
+      - text: |
+          \usepackage{tabularx}
+          \usepackage{multirow}
+          \usepackage{graphicx}
+          \usepackage{xcolor}
+          \usepackage{fancyhdr}
+          \usepackage{lastpage}
+          
+          % Define the Page Style
+          \pagestyle{fancy}
+          \fancyhf{} 
+          \renewcommand{\headrulewidth}{0pt}
+          
+          % Define the Header Content
+          \fancyhead[C]{
+            \noindent
+            \bgroup
+            \def\arraystretch{1.4}
+            \begin{tabularx}{\textwidth}{|p{5.5cm}|p{1.8cm}|X|p{1.2cm}|p{1.8cm}|}
+            \hline
+            \multirow{5}{5.5cm}{
+                \vspace*{1mm}
+                \includegraphics[width=4.5cm]{logo} \\
+                \fontsize{6pt}{7pt}\selectfont
+                \textbf{CIVIL \& ENVIRONMENTAL ENGINEERING,}\\
+                SKEMPTON BUILDING, IMPERIAL COLLEGE\\
+                LONDON, SOUTH KENSINGTON CAMPUS,\\
+                LONDON SW7 2AZ.\\[3mm]
+                \normalsize\textbf{CALCULATION SHIT}
+            }
+            & \textbf{Job No.} & & \textbf{Sheet} & \textbf{Ref} \\ \cline{2-5}
+            & \textbf{Job Title} & Steel Design Coursework & \multicolumn{2}{l|}{\thepage\ of \pageref{LastPage}} \\ \cline{2-5}
+            & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
+                \textbf{Subject} \newline
+                \vspace*{1mm}
+                \centerline{Design of Internal Columns}
+                \vspace*{1mm}
+            } \\ \cline{2-5}
+            & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Stuid shit & \multicolumn{2}{l|}{\textbf{Date} \quad 30/02/2077} \\ \cline{3-5}
+            & & \textbf{Checked by} \quad Even more stupid shit & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
+            \end{tabularx}
+            \egroup
+          }
+---
+```{python}
+# Floor area and height
+lx = 8.5
+ly = 13.5
+
+# floor loads
+gt_f = 0.7
+gs_f = 2.63
+gc_f = 0.5
+gste_f = 0.3
+gser_f = 1.4
+
+qpar_f = 1.0
+qimp_f = 4.0
+qclad = 1.2
+
+# ULS floor load
+Gtyp_f = round(gt_f + gs_f + gc_f + gste_f + gser_f,4)
+Qtyp_f = round(qpar_f + qimp_f + qclad,4)
+wtyp_f = round(1.35*Gtyp_f + 1.5*Qtyp_f,4)
+qtyp_f = round(wtyp_f*lx/2,4)
+
+# Moment and shear
+Med = (qtyp_f*1000)*(ly*1000)**2/8
+Ved = (qtyp_f*1000)*(ly*1000)/2
+```
+
+#
+# Floor Loads
+\begin{description}
+    \item[$G_{tiles}$] = `{python} gt_f` $kN/m^2$
+    \item[$G_{steel}$] = `{python} gste_f` $kN/m^2$
+    \item[$G_{cladding}$] = `{python} gc_f` $kN/m^2$
+    \item[$G_{slab}$] = `{python} gs_f` $kN/m^2$
+    \item[$G_{services}$] = `{python} gser_f` $kN/m^2$
+    \item[$Q_{partitions}$] = `{python} qpar_f` $kN/m^2$
+    \item[$Q_{imposed}$] = `{python} qimp_f` $kN/m^2$
+    \item[$Q_{cladding}$] = `{python} qclad` $kN/m^2$
+\end{description}
+
+# ULS floor uniform distributed load
+\begin{description}
+    \item[Typical dead load, $G_{typ}$] = $G_{tiles} + G_{steel} + G_{cladding} + G_{slab} + G_{services}$ = `{python} Gtyp_f` $kN/m^2$
+    \item[Typical imposed load, $Q_{typ}$] = $Q_{partitions} + Q_{imposed} + Q_{cladding}$ = `{python} Qtyp_f` $kN/m^2$
+    \item[Typical area load, $w_{typ}$] = $1.35\cdot G_{typ} + 1.5 \cdot Q_{typ}$ = `{python} wtyp_f` $kN/m^2$
+\end{description}
+
+# Load areas
+\begin{description}
+    \item[Horizontal distance, $L_{x}$] = `{python} lx` $m$
+    \item[Horizontal distance, $L_{y}$] = `{python} ly` $m$
+    \item[Line area, $q$] =  `{python} qtyp_f` $kN/m$
+    \item[Moment, $M_{ed}$] = $\frac{q\cdot L_{y}^{2}}{8}$ = `{python} Med` Nmm
+    \item[Shear, $V_{ed}$] = $\frac{q\cdot L_{y}}{2}$ = `{python} Ved` N
+\end{description}
+
+```{python}
+#material
+fu= 500.0
+fy = 355.0
+E = 210000
+G = 81000
+fck = 30.0
+Ecm = 33000
+
+import pandas as pd
+df_all = pd.read_csv('section_mm.csv')
+if df_all.columns[0] == 'Unnamed: 0':
+  df_all = df_all.rename(columns = {'Unnamed: 0' : 'Section Profile'})
+
+section = '533 x 312x 151'
+df = df_all[df_all['Section Profile'] == section]
+#section
+h = float(df['h (mm)'].iloc[0])
+b = float(df['b (mm)'].iloc[0])
+tw = float(df['tw (mm)'].iloc[0])
+tf = float(df['tf (mm)'].iloc[0])
+d = float(df['d (mm)'].iloc[0])
+r= float(df['r(mm)'].iloc[0])
+A = float(df['A (mm^2)'].iloc[0])
+Iy = float(df['Iy (mm^4)'].iloc[0])
+Iz = float(df['Iz (mm^4)'].iloc[0])
+Ry = float(df['R_y (mm)'].iloc[0])
+Rz = float(df['R_z (mm)'].iloc[0])
+Ey = float(df['W_el,y (mm^3)'].iloc[0])
+Ez = float(df['W_el,z (mm^3)'].iloc[0])
+Py = float(df['W_pl,y (mm3)'].iloc[0])
+Pz = float(df['W,pl,z (mm^3)'].iloc[0])
+Iw = float(df['I_w (mm^6)'].iloc[0])
+It = float(df['I_T (mm^4)'].iloc[0])
+
+ratio = h/b
+if ratio > 1.2:
+  if tf <= 40:
+    ay = 0.21
+    az = 0.34
+  else:
+    ay = 0.34
+    az = 0.49
+else:
+  if tf <= 100:
+    ay = 0.34
+    az = 0.49
+  else:
+    ay = 0.70
+    az = 0.70
+
+span = 6
+```
+<pagebreak>
+
+#  
+
+# Effective length of column about y-y
+
+\begin{description}
+  \item[Ultimate strength:] $f_{u}$ = `{python} fy` $N\cdot mm^{-2}$  
+  \item[Yield strength:] $f_{y}$ = `{python} fu` $N \cdot mm^{-2}$  
+  \item[Young modulus:] E = `{python} E` $N\cdot mm^{-2}$  
+  \item[Shear modulus:] G = `{python} G` $N\cdot mm^{-2}$
+  \item[Concrete strength:] $f_{ck}$ = `{python} fck` $N\cdot mm^{-2}$
+  \item[Concrete Young modulus:] $E_{cm}$ = `{python} Ecm` $N\cdot mm^{-2}$
+\end{description}
+
+# 
+
+# Section Properties of 356 x 406 x 634
+
+\begin{description}
+  \item[Overall depth, h] = `{python} h` mm  
+  \item[Width of section, b] = `{python} b` mm  
+  \item[Web thickness, $t_{w}$] = `{python} tw`  mm  
+  \item[Flange thickness, $t_{f}$] = `{python} tf` mm  
+  \item[De pth between fillet, $h_{w}$] = `{python} d` mm  
+  \item[Root radius, r] = `{python} r` mm  
+  \item[Area of section, $A$] = `{python} A`  $mm^{2}$   
+  \item[2nd moment area Major axis, $I_{y}$] = `{python} Iy` $mm^{4}$  
+  \item[2nd moment area minor axis, $I_{z}$] = `{python} Iz` $mm^{4}$  
+  \item[Radius of gyration major axis $i_{y}$] = `{python} Ry` mm  
+  \item[Radius of gyration minor axis, $i_{z}$] = `{python} Rz` mm  
+  \item[Elastic modulus major axis, $W_{el,y}$] = `{python} Ey` $mm^{3}$  
+  \item[Elastic modulus minor axis, $W_{el,z}$] = `{python} Ez` $mm^{3}$  
+  \item[Plastic modulus major axis, $W_{pl,y}$] = `{python} Py` $mm^{3}$  
+  \item[Plastic modulus minor axis, $W_{pl,z}$] = `{python} Pz` $mm^{3}$  
+  \item[Warping Constant, $I_{w}$] = `{python} Iw` $mm^{6}$  
+  \item[Torsional constant, $I_{t}$] = `{python} It` $mm^{4}$  
+\end{description}
+
+```{python}
+import math
+def rd (number):
+  number = round(number,4)
+  return number
+ep = math.sqrt(235/fy)
+crf = rd(9*ep)
+crw = rd(33*ep)
+cw = d
+c1 = rd(cw/tw)
+cf = rd((b-tw-2*r)/2)
+c2 = rd(cf/tf)
+```
+{{<pagebreak>}}
+
+#
+
+# Section Classification
+
+\begin{description}
+  \item[$\epsilon$] = $\sqrt{\frac{235}{f_{y}}}$ = `{python} ep`  
+  \item[$c_{w}$] = $\frac{(b-t_{w}-2\cdot r)}{2}$ = `{python} cw`  
+\end{description}
+Web class number = $\frac{c_{w}}{t_{w}}$ = `{python} c1`
+\begin{description}
+  \item[$c_{f}$] = Depth between filet = `{python} cf` 
+\end{description}  
+Flange class number = $\frac{c_{f}}{t_{f}}$ = `{python} c2` 
+Since `{python} c1` < `{python} crw` and `{python} c2` < `{python} crf`, the section belongs to class 1  
+
+```{python}
+beam = 'Primary'
+gammac = 1.5
+ac = 0.85
+Le =ly*1000
+beff = Le/4
+
+hd = ly*1000/20
+ht = hd - h
+hcon = 80 + 15
+if beam == 'Primary':
+  hc = ht -hcon/2
+else:
+  hc = ht - hcon
+
+fcd = ac*fck/gammac
+Ncf = fcd*beff*hc
+Napl = fy*A
+
+if Ncf < Napl:
+  Nac = Napl - Ncf
+  x =Nac/(2*fy*b)
+  Mrd = Napl*(h/2 + ht - hc/2) - Nac*(x/2 + ht - hc/2)
+else:
+  x = Napl/fcd*beff
+  Mrd = Napl*(h/2 + ht - x/2)
+
+if Mrd > Med:
+  symbol = '>'
+  outputm = 'The fully connected composite beam is safe in bending'
+else:
+  symbol = '<'
+  outputm = 'The fully connected composite beam is not safe in bending'
+```
+
+\begin{description}
+  \item[Factored strength of concrete, $f_{cd}$] = `{python} fcd` N/mm²
+  \item[Total depth of beam, $h_d$] = `{python} hd` mm
+  \item[Depth of concrete and comflor slab, $h_{t}$] = `{python} ht` mm
+  \item[Height of the comflor slab, $h_{g}$] = `{python} hcon` mm
+  \item[Height of the concrete in compression, $h_{c}$] = `{python} hc` mm
+\end{description}
+if the total strength of concrete `{python} Ncf` N is less than the plastic strength of the steel `{python} Napl` N,
+\begin{description}
+  \item[$N_{ac}$] = $N_{apl} - N_{cf}$ = `{python} Nac` N
+  \item[Neutral axis depth, $x$] = $\frac{N_{ac}}{2\cdot f_{y}\cdot b}$ = `{python} x` mm
+  \item[Design moment capacity, $M_{rd}$] = $N_{apl}\cdot(\frac{h}{2} + h_g - \frac{h_c}{2}) - N_{ac} \cdot (\frac{x}{2} + h_g - \frac{h_c}{2})$ = `{python} Mrd` N·mm
+\end{description}
+if the total strength of concrete `{python} Ncf` N is greater than the plastic strength of the steel `{python} Napl` N,
+\begin{description}
+  \item[Neutral axis depth, $x$] = $\frac{N_{apl}}{f_{cd}\cdot b_{eff}}$ = `{python} x` mm
+  \item[Design moment capacity, $M_{rd}$] = $N_{apl}\cdot(\frac{h}{2} + h_g - \frac{x}{2})$ = `{python} Mrd` N·mm
+\end{description}
+Since `{python} Mrd` `{python} symbol` `{python} Med`, `{python} outputm`
+
+```{python}
+# Shear Resistance
+gamm0 = 1.0
+gammav = 1.25
+a = 1
+eta = 1.0
+Ashear = min(A - (2*b*tf) + (tw+2*r), eta*d*tw)
+Vplrd = (Ashear*fy)/(gamm0*math.sqrt(3))
+if Vplrd > Ved:
+  symbolv = '>'
+  outputv = 'The composite beam is safe in shear'
+else:
+  symbolv = '<'
+  outputv = 'The composite beam is not safe in shear'
+
+# Shear Resistance of the stud shear connectors
+a = 1
+dstud = 19.0
+b0 = 144.5
+hp = 60
+hsc = 95
+nr =2
+spacing = 300
+pstud = (0.29*a*dstud**2*(fck*Ecm)**0.5)/gammav
+pcon = (0.8*math.pi*dstud**2*fu)/(4*gammav)
+prdi = 0.7*min(pstud, pcon)
+kt = (0.70*b0)/(nr**0.5*hp)*((hsc/hp)-1)
+prd = prdi*kt
+lcrs = ly*1000/2
+nstrud = 2*lcrs/spacing
+vstud = prd*nstrud
+eta_c = vstud/Ncf
+etas1 = 1-(355/fy)*(1.433 - 0.054*lx)
+etas2 = 0.4*(Med/Mrd)
+if eta_c > etas2:
+  symbolstud = '>'
+  outputstud = 'The stud shear connectors are safe'
+else:
+  symbolstud = '<'
+  outputstud = 'The stud shear connectors are not safe'
+
+# Partial Connection moment(refined method)
+if vstud < Napl:
+  Nac = Napl - vstud
+  hc = vstud/(fcd*beff)
+  x =Nac/(2*fy*b)
+  Mrd = Napl*(h/2 + ht - hc/2) - Nac*(x/2 + ht - hc/2)
+else:
+  x = Napl/fcd*beff
+  Mrd = Napl*(h/2 + ht - x/2)
+
+if Mrd > Med:
+  symbol = '>'
+  outputm = 'The partial connected composite beam is safe in bending'
+else:
+  symbol = '<'
+  outputm = 'The partial connected composite beam is not safe in bending'
+```
+
+\begin{description}
+  \item[$A_{shear}$] = $min(A - (2\cdot b \cdot t_{f}) + (t_{w}+2\cdot r), \eta \cdot h_{w} \cdot t_{w})$ = `{python} Ashear` $mm^{2}$
+  \item[Shear resistance of the beam, $V_{pl,rd}$] = $\frac{A_{shear}\cdot f_{y}}{\gamma_{0}\cdot\sqrt{3}}$ = `{python} Vplrd` N
+  \item[$\gamma_{v}$] = 1.25
+  \item[$P_{stud}$] = $\frac{0.29\cdot a \cdot d_{stud}^{2} \cdot (f_{ck}\cdot E_{cm})^{0.5}}{\gamma_{v}}$ = `{python} pstud` N
+  \item[$P_{concrete}$] = $\frac{0.8\cdot \pi \cdot d_{stud}^{2} \cdot f_{u}}{4\cdot \gamma_{v}}$ = `{python} pcon` N
+  \item[$P_{rd,smaller}$] = $0.7\cdot min(P_{stud}, P_{concrete})$ = `{python} prdi` N
+  \item[$k_{t}$] = $\frac{0.70\cdot b_{0}}{n_{r}^{0.5}\cdot h_{p}}\cdot(\frac{h_{sc}}{h_{p}}-1)$ = `{python} kt`
+  \item[Shear resistance of a single stud shear connector,$P_{rd}$] = $P_{rd,smaller}\cdot k_{t}$ = `{python} prd` N
+  \item[Critical length of the shear connectors, $l_{crs}$] = $\frac{l_{y}}{2}$ = `{python} lcrs` mm
+  \item[Number of stud shear connectors, $n_{strud}$] = $\frac{2\cdot l_{crs}}{spacing}$ = `{python} nstrud`
+  \item[Shear resistance of the stud shear connectors, $V_{stud}$] = $p_{rd}\cdot n_{strud}$ = `{python} vstud` N
+  \item[Shear connection efficiency, $\eta_{c}$] = $\frac{V_{stud}}{N_{cf}}$ = `{python} eta_c`
+  \item[Shear connection efficiency limit, $\eta_{s1}$] = $1-(\frac{355}{f_{y}})\cdot(1.433 - 0.054\cdot l_{x})$ = `{python} etas1`
+  \item[Shear connection efficiency limit, $\eta_{s2}$] = $0.4\cdot\frac{M_{ed}}{M_{rd}}$ = `{python} etas2`
+\end{description}
+Since $\eta_{c}$ `{python} symbolstud` $\eta_{s2}$ and $\eta_{s1}$, `{python} outputstud`
+Assuming the neutral axis depth is at the steel section
+\begin{description}
+  \item[$N_{ac}$] = $N_{apl} - V_{stud}$ = `{python} Nac` N
+  \item[Partial connection moment capacity, $M_{rd}$] = $Napl\cdot(\frac{h}{2} + h_t - \frac{h_c}{2}) - Nac\cdot(\frac{x}{2} + h_t - \frac{h_c}{2})$ = `{python} Mrd` N·mm
+\end{description}
+since $M_{rd}$ `{python} symbol` $M_{ed}$, `{python} outputm`
+ 
+```{python}
+modula = 2*E/Ecm
+zg = h/2 + ht
+Adeflc = A*(zg - hc)
+Adefls = beff*hc**2/(2*modula) 
+axis = (modula * A * zg + 0.5*beff*hc**2)/(modula * A + beff*hc)
+Inertia = Iy + A*axis**2 + (beff*hc/modula)*((hc**2/12)+(x-hc/2)**2)
+qsls = qtyp_f*1000*lx
+deflec_comp = 5*qsls*ly**4/(384*E*Inertia)
+deflec_steel = 5*qsls*ly**4/(384*E*Iy)
+deflec_partial = deflec_comp + 0.3*(1-eta_c)*(deflec_steel - deflec_comp)
+deflec_lim = ly/360
+
+if deflec_partial > deflec_lim:
+  symbol = '>'
+  outputdeflec = 'The partially connected composite beam does not satisfy the deflection limit'
+else:
+  symbol = '<'
+  outputdeflec = 'The partially connected composite beam satisfies the deflection limit'
+```
+\begin{description}
+  \item[Modular ratio, $n$] = $\frac{E_{steel}}{E_{concrete}}$ = `{python} modula`
+  \item[Distance from the top of the beam to the centroid of the steel section, $z_{g}$] = $\frac{h}{2} + h_{t}$ = `{python} zg` mm
+  \item[Area of the transformed section in compression, $A_{defl,c}$] = $A\cdot(z_{g} - h_{c})$ = `{python} Adeflc` mm³
+  \item[Area of the transformed section in tension, $A_{defl,s}$] = $\frac{b_{eff}\cdot h_{c}^{2}}{2\cdot n}$ = `{python} Adefls` mm³
+  \item[Distance from the top of the beam to the neutral axis, $x$] = $\frac{n\cdot A\cdot z_{g} + 0.5\cdot b_{eff}\cdot h_{c}^{2}}{n\cdot A + b_{eff}\cdot h_{c}}$ = `{python} axis` mm
+  \item[Inertia of the transformed section, $I$] = $I_{y} + A\cdot axis^{2} + \frac{b_{eff}\cdot h_{c}}{n}\cdot(\frac{h_{c}^{2}}{12}+(x-\frac{h_{c}}{2})^{2})$ = `{python} Inertia` mm⁴
+  \item[Factored uniform load, $q$] = `{python} qtyp_f` kN/m
+  \item[Deflection of the composite beam, $\delta_{comp}$] = $\frac{5\cdot q\cdot L^{4}}{384\cdot E \cdot I}$ = `{python} deflec_comp` mm
+  \item[Deflection of the steel beam, $\delta_{steel}$] = $\frac{5\cdot q\cdot L^{4}}{384\cdot E \cdot I_y}$ = `{python} deflec_steel` mm
+  \item[Deflection of the partially connected composite beam, $\delta_{partial}$] = $\delta_{comp} + 0.3\cdot(1-\eta_{c})\cdot(\delta_{steel} - \delta_{comp})$ = `{python} deflec_partial` mm
+  \item[Deflection limit, $\delta_{lim}$] = $\frac{L}{360}$ = `{python} deflec_lim` mm
+\end{description}
+Since $\delta_{partial}$ `{python} symbol` $\delta_{lim}$, `{python} outputdeflec`
