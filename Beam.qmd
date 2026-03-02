@@ -9,7 +9,7 @@ format:
       - right=10mm
       - bottom=20mm
       - headheight=40mm 
-      - headsep=15mm 
+      - headsep=5mm 
       - includehead=true 
     include-in-header:
       - text: |
@@ -56,135 +56,152 @@ format:
             \egroup
           }
 ---
-
+#
 
 ```{python}
 #material
-ustr= 500.0
-ystr = 355.0
+fu= 500.0
+fy = 355.0
 E = 210*10**3
 
 import pandas as pd
-df = pd.read_csv('section_mm.csv')
+df_all = pd.read_csv('section_mm.csv')
+if df_all.columns[0] == 'Unnamed: 0':
+  df_all = df_all.rename(columns = {'Unnamed: 0' : 'Section Profile'})
+
+section = '356 x 406x 634'
+df = df_all[df_all['Section Profile'] == section]
 #section
-height = df['h (mm)']
-width = df['b (mm)']
-webt = df['tw (mm)']
-ft = df['tf (mm)']
+h = float(df['h (mm)'].iloc[0])
+b = float(df['b (mm)'].iloc[0])
+tw = float(df['tw (mm)'].iloc[0])
+tf = float(df['tf (mm)'].iloc[0])
+d = float(df['d (mm)'].iloc[0])
+r= float(df['r(mm)'].iloc[0])
+A = float(df['A (mm^2)'].iloc[0])
+Iy = float(df['Iy (mm^4)'].iloc[0])
+Iz = float(df['Iz (mm^4)'].iloc[0])
+Ry = float(df['R_y (mm)'].iloc[0])
+Rz = float(df['R_z (mm)'].iloc[0])
+Ey = float(df['W_el,y (mm^3)'].iloc[0])
+Ez = float(df['W_el,z (mm^3)'].iloc[0])
+Py = float(df['W_pl,y (mm3)'].iloc[0])
+Pz = float(df['W,pl,z (mm^3)'].iloc[0])
+Iw = float(df['I_w (mm^6)'].iloc[0])
+It = float(df['I_T (mm^4)'].iloc[0])
 ```
 
+## Effective length of column about y-y
 
-**Material Properties**
+\begin{description}
+  \item[Ultimate strength:] $f_{u}$ = `{python} fy` $N\cdot mm^{-2}$  
+  \item[Yield strength:] $f_{y}$ = `{python} fu` $N \cdot mm^{-2}$  
+  \item[Young modulus:] E = `{python} E` $N\cdot mm^{-2}$  
+\end{description}
 
-::: {style="line-height: 2;"}
-Ultimate strength: $f_{u}$ = `{python} ustr` N\cdot mm^{-2}  
-Yield strength: $f_{y}$ = `{python} ystr` $N \cdot mm^{-2}$  
-Young modulus: E = `{python} E` $N\cdot mm^{-2}$  
-:::
+## Section Properties
 
-### **Section Properties**
+\begin{description}
+  \item[Overall depth, h] = `{python} h` mm  
+  \item[Width of section, b] = `{python} b` mm  
+  \item[Web thickness, $t_{w}$] = `{python} tw`  mm  
+  \item[Flange thickness, $t_{f}$] = `{python} tf` mm  
+  \item[De pth between fillet, $h_{w}$] = `{python} d` mm  
+  \item[Root radius, r] = `{python} r` mm  
+  \item[Area of section, $A$] = `{python} A`  $mm^{2}$   
+  \item[2nd moment area Major axis, $I_{y}$] = `{python} Iy` $mm^{4}$  
+  \item[2nd moment area minor axis, $I_{z}$] = `{python} Iz` $mm^{4}$  
+  \item[Radius of gyration major axis $i_{y}$] = `{python} Ry` mm  
+  \item[Radius of gyration minor axis, $i_{z}$] = `{python} Rz` mm  
+  \item[Elastic modulus major axis, $W_{el,y}$] = `{python} Ey` $mm^{3}$  
+  \item[Elastic modulus minor axis, $W_{el,z}$] = `{python} Ez` $mm^{3}$  
+  \item[Plastic modulus major axis, $W_{pl,y}$] = `{python} Py` $mm^{3}$  
+  \item[Plastic modulus minor axis, $W_{pl,z}$] = `{python} Pz` $mm^{3}$  
+  \item[Warping Constant, $I_{w}$] = `{python} Iw` $mm^{6}$  
+  \item[Torsional constant, $I_{t}$] = `{python} It` $mm^{4}$  
+\end{description}
 
-::: {style="line-height: 2;"}
-Overall depth, h = 455.6 mm  
-Width of section, b = 418.5 mm  
-Web thickness, $t_{w}$ = 42.1 mm  
-Flange thickness, $t_{f}$ = 67.5 mm  
-Depth between fillet, $h_{w}$ = 290.2 mm  
-Root radius, r = 15.2 mm  
-Area of section, $A$ = 808 $mm^{2}$   
-2nd moment area Major axis: $I_{y}$ = 275000 $mm^{4}$  
-2nd moment area minor axis, $I_{z}$ = 98100 $mm^{4}$  
-Radius of gyration major axis $i_{y}$ = 18.4 mm  
-Radius of gyration minor axis, $i_{z}$ = 11.0 mm  
-Elastic modulus major axis, $W_{el,y}$ = 11600 $mm^{3}$  
-Elastic modulus minor axis, $W_{el,z}$ = 4630 $mm^{3}$  
-Plastic modulus major axis, $W_{pl,y}$ = 14200 $mm^{3}$  
-Plastic modulus minor axis, $W_{pl,z}$ = 7110 $mm^{3}$  
-Warping Constant, $I_{w}$ = 38.8 $mm^{6}$  
-Torsional constant, $I_{t}$ = 13700 $mm^{4}$  
-:::
-
-
-```{=latex}
-\noindent
-\underline{\large\textbf{Section Classification:}}
-\vspace{2mm}
-
-\indent
-\bgroup
-\def\arraystretch{2} 
-\begin{tabularx}{\textwidth}{@{} X @{}} 
-$\epsilon = \sqrt{\frac{235}{f_{y}}} = 0.814$ \\
-$c = \frac{(b-t_{w}-2\cdot r)}{2} = 173~mm$\\
-$\frac{c}{t_{f}} = 2.563 \quad \text{and} \quad 9\cdot\epsilon = 7.323$ \\
-$c_{star} := h_{w} = 290.2~mm$ \\
-$\frac{c_{star}}{t_{w}} = 6.893 \quad \text{and} \quad 33\cdot\epsilon = 26.849$ \\
-Since $\frac{c}{t_{f}} < 9\cdot\epsilon \quad \text{and} \quad \frac{c_{star}}{t_{w}} < 33\cdot\epsilon$ \\
-From Table 9.5, the cross section belongs to class 1. \\
-\end{tabularx}
-\egroup
-\vspace{5mm}
+```{python}
+import math
+def rd (number):
+  number = round(number,4)
+  return number
+ep = math.sqrt(235/fy)
+crf = rd(9*ep)
+crw = rd(33*ep)
+cw = d
+c1 = rd(cw/tw)
+cf = rd((b-tw-2*r)/2)
+c2 = rd(cf/tf)
 ```
+
+## Section Classification
+
+\begin{description}
+  \item[$\epsilon$] = $\sqrt{\frac{235}{f_{y}}}$ = `{python} ep` \\[2ex]  
+  \item[$c_{w}$] = $\frac{(b-t_{w}-2\cdot r)}{2}$ = `{python} cw` \\[2ex]  
+  \item[Web class number] = $\frac{c}{t_{f}}$ = `{python} c1`  \\[2ex]   
+  \item[$c_{f}$] = Depth between filet = `{python cf}`  \\[2ex]  
+  \item[Flange class number] = $\frac{c_{star}}{t_{w}}$ = `{python} c2`  \\[2ex]
+\end{description}
+  Since `{python} c1` < `{python} crw` and `{python} c2` < `{python} crf`, the section belongs to class 1  
+
+```{python}
+def buckle (Lcr, I, E, A, fy, a, h, b):
+  Lcr = 6
+  Ncr = (math.pi**2 * E * I) / (Lcr**2)
+  lam = math.sqrt(( A*fy / Ncr ))
+  ratio = h/b
+  if ratio <= 1.2:
+    phi = 0.5*(1 + a*(lam - 0.2) + lam**2)
+    chi = 1/(phi + math.sqrt(phi**2 - lam**2))
+  return Ncr, lam, ratio, phi, chi
+
+Lcry = 3
+ay = 0.34
+Ncry, lamy, ratio, phiy, chiy = buckle(Lcry, Iy, E, A, fy, ay, h, b)
+
+Lcrz = 3
+az = 0.49
+Ncrz, lamz, ratio, phiz, chiz = buckle(Lcrz, Iz, E, A, fy, az, h, b)
+
+chi = min([chiy,chiz])
+Nrd = chi*A*fy
+```
+## Buckling resistance 
+
+\begin{description}
+  \item[$L_{cr,y}$] = $\frac{6}{2}$ = `{python} Lcry`
+  \item[$N_{cr,y}$] = $\frac{(\pi^{2}\cdot E\cdot I_{y})}{{L_{cr,y}}^{2}}$ = `{python} Ncry` kN
+  \item[$\lambda_{y}$] = $\sqrt{\frac{(A\cdot f_{y})}{N_{cr,y}}}$ = `{python} lamy`
+  \item[$\frac{h}{b}$] = `{python} ratio` < 1.2
+  \item[$t_{f}$] = `{python} tf` mm < 100~mm
+\end{description}
+Use buckling curve B,  $\alpha_{y}$ = `{python} ay`
+\begine{description}
+  \item[$\phi_{y}$] = $0.5 \cdot (1 + \alpha_{y} \cdot (\lambda_{y} - 0.2) + {\lambda_{y}}^{2})$ = `{python} phiy`
+  \item[$\chi_{y}$] = $\frac{1}{\phi_{y} + \sqrt{{\phi_{y}}^{2} - {\lambda_{y}}^{2}}}$ = `{python} chiy`
+\end{description}
+
+\begin{description}
+  \item[$L_{cr,z}$] = $\frac{6}{2}$ = `{python} Lcrz`
+  \item[$N_{cr,z}$] = $\frac{(\pi^{2}\cdot E\cdot I_{z})}{{L_{cr,z}}^{2}}$ = `{python} Ncrz` kN
+  \item[$\lambda_{z}$] = $\sqrt{\frac{(A\cdot f_{y})}{N_{cr,z}}}$ = `{python} lamz`
+  \item[$\frac{h}{b}$] = `{python} ratio` < 1.2
+  \item[$t_{f}$] = `{python} tf` mm < 100~mm
+\end{description}
+Use buckling curve C,  $\alpha_{z}$ = `{python} az`
+\begine{description}
+  \item[$\phi_{z}$] = $0.5 \cdot (1 + \alpha_{z} \cdot (\lambda_{z} - 0.2) + {\lambda_{z}}^{2})$ = `{python} phiz`
+  \item[$\chi_{z}$] = $\frac{1}{\phi_{z} + \sqrt{{\phi_{z}}^{2} - {\lambda_{z}}^{2}}}$ = `{python} chiz`
+\end{description}
+
 {{<pagebreak>}}
 
+#
 
-```{=latex}
-\noindent
-\underline{\large\textbf{Buckling resistance of member in axial compression: GROUND COLUMN C}}
-\vspace{2mm}
+\begine{description}
+  \item[$\chi$] = min($\chi_{y},\chi_{z}$) = `{python} chi}`
+  \item[$N_{RD\_634\_6m}$] = $\chi\cdot A\cdot f_{y}$ = `{python} Nrd`
+\end{description}
 
-\indent
-\bgroup
-\def\arraystretch{1.8} 
-\begin{tabularx}{\textwidth}{@{} X @{}}
-\textbf{Effective length of column about y-y:} \\
-$L_{cr,y} = \frac{6}{2}m = 3~m$ \\
-$N_{cr,y} = \frac{(\pi^{2}\cdot E\cdot I_{y})}{{L_{cr,y}}^{2}} = 633299.616~\textcolor{blue}{kN}$ \\
-$\lambda_{y} = \sqrt{\frac{(A\cdot f_{y})}{N_{cr,y}}} = 0.213$ \\
-$\frac{h}{b} = 1.089 \quad (< 1.2)$ \\
-$t_{f} = 67.5~mm \quad (< 100~mm)$ \\
-Hence, use buckling curve \textbf{b} where $\alpha_{y} := 0.34$. \\
-$\phi_{y} = 0.5 \cdot (1 + \alpha_{y} \cdot (\lambda_{y} - 0.2) + {\lambda_{y}}^{2}) = 0.525$ \\
-$\chi_{y} = \frac{1}{\phi_{y} + \sqrt{{\phi_{y}}^{2} - {\lambda_{y}}^{2}}} = 0.995$ \\
-\end{tabularx}
-\egroup
-\vspace{5mm}
-```
-```{=latex}
-\noindent
-\underline{\large\textbf{Hence the compressive resistance of the column about z-z is:}}
-\vspace{2mm}
-
-\indent
-\bgroup
-\def\arraystretch{1.8} 
-\begin{tabularx}{\textwidth}{@{} X @{}}
-$L_{cr\_z}:=\frac{6}{2}m=3~m$ \\
-$N_{cT\_z}:=\frac{(\pi^{2}\cdot E\cdot I_{z})}{{L_{cT\_z}}^{2}}=225915.245kN$ \\
-$\lambda_{z}:=\sqrt{\frac{(A\cdot f_{y})}{N_{cT\_z}}}=0.356$ \\
-$\frac{h}{b}=1.089 \quad (< 1.2)$ \\
-$t_{f}=67.5~mm \quad (< 100~mm)$ \\
-Hence, use buckling curve \textbf{c} where $\alpha_{z} := 0.49$. \\
-$\phi_{z}:=0.5\cdot(1+\alpha_{z}\cdot(\lambda_{z}-0.2)+{\lambda_{z}}^{2})=0.602$ \\
-$\chi_{z}:=\frac{1}{\phi_{z}+\sqrt{{\phi_{z}}^{2}-{\lambda_{z}}^{2}}}=0.92$
-\end{tabularx}
-\egroup
-\vspace{5mm}
-```
-{{<pagebreak>}}
-
-```{=latex}
-\noindent
-\underline{\large\textbf{Hence, the compressive resistance of the column is reduced to:}}
-\vspace{2mm}
-
-\indent
-\bgroup
-\def\arraystretch{1.8} 
-\begin{tabularx}{\textwidth}{@{} X @{}}
-$\chi:=min(\chi_{y},\chi_{z})=0.92$\\
-$N_{RD\_634\_6m}:=\chi\cdot A\cdot f_{y}=26394.708~kN$\\
-\end{tabularx}
-\egroup
-\vspace{5mm}
-```
