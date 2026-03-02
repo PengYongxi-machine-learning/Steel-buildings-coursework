@@ -57,6 +57,7 @@ format:
           }
 ---
 ```{python}
+%precision 6
 # Floor area and height
 hcol = 6
 lx = 8.5

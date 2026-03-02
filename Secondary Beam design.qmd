@@ -57,6 +57,7 @@ format:
           }
 ---
 ```{python}
+%precision 6
 # Floor area and height
 lx = 8.5
 ly = 13.5

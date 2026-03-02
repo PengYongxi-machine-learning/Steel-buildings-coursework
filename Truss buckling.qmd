@@ -8,7 +8,7 @@ format:
       - left=5mm
       - right=5mm
       - bottom=20mm
-      - headheight=40mm 
+      - headheight=35mm 
       - headsep=5mm 
       - includehead=true 
     include-in-header:
@@ -19,13 +19,12 @@ format:
           \usepackage{xcolor}
           \usepackage{fancyhdr}
           \usepackage{lastpage}
-          
-          % Define the Page Style
+
           \pagestyle{fancy}
           \fancyhf{} 
           \renewcommand{\headrulewidth}{0pt}
           
-          % Define the Header Content
+
           \fancyhead[C]{
             \noindent
             \bgroup
@@ -47,25 +46,27 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{NS-Truss Sizing and Connection Calculations (Scheme 1)}
+                \centerline{Truss Sizing and Connection Calculations}
                 \vspace*{1mm}
             } \\ \cline{2-5}
-            & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad JT MA & \multicolumn{2}{l|}{\textbf{Date} \quad 29/03/2023} \\ \cline{3-5}
+            & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  & \multicolumn{2}{l|}{\textbf{Date} \quad 29/03/2023} \\ \cline{3-5}
             & & \textbf{Checked by} & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
             \end{tabularx}
             \egroup
           }
 ---
 ```{python}
+%precision 2
+import pandas as pd
+df_all = pd.read_csv('section_mm.csv')
+if df_all.columns[0] == 'Unnamed: 0':
+  df_all = df_all.rename(columns = {'Unnamed: 0' : 'Section Profile'})
+
 #material
 fu= 500.0
 fy = 355.0
 E = 210000
 
-import pandas as pd
-df_all = pd.read_csv('section_mm.csv')
-if df_all.columns[0] == 'Unnamed: 0':
-  df_all = df_all.rename(columns = {'Unnamed: 0' : 'Section Profile'})
 
 section = '356 x 406x 634'
 df = df_all[df_all['Section Profile'] == section]
@@ -79,12 +80,12 @@ r= float(df['r(mm)'].iloc[0])
 A = float(df['A (mm^2)'].iloc[0])
 Iy = float(df['Iy (mm^4)'].iloc[0])
 Iz = float(df['Iz (mm^4)'].iloc[0])
-Ry = float(df['R_y (mm)'].iloc[0])
-Rz = float(df['R_z (mm)'].iloc[0])
-Ey = float(df['W_el,y (mm^3)'].iloc[0])
-Ez = float(df['W_el,z (mm^3)'].iloc[0])
-Py = float(df['W_pl,y (mm3)'].iloc[0])
-Pz = float(df['W,pl,z (mm^3)'].iloc[0])
+Ry = float(df['Ry (mm)'].iloc[0])
+Rz = float(df['Rz (mm)'].iloc[0])
+Wey = float(df['W_el,y (mm^3)'].iloc[0])
+Wez = float(df['W_el,z (mm^3)'].iloc[0])
+Wpy = float(df['W_pl,y (mm3)'].iloc[0])
+Wpz = float(df['W_pl,z (mm^3)'].iloc[0])
 Iw = float(df['I_w (mm^6)'].iloc[0])
 It = float(df['I_T (mm^4)'].iloc[0])
 
@@ -104,157 +105,162 @@ else:
     ay = 0.70
     az = 0.70
 
-span = 6
+span = 6000
 ```
 #
 
-# Effective length of column about y-y
+
+## Effective length of column about y-y
 
 \begin{description}
-  \item[Ultimate strength:] $f_{u}$ = `{python} fy` $N\cdot mm^{-2}$  
-  \item[Yield strength:] $f_{y}$ = `{python} fu` $N \cdot mm^{-2}$  
-  \item[Young modulus:] E = `{python} E` $N\cdot mm^{-2}$  
+  \item[]Ultimate strength, $f_{u}$ = `{python} fy` $N\cdot mm^{-2}$  
+  \item[]Yield strength, $f_{y}$ = `{python} fu` $N \cdot mm^{-2}$  
+  \item[]Young's modulus, $E$ = `{python} E` $N\cdot mm^{-2}$  
 \end{description}
 
-# Section Properties of 356 x 406 x 634
+## Section Properties of 356 x 406 x 634
 
 \begin{description}
-  \item[Overall depth, h] = `{python} h` mm  
-  \item[Width of section, b] = `{python} b` mm  
-  \item[Web thickness, $t_{w}$] = `{python} tw`  mm  
-  \item[Flange thickness, $t_{f}$] = `{python} tf` mm  
-  \item[De pth between fillet, $h_{w}$] = `{python} d` mm  
-  \item[Root radius, r] = `{python} r` mm  
-  \item[Area of section, $A$] = `{python} A`  $mm^{2}$   
-  \item[2nd moment area Major axis, $I_{y}$] = `{python} Iy` $mm^{4}$  
-  \item[2nd moment area minor axis, $I_{z}$] = `{python} Iz` $mm^{4}$  
-  \item[Radius of gyration major axis $i_{y}$] = `{python} Ry` mm  
-  \item[Radius of gyration minor axis, $i_{z}$] = `{python} Rz` mm  
-  \item[Elastic modulus major axis, $W_{el,y}$] = `{python} Ey` $mm^{3}$  
-  \item[Elastic modulus minor axis, $W_{el,z}$] = `{python} Ez` $mm^{3}$  
-  \item[Plastic modulus major axis, $W_{pl,y}$] = `{python} Py` $mm^{3}$  
-  \item[Plastic modulus minor axis, $W_{pl,z}$] = `{python} Pz` $mm^{3}$  
-  \item[Warping Constant, $I_{w}$] = `{python} Iw` $mm^{6}$  
-  \item[Torsional constant, $I_{t}$] = `{python} It` $mm^{4}$  
+  \item[]Overall depth, $h$ = `{python} h` mm  
+  \item[]Width of section, $b$ = `{python} b` mm  
+  \item[]Web thickness, $t_{w}$ = `{python} tw`  mm  
+  \item[]Flange thickness, $t_{f}$ = `{python} tf` mm  
+  \item[]Depth between fillet, $h_{w}$ = `{python} d` mm  
+  \item[]Root radius, $r$ = `{python} r` mm  
+  \item[]Area of section, $A$ = `{python} A`  $mm^{2}$   
+  \item[]2nd moment of area Major axis, $I_{y}$ = `{python} Iy` $mm^{4}$  
+  \item[]2nd moment of area minor axis, $I_{z}$ = `{python} Iz` $mm^{4}$  
+  \item[]Radius of gyration major axis $i_{y}$ = `{python} Ry` mm  
+  \item[]Radius of gyration minor axis, $i_{z}$ = `{python} Rz` mm  
+  \item[]Elastic modulus major axis, $W_{el,y}$ = `{python} Wey` $mm^{3}$  
+  \item[]Elastic modulus minor axis, $W_{el,z}$ = `{python} Wez` $mm^{3}$  
+  \item[]Plastic modulus major axis, $W_{pl,y}$ = `{python} Wpy` $mm^{3}$  
+  \item[]Plastic modulus minor axis, $W_{pl,z}$ = `{python} Wpz` $mm^{3}$  
+  \item[]Warping constant, $I_{w}$ = `{python} Iw` $mm^{6}$  
+  \item[]Torsional constant, $I_{t}$ = `{python} It` $mm^{4}$  
 \end{description}
 
 ```{python}
 import math
-def rd (number):
-  number = round(number,4)
-  return number
+
 ep = math.sqrt(235/fy)
-crf = rd(9*ep)
-crw = rd(33*ep)
+crf = 9*ep
+crw = 33*ep
 cw = d
-c1 = rd(cw/tw)
-cf = rd((b-tw-2*r)/2)
-c2 = rd(cf/tf)
+c1 = cw/tw
+cf = (b-tw-2*r)/2
+c2 = cf/tf
 ```
 {{<pagebreak>}}
 
 #
 
-# Section Classification
+## Section Classification
 
 \begin{description}
-  \item[$\epsilon$] = $\sqrt{\frac{235}{f_{y}}}$ = `{python} ep`  
-  \item[$c_{w}$] = $\frac{(b-t_{w}-2\cdot r)}{2}$ = `{python} cw`  
-\end{description}
-Web class number= $\frac{c_{w}}{t_{w}}$ = `{python} c1`
-\begin{description}
-  \item[$c_{f}$] = Depth between filet = `{python} cf` 
+  \item[]$\epsilon$ = $\sqrt{\frac{235}{f_{y}}}$ = `{python} ep` --- (EN 1993-1-1 :2022, Eq 5.1)
+  \item[]Web Classification: 
+  \item[]Class 1 criteria $\leq$ $28\epsilon$ = `{python} crw` --- (EN 1993-1-1 :2022, Table 7.3)
+  \item[]$\frac{c_{w}}{t_{w}}$ = `{python} c1`
+  \item[]$c_{w}$ = $\frac{(b-t_{w}-2\cdot r)}{2}$ = `{python} cw` 
+  \item[]Flange Classification: 
+  \item[]$c_{f}$ = Depth between filet = `{python} cf` --- (EN 1993-1-1 :2022, Table 7.4)
+  \item[]$\frac{c_{f}}{t_{f}}$ = `{python} c2` 
+  \item[]Class 1 criteria $\leq$ $9\epsilon$ = `{python} crf` 
+  \item[]Since $\frac{c_{w}}{t_{w}}$ < $28\epsilon$ and $\frac{c_{f}}{t_{f}}$ < $9\epsilon$, the section belongs to class 1  
 \end{description}  
-Flange class number = $\frac{c_{f}}{t_{f}}$ = `{python} c2` 
-Since `{python} c1` < `{python} crw` and `{python} c2` < `{python} crf`, the section belongs to class 1  
+ 
 
 ```{python}
 def buckle (Lcr, I, E, A, fy, a):
-  Ncr = (math.pi**2 * E * I) / ((1000*Lcr)**2)
-  lam = math.sqrt(( A*fy / Ncr ))
+  Ncr = (math.pi**2 * E * I) / (Lcr**2)/1000
+  lam = math.sqrt(( A*fy / (Ncr*1000) ))
   phi = 0.5*(1 + a*(lam - 0.2) + lam**2)
   chi = min(1/(phi + math.sqrt(phi**2 - lam**2)),1)
-  print(round(Ncr,4))
-  return rd(Ncr), rd(lam), rd(ratio), rd(phi), rd(chi)
+  return Ncr, lam, ratio, phi, chi
 
 Lcr = span/2
 Ncry, lamy, ratio, phiy, chiy = buckle(Lcr, Iy, E, A, fy, ay)
 Ncrz, lamz, ratio, phiz, chiz = buckle(Lcr, Iz, E, A, fy, az)
 
 chi = min([chiy,chiz])
-Nrd = rd(chi*A*fy)
+Nrd = chi*A*fy/1000
 Ned =3000000
 
-if Nrd > Ned:
+if Nrd >= Ned:
   symbol = '>'
-  outputn=('The section is safe in compression')
+  outputn='the section is safe in compression'
 else:
   symbol = '<'
-  outputn('The section is not safe in compression')
+  outputn='the section is not safe in compression'
 ```
-# Buckling resistance 
+
+## Buckling resistance about y-y axis
 
 \begin{description}
-  \item[Span] = `{python} span`
-  \item[$L_{cr,y}$] = $\frac{span}{2}$ = `{python} Lcr`
-  \item[$N_{cr,y}$] = $\frac{\pi^{2}\cdot E\cdot I_{y}}{{L_{cr,y}}^{2}}$ = `{python} Ncry` kN
-  \item[$\lambda_{y}$] = $\sqrt{\frac{(A\cdot f_{y})}{N_{cr,y}}}$ = `{python} lamy`
-  \item[$\frac{h}{b}$] = `{python} ratio` < 1.2
-  \item[$t_{f}$] = `{python} tf` mm < 100~mm
+  \item[]span = `{python} span` mm
+  \item[]$L_{cr,y}$ = $\frac{span}{2}$ = `{python} Lcr` mm
+  \item[]$N_{cr,y}$ = $\frac{\pi^{2}\cdot E\cdot I_{y}}{{L_{cr,y}}^{2}}$ = `{python} Ncry` kN
+  \item[]$\lambda_{y}$ =  $\sqrt{\frac{N_{Rk}}{N_{cr,y}}}$ = $\sqrt{\frac{A\cdot f_{y}}{N_{cr,y}}}$ = `{python} lamy` --- (EN 1993-1-1 :2022, Eq 8.69)
+  \item[]$\frac{h}{b}$ = `{python} ratio` < 1.2
+  \item[]$t_{f}$ = `{python} tf` mm < 100~mm
+  \item[]Use buckling curve B,  $\alpha_{y}$ = `{python} ay` --- (EN 1993-1-1 :2022, Table 8.2)
+  \item[]$\phi_{y}$ = $0.5 \cdot (1 + \alpha_{y} \cdot (\lambda_{y} - 0.2) + {\lambda_{y}}^{2})$ = `{python} phiy` --- (EN 1993-1-1 :2022, Eq 8.74)
+  \item[]$\chi_{y}$ = $\frac{1}{\phi_{y} + \sqrt{{\phi_{y}}^{2} - {\lambda_{y}}^{2}}}$ = `{python} chiy` --- (EN 1993-1-1 :2022, Eq 8.73)
 \end{description}
-
+ 
 {{<pagebreak>}}
 
 #
-Use buckling curve B,  $\alpha_{y}$ = `{python} ay`
+
+## Buckling resistance about z-z axis
 \begin{description}
-  \item[$\phi_{y}$] = $0.5 \cdot (1 + \alpha_{y} \cdot (\lambda_{y} - 0.2) + {\lambda_{y}}^{2})$ = `{python} phiy`
-  \item[$\chi_{y}$] = $\frac{1}{\phi_{y} + \sqrt{{\phi_{y}}^{2} - {\lambda_{y}}^{2}}}$ = `{python} chiy`
+  \item[]$L_{cr,z}$ = $\frac{span}{2}$ = `{python} Lcr` mm
+  \item[]$N_{cr,z}$ = $\frac{\pi^{2}\cdot E\cdot I_{z}}{{L_{cr,z}}^{2}}$ = `{python} Ncrz` kN
+  \item[]$\lambda_{z}$ = $\sqrt{\frac{N_{Rk}}{N_{cr,z}}}$ = $\sqrt{\frac{A\cdot f_{y}}{N_{cr,z}}}$ = `{python} lamz` --- (EN 1993-1-1 :2022, Eq 8.69)
+  \item[]$\frac{h}{b}$ = `{python} ratio` < 1.2
+  \item[]$t_{f}$ = `{python} tf` mm < 100~mm
+  \item[]Use buckling curve C,  $\alpha_{z}$ = `{python} az` --- (EN 1993-1-1 :2022, Table 8.2)
+  \item[]$\phi_{z}$ = $0.5 \cdot (1 + \alpha_{z} \cdot (\lambda_{z} - 0.2) + {\lambda_{z}}^{2})$ = `{python} phiz` --- (EN 1993-1-1 :2022, Eq 8.74)
+  \item[]$\chi_{z}$ = $\frac{1}{\phi_{z} + \sqrt{{\phi_{z}}^{2} - {\lambda_{z}}^{2}}}$ = `{python} chiz` --- (EN 1993-1-1 :2022, Eq 8.73)
+  
+\end{description}
+  
+## Buckling resistance
+\begin{description}
+  \item[]$\chi$ = min($\chi_{y},\chi_{z}$) = `{python} chi`
+  \item[]$N_{RD}$ = $\chi\cdot A\cdot f_{y}$ = `{python} Nrd` kN --- (EN 1993-1-1 :2022, Eq 8.68)
+  \item[]Maximum axial compressive force is `{python} Ned` kN.
+  \item[]Since $N_{RD}$ `{python} symbol` $N_{ED}$, `{python} outputn`
 \end{description}
 
-\begin{description}
-  \item[$L_{cr,z}$] = $\frac{span}{2}$ = `{python} Lcr`
-  \item[$N_{cr,z}$] = $\frac{\pi^{2}\cdot E\cdot I_{z}}{{L_{cr,z}}^{2}}$ = `{python} Ncrz` kN
-  \item[$\lambda_{z}$] = $\sqrt{\frac{(A\cdot f_{y})}{N_{cr,z}}}$ = `{python} lamz`
-  \item[$\frac{h}{b}$] = `{python} ratio` < 1.2
-  \item[$t_{f}$] = `{python} tf` mm < 100~mm
-\end{description}
-
-
-Use buckling curve C,  $\alpha_{z}$ = `{python} az`
-\begin{description}
-  \item[$\phi_{z}$] = $0.5 \cdot (1 + \alpha_{z} \cdot (\lambda_{z} - 0.2) + {\lambda_{z}}^{2})$ = `{python} phiz`
-  \item[$\chi_{z}$] = $\frac{1}{\phi_{z} + \sqrt{{\phi_{z}}^{2} - {\lambda_{z}}^{2}}}$ = `{python} chiz`
-\end{description}
-
-\begin{description}
-  \item[$\chi$] = min($\chi_{y},\chi_{z}$) = `{python} chi`
-  \item[$N_{RD}$] = $\chi\cdot A\cdot f_{y}$ = `{python} Nrd`
-\end{description}
-
-Maximum axial compressive force is `{python} Ned` N. 
-Since $N_{RD}$ `{python} symbol` $N_{ED}$, `{python} outputn`
 
 ```{python}
 gamma1 = 1.0
 gamma0 = 1.25
 area_reduction = 0.9
-Nplrd = A*fy
-Nurd = area_reduction*A*fu/gamma0
+Nplrd = A*fy/gamma1/1000
+Nurd = area_reduction*A*fu/gamma0/1000
 Ntrd = min(Nplrd, Nurd)
 Nted = 3000000
 if Ntrd > Nted:
   symbol = '>'
-  outputt=('The section is safe in tension')
+  outputt='the section is safe in tension'
 else:
   symbol = '<'
-  outputt('The section is not safe in tension')
+  outputt='the section is not safe in tension'
 ```
 
+## Tension resistance
+
 \begin{description}
-  \item[Gross area tension resistance, $N_{pl,RD}$] = $\frac{A\cdot f_{y}}{\gamma_{1}}$ = `{python} Nplrd` N
-Assume the net area is 90\% of the gross area, then
-  \item[Net area tension resistance, $N_{u,RD}$] = `{python} area_reduction`$\frac{\cdot A_{net}\cdot f_{u}}{\gamma_{0}}$ = `{python} Nurd` N
+  \item[]Gross area tension resistance :
+  \item[]$N_{pl,RD}$ = $\frac{A\cdot f_{y}}{\gamma_{1}}$ = `{python} Nplrd` kN --- (EN 1993-1-1 :2022, Eq 8.14)
+  \item[]Assume the net area is 90\% of the gross area and smooth holes,
+  \item[]k = 1
+  \item[]Net area tension resistance :
+  \item[]$N_{u,RD}$ = `{python} area_reduction`$\frac{k\cdot A_{net}\cdot f_{u}}{\gamma_{0}}$ = `{python} Nurd` kN --- (EN 1993-1-1 :2022, Eq 8.15)
+  \item[]Maximum axial tensile force is `{python} Nted` kN.
+  \item[]Since $N_{t,RD}$ `{python} symbol` $N_{t,ED}$, `{python} outputt`
 \end{description}
-Maximum axial tensile force is `{python} Nted` N.
-Since $N_{t,RD}$ `{python} symbol` $N_{t,ED}$, `{python} outputt`
+
