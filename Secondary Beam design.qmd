@@ -284,6 +284,22 @@ else:
   \item[]Therefore `{python} output_moment`
 \end{description}
 
+```{{python}}
+
+if N_cf < N_apl:
+    print(rf"""
+  \item[] If the $N_{{cf}}$ is less than the $N_{{apl}}$, the neutral axis is within the steel section, 
+  \item[] $N_{{ac}} = N_{{apl}} - N_{{cf}} = {Nac:.2f}$ kN
+  \item[] Neutral axis depth, $x = \frac{{N_{{ac}}}}{{2\cdot f_{{y}}\cdot b}} = {x:.2f}$ mm
+  \item[] Design moment capacity, $M_{{rd}} = N_{{apl}}\cdot(\frac{{h_{{s}}}}{{2}} + h_{{t}} - \frac{{h_{{c}}}}{{2}}) - N_{{ac}} \cdot (\frac{{x}}{{2}} + h_{{t}} - \frac{{h_{{c}}}}{{2}}) = {Mplrd:.2f}$ kN·m
+    """)
+else:
+    print(rf"""
+  \item[] If the $N_{{cf}}$ is greater than the $N_{{apl}}$, the neutral axis is within the concrete section, 
+  \item[] Neutral axis depth, $x = \frac{{N_{{apl}}}}{{f_{{cd}}\cdot b_{{eff}}}} = {x:.2f}$ mm
+  \item[] Design moment capacity, $M_{{rd}} = N_{{apl}}\cdot(\frac{{h_{{s}}}}{{2}} + h_{{t}} - \frac{{x}}{{2}}) = {Mplrd:.2f}$ kN·m
+    """)
+```
 
 ```{python}
 # Shear Resistance

@@ -242,7 +242,7 @@ else:
 
 #
 
-## Section Properties of 356 x 406 x 634
+## Section Properties of `{python} section`
 
 \begin{description}
   \item[]Overall depth, h = `{python} h` mm  
@@ -266,7 +266,7 @@ else:
 
 ```{python}
 import math
-ep = 235/fy
+ep = math.sqrt(235/fy)
 crf = 9*ep
 crw = 28*ep
 cw = d
@@ -302,7 +302,7 @@ def buckle (Lcr, I, E, A, fy, a):
   chi = min(1/(phi + math.sqrt(phi**2 - lam**2)),1)
   return Ncr, lam, ratio, phi, chi
 span = hcol
-Lcr = hcol/2
+Lcr = hcol
 Ncry, lamy, ratio, phiy, chiy = buckle(Lcr, Iy, E, A, fy, ay)
 Ncrz, lamz, ratio, phiz, chiz = buckle(Lcr, Iz, E, A, fy, az)
 
@@ -357,7 +357,7 @@ else:
 
 ```{python}
 Lcr = hcol
-Mcr = ((math.pi**2 * E * Iz) / Lcr**2) * (Iw/Iz + (G * It * (Lcr)**2)/ (math.pi**2 * E * It)) **1e-6
+Mcr = ((math.pi**2 * E * Iz) / Lcr**2) * math.sqrt(Iw/Iz + (G * It * (Lcr)**2)/ (math.pi**2 * E * It))*1e-6
 
 if ratio > 1.2:
     if tf <= 40:
