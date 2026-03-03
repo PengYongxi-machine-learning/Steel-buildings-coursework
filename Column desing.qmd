@@ -50,8 +50,8 @@ format:
                 \centerline{Design of Columns}
                 \vspace*{1mm}
             } \\ \cline{2-5}
-            & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 30/02/2077} \\ \cline{3-5}
-            & & \textbf{Checked by} \quad  & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
+            & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 30/02/2077} \\ \cline{3-5}
+            & & \textbf{Checked by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
             \end{tabularx}
             \egroup
           }
@@ -382,9 +382,9 @@ else:
 
 int_ratio = Ned/Nrd + Myed/Mbrd + Mzed/Mcrdz
 if int_ratio < 1.0:
-    output_interaction = 'the result is less than 1.0, the section is safe in resisting interaction'
+    output_interaction = 'the result is less than 1, the section is safe in resisting interaction'
 else:
-    output_interaction = 'the result is greater than 1.0, the section is not safe in resisting interaction'
+    output_interaction = 'the result is greater than 1, the section is not safe in resisting interaction'
 ```
 
 ## Lateral torsional buckling check
