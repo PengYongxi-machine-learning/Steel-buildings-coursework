@@ -19,6 +19,7 @@ format:
           \usepackage{xcolor}
           \usepackage{fancyhdr}
           \usepackage{lastpage}
+          \usepackage{multicol}
 
           \pagestyle{fancy}
           \fancyhf{} 
@@ -50,12 +51,21 @@ format:
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 29/03/2023} \\ \cline{3-5}
-            & & \textbf{Checked by} \quad & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
+            & & \textbf{Checked by} Pablo Peng \quad & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
             \end{tabularx}
             \egroup
           }
 ---
+
+\Large
+\linespread{1.4}
+\selectfont 
+
 ```{python}
+# Define beam type and section
+beam = 'Primary' # 'Primary' or 'Secondary'
+section = '533 x 312x 151'
+
 %precision 2
 # Floor area and height
 lx = 8500
@@ -83,8 +93,15 @@ Med = qtyp_f*(ly*1e-3)**2/8
 Ved = qtyp_f*(ly*1e-3)/2
 ```
 
+# 
 #
+#
+#
+#
+#
+
 # Floor Loads
+\begin{multicols}{2}
 \begin{description}
     \item[]$G_{tiles}$ = `{python} gt_f` $kN/m^2$
     \item[]$G_{steel}$ = `{python} gste_f` $kN/m^2$
@@ -95,6 +112,7 @@ Ved = qtyp_f*(ly*1e-3)/2
     \item[]$Q_{imposed}$ = `{python} qimp_f` $kN/m^2$
     \item[]$Q_{cladding}$ = `{python} qclad` $kN/m^2$
 \end{description}
+\end{multicols}
 
 # ULS floor uniform distributed load
 \begin{description}
@@ -103,16 +121,32 @@ Ved = qtyp_f*(ly*1e-3)/2
     \item[]Typical area load, $W_{typ}$ = $1.35\cdot G_{typ} + 1.5 \cdot Q_{typ}$ = `{python} wtyp_f` $kN/m^2$
 \end{description}
 
-# Load areas
+{{< pagebreak >}}
+
+#
+# Axial and bending loads on the beam
 \begin{description}
-    \item[]X-distance, $L_{x}$ = `{python} lx` $m$
-    \item[]Y-distance, $L_{y}$ = `{python} ly` $m$
+    \item[]$L_{x}$ = `{python} lx` $m$
+    \item[]$L_{y}$ = `{python} ly` $m$
     \item[]UDL, $q$ = $W_{typ}\cdot\frac{L_{x}}{2}$ = `{python} qtyp_f` $kN/m$
     \item[]Moment, $M_{ed}$ = $\frac{q\cdot L_{y}^{2}}{8}$ = `{python} Med` $kNm$
     \item[]Shear, $V_{ed}$ = $\frac{q\cdot L_{y}}{2}$ = `{python} Ved` $kN$
 \end{description}
 
 ```{python}
+import pandas as pd
+import math
+
+df_all = pd.read_csv('section_mm.csv')
+if df_all.columns[0] == 'Unnamed: 0':
+  df_all = df_all.rename(columns = {'Unnamed: 0' : 'Section Profile'})
+
+# Scientific notation formatter
+def sci(value):
+    exp_num = math.floor(math.log10(abs(value)))
+    base = value / (10 ** exp_num)
+    return value, base, exp_num
+
 #material
 fu= 500.0
 fy = 355.0
@@ -121,31 +155,25 @@ G = 81000
 fck = 30.0
 Ecm = 33000
 
-import pandas as pd
-df_all = pd.read_csv('section_mm.csv')
-if df_all.columns[0] == 'Unnamed: 0':
-  df_all = df_all.rename(columns = {'Unnamed: 0' : 'Section Profile'})
-
-section = '533 x 312x 151'
+#section properties
 df = df_all[df_all['Section Profile'] == section]
-#section
 h = float(df['h (mm)'].iloc[0])
 b = float(df['b (mm)'].iloc[0])
 tw = float(df['tw (mm)'].iloc[0])
 tf = float(df['tf (mm)'].iloc[0])
 d = float(df['d (mm)'].iloc[0])
 r= float(df['r(mm)'].iloc[0])
-A = float(df['A (mm^2)'].iloc[0])
-Iy = float(df['Iy (mm^4)'].iloc[0])
-Iz = float(df['Iz (mm^4)'].iloc[0])
+A, A1, A2 = sci(float(df['A (mm^2)'].iloc[0]))
+Iy, Iy1, Iy2 = sci(float(df['Iy (mm^4)'].iloc[0]))
+Iz, Iz1, Iz2 = sci(float(df['Iz (mm^4)'].iloc[0]))
 Ry = float(df['Ry (mm)'].iloc[0])
 Rz = float(df['Rz (mm)'].iloc[0])
-Wey = float(df['W_el,y (mm^3)'].iloc[0])
-Wez = float(df['W_el,z (mm^3)'].iloc[0])
-Wpy = float(df['W_pl,y (mm3)'].iloc[0])
-Wpz = float(df['W_pl,z (mm^3)'].iloc[0])
-Iw = float(df['I_w (mm^6)'].iloc[0])
-It = float(df['I_T (mm^4)'].iloc[0])
+Wey, Wey1, Wey2 = sci(float(df['W_el,y (mm^3)'].iloc[0]))
+Wez, Wez1, Wez2 = sci(float(df['W_el,z (mm^3)'].iloc[0]))
+Wpy, Wpy1, Wpy2 = sci(float(df['W_pl,y (mm3)'].iloc[0]))
+Wpz, Wpz1, Wpz2 = sci(float(df['W_pl,z (mm^3)'].iloc[0]))
+Iw, Iw1, Iw2 = sci(float(df['I_w (mm^6)'].iloc[0]))
+It, It1, It2 = sci(float(df['I_T (mm^4)'].iloc[0]))
 
 ratio = h/b
 if ratio > 1.2:
@@ -163,12 +191,8 @@ else:
     ay = 0.70
     az = 0.70
 ```
-<pagebreak>
 
-#  
-
-## Effective length of column about y-y
-
+# Material Properties
 \begin{description}
   \item[]Ultimate strength: $f_{u}$ = `{python} fu` $N\cdot mm^{-2}$  
   \item[]Yield strength: $f_{y}$ = `{python} fy` $N \cdot mm^{-2}$  
@@ -178,31 +202,33 @@ else:
   \item[]Concrete Young modulus: $E_{cm}$ = `{python} Ecm` $N\cdot mm^{-2}$
 \end{description}
 
+{{< pagebreak >}}
 
-## Section Properties of `{python} section`
-
+#
+# Section Properties of `{python} section`
+\begin{multicols}{2}
 \begin{description}
-  \item[]Overall depth, h = `{python} h` mm  
-  \item[]Width of section, b = `{python} b` mm  
-  \item[]Web thickness, $t_{w}$ = `{python} tw`  mm  
-  \item[]Flange thickness, $t_{f}$ = `{python} tf` mm  
-  \item[]Depth between fillet, $h_{w}$ = `{python} d` mm  
-  \item[]Root radius, r = `{python} r` mm  
-  \item[]Area of section, $A$ = `{python} A`  $mm^{2}$   
-  \item[]2nd moment area Major axis, $I_{y}$ = `{python} Iy` $mm^{4}$  
-  \item[]2nd moment area minor axis, $I_{z}$ = `{python} Iz` $mm^{4}$  
-  \item[]Radius of gyration major axis $i_{y}$ = `{python} Ry` mm  
-  \item[]Radius of gyration minor axis, $i_{z}$ = `{python} Rz` mm  
-  \item[]Elastic modulus major axis, $W_{el,y}$ = `{python} Wey` $mm^{3}$  
-  \item[]Elastic modulus minor axis, $W_{el,z}$ = `{python} Wez` $mm^{3}$  
-  \item[]Plastic modulus major axis, $W_{pl,y}$ = `{python} Wpy` $mm^{3}$  
-  \item[]Plastic modulus minor axis, $W_{pl,z}$ = `{python} Wpz` $mm^{3}$  
-  \item[]Warping Constant, $I_{w}$ = `{python} Iw` $mm^{6}$  
-  \item[]Torsional constant, $I_{t}$ = `{python} It` $mm^{4}$  
+  \item[] Overall depth, $h$ = `{python} h` mm  
+  \item[] Width of section, $b$ = `{python} b` mm  
+  \item[] Web thickness, $t_{w}$ = `{python} tw` mm  
+  \item[] Flange thickness, $t_{f}$ = `{python} tf` mm  
+  \item[] Depth between fillet, $h_{w}$ = `{python} d` mm  
+  \item[] Root radius, $r$ = `{python} r` mm  
+  \item[] Area of section, $A$ = `{python} A1` $\cdot 10^{`{python} A2`}$ $mm^{2}$ 
+  \item[] 2nd moment Y-Y, $I_{y}$ = `{python} Iy1` $\cdot 10^{`{python} Iy2`}$ $mm^{4}$  
+  \item[] 2nd moment Z-Z, $I_{z}$ = `{python} Iz1` $\cdot 10^{`{python} Iz2`}$ $mm^{4}$  
+  \item[] Radius of gyration Y-Y, $i_{y}$ = `{python} Ry` mm  
+  \item[] Radius of gyration Z-Z, $i_{z}$ = `{python} Rz` mm  
+  \item[] Elastic modulus Y-Y, $W_{el,y}$ = `{python} Wey1` $\cdot 10^{`{python} Wey2`}$ $mm^{3}$  
+  \item[] Elastic modulus Z-Z, $W_{el,z}$ = `{python} Wez1` $\cdot 10^{`{python} Wez2`}$ $mm^{3}$  
+  \item[] Plastic modulus Y-Y, $W_{pl,y}$ = `{python} Wpy1` $\cdot 10^{`{python} Wpy2`}$ $mm^{3}$  
+  \item[] Plastic modulus Z-Z, $W_{pl,z}$ = `{python} Wpz1` $\cdot 10^{`{python} Wpz2`}$ $mm^{3}$  
+  \item[] Warping constant, $I_{w}$ = `{python} Iw1` $\cdot 10^{`{python} Iw2`}$ $mm^{6}$  
+  \item[] Torsional constant, $I_{t}$ = `{python} It1` $\cdot 10^{`{python} It2`}$   $mm^{4}$  
 \end{description}
+\end{multicols}
 
 ```{python}
-import math
 ep = math.sqrt(235/fy)
 crf = 9*ep
 crw = 72*ep
@@ -211,18 +237,20 @@ c1 = cw/tw
 cf = (b-tw-2*r)/2
 c2 = cf/tf
 ```
-{{<pagebreak>}}
 
-#
-
-## Section Classification
-
+# Section Classification
 \begin{description}
   \item[]$\epsilon$ = $\sqrt{\frac{235}{f_{y}}}$ = `{python} ep`  
   \item[]$c_{w}$ = $\frac{(b-t_{w}-2\cdot r)}{2}$ = `{python} cw`  
   \item[] $\frac{c_{w}}{t_{w}}$ = `{python} c1`
   \item[]Class 1 limit for web, $c_{rw}$ = 72$\epsilon$ = `{python} crw`
   \item[]$c_{f}$ = Depth between filet = `{python} cf` 
+\end{description}
+
+{{< pagebreak >}}
+
+#
+\begin{description}
   \item[]Flange class number = $\frac{c_{f}}{t_{f}}$ = `{python} c2`
   \item[]Class 1 limit for flange, $c_{rf}$ = 9$\epsilon$ = `{python} crf`
   \item[]Since `{python} c1` < `{python} crw` and `{python} c2` < `{python} crf`, the section belongs to class 1 
@@ -230,7 +258,6 @@ c2 = cf/tf
  
 
 ```{python}
-beam = 'Primary'
 gammac = 1.5
 a_c = 0.85
 Le =ly
@@ -239,7 +266,7 @@ beff = Le/4
 hs = h
 ht = 180
 hp = 80 + 15
-if beam == 'Secondary':
+if beam == 'Primary':
   hc = ht -hp/2
 else:
   hc = ht - hp
@@ -262,10 +289,9 @@ else:
   output_moment = 'the fully connected composite beam is not safe in bending'
 ```
 
-## Bending Resistance of the Composite Beam (Full connection)
-
+# Bending Resistance of the Composite Beam (Full connection)
 \begin{description}
-  \item[]Effective width, $b_{eff}$ = $\frac{L_{y}}{4}$ = `{python} beff` mm
+  \item[]Effective width,$b_{eff}$ = $\frac{L_{y}}{4}$ = `{python} beff` mm
   \item[]Factored strength of concrete, $f_{cd}$ = `{python} fcd` $N/mm²$
   \item[]Depth of steel, $h_{s}$ = `{python} hs` mm
   \item[]Depth of concrete and comflor slab, $h_{t}$ = `{python} ht` mm
@@ -277,6 +303,12 @@ else:
   \item[]$N_{ac}$ = $N_{apl} - N_{cf}$ = `{python} Nac` kN
   \item[]Neutral axis depth, $x$ = $\frac{N_{ac}}{2\cdot f_{y}\cdot b}$ = `{python} x` mm
   \item[]Design moment capacity, $M_{rd}$ = $N_{apl}\cdot(\frac{h_{s}}{2} + h_{t} - \frac{h_{c}}{2}) - N_{ac} \cdot (\frac{x}{2} + h_{t} - \frac{h_{c}}{2})$ = `{python} Mplrd` kN·m
+\end{description}
+
+{{< pagebreak >}}
+
+#
+\begin{description}
   \item[]If the $N_{cf}$ is greater than the $N_{apl}$, the neutral axis is within the concrete section, 
   \item[]Neutral axis depth, $x$ = $\frac{N_{apl}}{f_{cd}\cdot b_{eff}}$ = `{python} x` mm
   \item[]Design moment capacity, $M_{rd}$ = $N_{apl}\cdot(\frac{h_{s}}{2} + h_{t} - \frac{x}{2})$ = `{python} Mplrd` kN·m
@@ -326,18 +358,15 @@ else:
 ```
 <pagebreak>
 
-#
-
-## Shear Resistance of the Composite Beam
-
+# Shear Resistance of the Composite Beam
 \begin{description}
-  \item[]Shear Area $A_{shear}$ = $min(A - (2\cdot b \cdot t_{f}) + (t_{w}+2\cdot r), \eta \cdot h_{w} \cdot t_{w})$ = `{python} Ashear` $mm^{2}$ --- (EN 1993-1-1:2022 Clause 8.23)
-  \item[]Partial Safety Factor for shear $\gamma_{v}$ = 1.25 
+  \item[]According to (EN 1993-1-1:2022 Clause 8.23)
+  \item[]Shear Area $A_{shear}$ = $min(A - (2\cdot b \cdot t_{f}) + (t_{w}+2\cdot r), \eta \cdot h_{w} \cdot t_{w})$ = `{python} Ashear` $mm^{2}$ 
+  \item[]Partial Safety Factor for shear, $\gamma_{v}$ = 1.25 
   \item[]Shear resistance of the beam, $V_{pl,rd}$= $\frac{A_{shear}\cdot f_{y}}{\gamma_{0}\cdot\sqrt{3}}$ = `{python} Vplrd` kN
 \end{description}
 
-## Shear Resistance of the Stud Shear Connectors
-
+# Shear Resistance of the Stud Shear Connectors
 \begin{description}
   \item[]$\alpha$ = `{python} a`
   \item[]Safety factor for shear connectors, $\gamma_{v}$ = `{python} gammav`
@@ -345,6 +374,12 @@ else:
   \item[]Stud Shear Resistance $P_{stud}$ = $\frac{0.29\cdot \alpha \cdot d_{stud}^{2} \cdot (f_{ck}\cdot E_{cm})^{0.5}}{\gamma_{v}}$ = `{python} pstud` kN
   \item[]Concrete Shear Resistance $P_{concrete}$ = $\frac{0.8\cdot \pi \cdot d_{stud}^{2} \cdot f_{u}}{4\cdot \gamma_{v}}$ = `{python} pcon` kN --- (EC4 Clause 6.6.4.2)
   \item[]Assume the mesh is placed above the heads of the studs,
+\end{description}
+
+{{< pagebreak >}}
+
+#
+\begin{description}
   \item[]Unfactored Stud Shear Resistance $P_{rd,unfactored}$ = $0.7\cdot min(P_{stud}, P_{concrete})$ = `{python} prdi` kN
   \item[]$b_{0}$ = `{python} b0` mm
   \item[]$h_{sc}$ = `{python} hsc` mm
@@ -359,21 +394,21 @@ else:
   \item[]Final shear connection efficiency, $\eta_{final}$ = $max(\eta_{s}, \eta_{s1}, \eta_{s2}, 0.28)$ = `{python} eta_final`
 \end{description}
 
-<pagebreak>
-
-#
-
-### Bending Resistance of the Partially Connected Composite Beam (Simplified Method)
-
+# Bending Resistance of the Partially Connected Composite Beam (Simplified Method)
 \begin{description}
   \item[]Assuming the neutral axis depth is at the steel section (mostly true)
   \item[]Plastic moment capacity of the steel section, $M_{plard}$ = $W_{pl,y}\cdot f_{y}$ = `{python} Mplard` N·mm
-  \item[]Partial connection moment capacity, $M_{rd}$ = $M_{plard} + \eta_{final}\cdot(M_{plrd} - M_{plard})$ = `{python} Mrd` N·mm --- (EC4 Clause 6.2.1.3)
+  \item[]$M_{rd}$ = $M_{plard} + \eta_{final}\cdot(M_{plrd} - M_{plard})$ = `{python} Mrd` N·mm --- (EC4 Clause 6.2.1.3)
   \item[]Design moment, $M_{ed}$ = `{python} Med` kN·m
+\end{description}
+
+{{< pagebreak >}}
+
+#
+\begin{description}
   \item[]Therefore, `{python} output_partial`
 \end{description}
 
- 
 ```{python}
 n0 = E/Ecm
 n = 2*n0
@@ -394,8 +429,7 @@ else:
   outputdeflec = 'The partially connected composite beam satisfies the deflection limit'
 ```
 
-## Deflection check of composite beam
-
+# Deflection check of composite beam
 \begin{description}
   \item[]Modular ratio, $n_{0}$ = $\frac{E_{steel}}{E_{concrete}}$ = `{python} n0`
   \item[]Distance from the top of the beam to the centroid of the steel section, $z_{g}$ = $\frac{h}{2} + h_{t}$ = `{python} zg` mm
@@ -403,12 +437,11 @@ else:
   \item[]n = $2\cdot n_{0}$ = `{python} n`
   \item[]$\frac{b_{eff}\cdot h_{c}^{2}}{2\cdot n}$ = `{python} Adeflc` mm³
   \item[]Neutral axis, $x$ = $\frac{n\cdot A\cdot z_{g} + 0.5\cdot b_{eff}\cdot h_{c}^{2}}{n\cdot A + b_{eff}\cdot h_{c}}$ = `{python} axis` mm
-  \item[]Inertia of the transformed section, $I$ = $I_{y} + A\cdot (z_{g}-x)^{2} + \frac{b_{eff}\cdot h_{c}}{n}\cdot(\frac{h_{c}^{2}}{12}+(x-\frac{h_{c}}{2})^{2})$ = `{python} Inertia` mm⁴
-  \item[]SLS UDL, $q_{SLS}$ = `{python} qsls` kN/m
+  \item[]$I$ = $I_{y} + A\cdot (z_{g}-x)^{2} + \frac{b_{eff}\cdot h_{c}}{n}\cdot(\frac{h_{c}^{2}}{12}+(x-\frac{h_{c}}{2})^{2})$ = `{python} Inertia` mm⁴
+  \item[]SLS UDL, $q_{sls}$ = `{python} qsls` kN/m
   \item[]Deflection of the composite beam, $\delta_{comp}$ = $\frac{5\cdot q\cdot L^{4}}{384\cdot E \cdot I}$ = `{python} deflec_comp` mm
   \item[]Deflection of the steel beam, $\delta_{steel}$ = $\frac{5\cdot q\cdot L^{4}}{384\cdot E \cdot I_y}$ = `{python} deflec_steel` mm
-  \item[]Deflection of the partially connected composite beam, $\delta_{partial}$ = $\delta_{comp} + 0.3\cdot(1-\eta_{final})\cdot(\delta_{steel} - \delta_{comp})$ = `{python} deflec_partial` mm
+  \item[]Deflection of composite beam, $\delta_{partial}$ = $\delta_{comp} + 0.3\cdot(1-\eta_{final})\cdot(\delta_{steel} - \delta_{comp})$ = `{python} deflec_partial` mm
   \item[]Deflection limit, $\delta_{lim}$ = $\frac{L}{360}$ = `{python} deflec_lim` mm
   \item[]`{python} outputdeflec`
 \end{description}
-

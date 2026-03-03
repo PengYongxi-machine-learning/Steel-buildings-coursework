@@ -126,7 +126,6 @@ section = '356 x 406x 551'
 #
 #
 
-
 # Floor Loads
 \begin{multicols}{2}
 \begin{description}
