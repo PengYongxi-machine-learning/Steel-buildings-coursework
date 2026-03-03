@@ -19,6 +19,7 @@ format:
           \usepackage{xcolor}
           \usepackage{fancyhdr}
           \usepackage{lastpage}
+          \usepackage{multicol}
 
           \pagestyle{fancy}
           \fancyhf{} 
@@ -55,20 +56,37 @@ format:
             \egroup
           }
 ---
+
+\Large 
+\linespread{1.4}
+\selectfont 
+
 ```{python}
+# Define variables
+section = '356 x 406x 634'
+length = 6000
+
+# setup
 %precision 2
 import pandas as pd
+import math
+
 df_all = pd.read_csv('section_mm.csv')
 if df_all.columns[0] == 'Unnamed: 0':
   df_all = df_all.rename(columns = {'Unnamed: 0' : 'Section Profile'})
+
+# Scientific notation formatter
+def sci(value):
+    exp_num = math.floor(math.log10(abs(value)))
+    base = value / (10 ** exp_num)
+    return value, base, exp_num
 
 #material
 fu= 500.0
 fy = 355.0
 E = 210000
+G = 81000
 
-
-section = '356 x 406x 634'
 df = df_all[df_all['Section Profile'] == section]
 #section
 h = float(df['h (mm)'].iloc[0])
@@ -77,17 +95,17 @@ tw = float(df['tw (mm)'].iloc[0])
 tf = float(df['tf (mm)'].iloc[0])
 d = float(df['d (mm)'].iloc[0])
 r= float(df['r(mm)'].iloc[0])
-A = float(df['A (mm^2)'].iloc[0])
-Iy = float(df['Iy (mm^4)'].iloc[0])
-Iz = float(df['Iz (mm^4)'].iloc[0])
+A, A1, A2 = sci(float(df['A (mm^2)'].iloc[0]))
+Iy, Iy1, Iy2 = sci(float(df['Iy (mm^4)'].iloc[0]))
+Iz, Iz1, Iz2 = sci(float(df['Iz (mm^4)'].iloc[0]))
 Ry = float(df['Ry (mm)'].iloc[0])
 Rz = float(df['Rz (mm)'].iloc[0])
-Wey = float(df['W_el,y (mm^3)'].iloc[0])
-Wez = float(df['W_el,z (mm^3)'].iloc[0])
-Wpy = float(df['W_pl,y (mm3)'].iloc[0])
-Wpz = float(df['W_pl,z (mm^3)'].iloc[0])
-Iw = float(df['I_w (mm^6)'].iloc[0])
-It = float(df['I_T (mm^4)'].iloc[0])
+Wey, Wey1, Wey2 = sci(float(df['W_el,y (mm^3)'].iloc[0]))
+Wez, Wez1, Wez2 = sci(float(df['W_el,z (mm^3)'].iloc[0]))
+Wpy, Wpy1, Wpy2 = sci(float(df['W_pl,y (mm3)'].iloc[0]))
+Wpz, Wpz1, Wpz2 = sci(float(df['W_pl,z (mm^3)'].iloc[0]))
+Iw, Iw1, Iw2 = sci(float(df['I_w (mm^6)'].iloc[0]))
+It, It1, It2 = sci(float(df['I_T (mm^4)'].iloc[0]))
 
 ratio = h/b
 if ratio > 1.2:
@@ -104,13 +122,9 @@ else:
   else:
     ay = 0.70
     az = 0.70
-
-span = 6000
 ```
 #
-
-
-## Effective length of column about y-y
+# Effective length of column about y-y
 
 \begin{description}
   \item[]Ultimate strength, $f_{u}$ = `{python} fy` $N\cdot mm^{-2}$  
@@ -118,31 +132,30 @@ span = 6000
   \item[]Young's modulus, $E$ = `{python} E` $N\cdot mm^{-2}$  
 \end{description}
 
-## Section Properties of `{python} section`
-
+# Section Properties of `{python} section`
+\begin{multicols}{2}
 \begin{description}
-  \item[]Overall depth, $h$ = `{python} h` mm  
-  \item[]Width of section, $b$ = `{python} b` mm  
-  \item[]Web thickness, $t_{w}$ = `{python} tw`  mm  
-  \item[]Flange thickness, $t_{f}$ = `{python} tf` mm  
-  \item[]Depth between fillet, $h_{w}$ = `{python} d` mm  
-  \item[]Root radius, $r$ = `{python} r` mm  
-  \item[]Area of section, $A$ = `{python} A`  $mm^{2}$   
-  \item[]2nd moment of area Major axis, $I_{y}$ = `{python} Iy` $mm^{4}$  
-  \item[]2nd moment of area minor axis, $I_{z}$ = `{python} Iz` $mm^{4}$  
-  \item[]Radius of gyration major axis $i_{y}$ = `{python} Ry` mm  
-  \item[]Radius of gyration minor axis, $i_{z}$ = `{python} Rz` mm  
-  \item[]Elastic modulus major axis, $W_{el,y}$ = `{python} Wey` $mm^{3}$  
-  \item[]Elastic modulus minor axis, $W_{el,z}$ = `{python} Wez` $mm^{3}$  
-  \item[]Plastic modulus major axis, $W_{pl,y}$ = `{python} Wpy` $mm^{3}$  
-  \item[]Plastic modulus minor axis, $W_{pl,z}$ = `{python} Wpz` $mm^{3}$  
-  \item[]Warping constant, $I_{w}$ = `{python} Iw` $mm^{6}$  
-  \item[]Torsional constant, $I_{t}$ = `{python} It` $mm^{4}$  
+  \item[] Overall depth, $h$ = `{python} h` mm  
+  \item[] Width of section, $b$ = `{python} b` mm  
+  \item[] Web thickness, $t_{w}$ = `{python} tw` mm  
+  \item[] Flange thickness, $t_{f}$ = `{python} tf` mm  
+  \item[] Depth between fillet, $h_{w}$ = `{python} d` mm  
+  \item[] Root radius, $r$ = `{python} r` mm  
+  \item[] Area of section, $A$ = `{python} A1` $\cdot 10^{`{python} A2`}$ $mm^{2}$ 
+  \item[] 2nd moment Y-Y, $I_{y}$ = `{python} Iy1` $\cdot 10^{`{python} Iy2`}$ $mm^{4}$  
+  \item[] 2nd moment Z-Z, $I_{z}$ = `{python} Iz1` $\cdot 10^{`{python} Iz2`}$ $mm^{4}$  
+  \item[] Radius of gyration Y-Y, $i_{y}$ = `{python} Ry` mm  
+  \item[] Radius of gyration Z-Z, $i_{z}$ = `{python} Rz` mm  
+  \item[] Elastic modulus Y-Y, $W_{el,y}$ = `{python} Wey1` $\cdot 10^{`{python} Wey2`}$ $mm^{3}$  
+  \item[] Elastic modulus Z-Z, $W_{el,z}$ = `{python} Wez1` $\cdot 10^{`{python} Wez2`}$ $mm^{3}$  
+  \item[] Plastic modulus Y-Y, $W_{pl,y}$ = `{python} Wpy1` $\cdot 10^{`{python} Wpy2`}$ $mm^{3}$  
+  \item[] Plastic modulus Z-Z, $W_{pl,z}$ = `{python} Wpz1` $\cdot 10^{`{python} Wpz2`}$ $mm^{3}$  
+  \item[] Warping constant, $I_{w}$ = `{python} Iw1` $\cdot 10^{`{python} Iw2`}$ $mm^{6}$  
+  \item[] Torsional constant, $I_{t}$ = `{python} It1` $\cdot 10^{`{python} It2`}$   $mm^{4}$  
 \end{description}
+\end{multicols}
 
 ```{python}
-import math
-
 ep = math.sqrt(235/fy)
 crf = 9*ep
 crw = 33*ep
@@ -151,11 +164,11 @@ c1 = cw/tw
 cf = (b-tw-2*r)/2
 c2 = cf/tf
 ```
-{{<pagebreak>}}
+
+{{< pagebreak >}}
 
 #
-
-## Section Classification
+# Section Classification
 
 \begin{description}
   \item[]$\epsilon$ = $\sqrt{\frac{235}{f_{y}}}$ = `{python} ep` --- (EN 1993-1-1 :2022, Eq 5.1)
@@ -179,7 +192,7 @@ def buckle (Lcr, I, E, A, fy, a):
   chi = min(1/(phi + math.sqrt(phi**2 - lam**2)),1)
   return Ncr, lam, ratio, phi, chi
 
-Lcr = span/2
+Lcr = length/2
 Ncry, lamy, ratio, phiy, chiy = buckle(Lcr, Iy, E, A, fy, ay)
 Ncrz, lamz, ratio, phiz, chiz = buckle(Lcr, Iz, E, A, fy, az)
 
@@ -195,27 +208,28 @@ else:
   outputn='the section is not safe in compression'
 ```
 
-## Buckling resistance about y-y axis
+# Buckling resistance about y-y axis
 
 \begin{description}
-  \item[]span = `{python} span` mm
-  \item[]$L_{cr,y}$ = $\frac{span}{2}$ = `{python} Lcr` mm
+  \item[]$L_{cr,y}$ = `{python} Lcr` mm
   \item[]$N_{cr,y}$ = $\frac{\pi^{2}\cdot E\cdot I_{y}}{{L_{cr,y}}^{2}}$ = `{python} Ncry` kN
   \item[]$\lambda_{y}$ =  $\sqrt{\frac{N_{Rk}}{N_{cr,y}}}$ = $\sqrt{\frac{A\cdot f_{y}}{N_{cr,y}}}$ = `{python} lamy` --- (EN 1993-1-1 :2022, Eq 8.69)
   \item[]$\frac{h}{b}$ = `{python} ratio` < 1.2
+\end{description}
+
+{{< pagebreak >}}
+
+#
+\begin{description}
   \item[]$t_{f}$ = `{python} tf` mm < 100~mm
   \item[]Use buckling curve B,  $\alpha_{y}$ = `{python} ay` --- (EN 1993-1-1 :2022, Table 8.2)
   \item[]$\phi_{y}$ = $0.5 \cdot (1 + \alpha_{y} \cdot (\lambda_{y} - 0.2) + {\lambda_{y}}^{2})$ = `{python} phiy` --- (EN 1993-1-1 :2022, Eq 8.74)
   \item[]$\chi_{y}$ = $\frac{1}{\phi_{y} + \sqrt{{\phi_{y}}^{2} - {\lambda_{y}}^{2}}}$ = `{python} chiy` --- (EN 1993-1-1 :2022, Eq 8.73)
 \end{description}
  
-{{<pagebreak>}}
-
-#
-
-## Buckling resistance about z-z axis
+# Buckling resistance about z-z axis
 \begin{description}
-  \item[]$L_{cr,z}$ = $\frac{span}{2}$ = `{python} Lcr` mm
+  \item[]$L_{cr,z}$ = `{python} Lcr` mm
   \item[]$N_{cr,z}$ = $\frac{\pi^{2}\cdot E\cdot I_{z}}{{L_{cr,z}}^{2}}$ = `{python} Ncrz` kN
   \item[]$\lambda_{z}$ = $\sqrt{\frac{N_{Rk}}{N_{cr,z}}}$ = $\sqrt{\frac{A\cdot f_{y}}{N_{cr,z}}}$ = `{python} lamz` --- (EN 1993-1-1 :2022, Eq 8.69)
   \item[]$\frac{h}{b}$ = `{python} ratio` < 1.2
@@ -223,10 +237,12 @@ else:
   \item[]Use buckling curve C,  $\alpha_{z}$ = `{python} az` --- (EN 1993-1-1 :2022, Table 8.2)
   \item[]$\phi_{z}$ = $0.5 \cdot (1 + \alpha_{z} \cdot (\lambda_{z} - 0.2) + {\lambda_{z}}^{2})$ = `{python} phiz` --- (EN 1993-1-1 :2022, Eq 8.74)
   \item[]$\chi_{z}$ = $\frac{1}{\phi_{z} + \sqrt{{\phi_{z}}^{2} - {\lambda_{z}}^{2}}}$ = `{python} chiz` --- (EN 1993-1-1 :2022, Eq 8.73)
-  
 \end{description}
-  
-## Buckling resistance
+
+{{< pagebreak >}}
+
+#
+# Buckling resistance
 \begin{description}
   \item[]$\chi$ = min($\chi_{y},\chi_{z}$) = `{python} chi`
   \item[]$N_{RD}$ = $\chi\cdot A\cdot f_{y}$ = `{python} Nrd` kN --- (EN 1993-1-1 :2022, Eq 8.68)
@@ -251,7 +267,7 @@ else:
   outputt='the section is not safe in tension'
 ```
 
-## Tension resistance
+# Tension resistance
 
 \begin{description}
   \item[]Gross area tension resistance :
