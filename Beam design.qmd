@@ -56,7 +56,6 @@ format:
             \egroup
           }
 ---
-
 \Large
 \linespread{1.4}
 \selectfont 
