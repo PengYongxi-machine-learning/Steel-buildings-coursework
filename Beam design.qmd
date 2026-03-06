@@ -47,7 +47,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Internal Secondary Beam (middle) Calculations}
+                \centerline{Left Edge Secondary Beam Calculations}
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 29/03/2023} \\ \cline{3-5}
@@ -63,12 +63,14 @@ format:
 ```{python}
 # Define beam type and section
 beam = 'Secondary' # 'Primary' or 'Secondary'
-section = '610 x 305x 179'
+Type = 'Edge' # 'Internal' or 'Edge'
+section = '457 x 191x 161'
 
 %precision 2
 # Floor area and height
-lx = 8250
+lx = 1500
 ly = 13500
+H = 6000
 
 # floor loads
 gt_f = 0.7
@@ -79,17 +81,25 @@ gser_f = 1.4
 
 qpar_f = 1.0
 qimp_f = 4.0
-qclad = 1.2
+if Type == 'Edge':
+  qcl = 1.2
+else:
+  qcl = 0.8
 
 # ULS floor load
 Gtyp_f = gt_f + gs_f + gc_f + gste_f + gser_f
 Qtyp_f = qpar_f + qimp_f
 wtyp_f = 1.35*Gtyp_f + 1.5*Qtyp_f
-qtyp_f = wtyp_f*(lx*1e-3)
+qtyp_f = wtyp_f*lx*1e-3
+qclad = 1.5*qcl*H*1e-3
+if Type == 'Edge':
+  qtotal = qclad + qtyp_f
+else:
+  qtotal = qtyp_f
 
 # Moment and shear
-Med = qtyp_f*(ly*1e-3)**2/8
-Ved = qtyp_f*(ly*1e-3)/2
+Med = qtotal*(ly*1e-3)**2/8
+Ved = qtotal*(ly*1e-3)/2
 ```
 
 # 
@@ -109,7 +119,7 @@ Ved = qtyp_f*(ly*1e-3)/2
     \item[]$G_{services}$ = `{python} gser_f` $kN/m^2$
     \item[]$Q_{partitions}$ = `{python} qpar_f` $kN/m^2$
     \item[]$Q_{imposed}$ = `{python} qimp_f` $kN/m^2$
-    \item[]$Q_{cladding}$ = `{python} qclad` $kN/m^2$
+    \item[]$Q_{cladding}$ = `{python} qcl` $kN/m^2$
 \end{description}
 \end{multicols}
 
@@ -127,9 +137,10 @@ Ved = qtyp_f*(ly*1e-3)/2
 \begin{description}
     \item[]$L_{x}$ = `{python} lx` $m$
     \item[]$L_{y}$ = `{python} ly` $m$
-    \item[]UDL, $q$ = $W_{typ}\cdot L_{x}$ = `{python} qtyp_f` $kN/m$
-    \item[]Moment, $M_{ed}$ = $\frac{q\cdot L_{y}^{2}}{8}$ = `{python} Med` $kNm$
-    \item[]Shear, $V_{ed}$ = $\frac{q\cdot L_{y}}{2}$ = `{python} Ved` $kN$
+    \item[]Height of between floor, $H$ = `{python} H` $mm$
+    \item[]UDL, $q_{Total}$ = $W_{typ}\cdot L_{x}$ + $1.5\cdot Q_{cladding}\cdot H$ = `{python} qtotal` $kN/m$
+    \item[]Moment, $M_{ed}$ = $\frac{q_{Total}\cdot L_{y}^{2}}{8}$ = `{python} Med` $kNm$
+    \item[]Shear, $V_{ed}$ = $\frac{q_{Total}\cdot L_{y}}{2}$ = `{python} Ved` $kN$
 \end{description}
 
 ```{python}
@@ -204,7 +215,7 @@ else:
 {{< pagebreak >}}
 
 #
-# Section Properties of `{python} section`
+# Section Properties of UKB `{python} section`
 \begin{multicols}{2}
 \begin{description}
   \item[] Overall depth, $h$ = `{python} h` mm  
@@ -262,7 +273,7 @@ Le =ly
 beff = Le/4
 ht = 180
 hp = 80 + 15
-if beam == beam:
+if beam == 'Primary':
   hc = ht -hp/2
 else:
   hc = ht - hp
