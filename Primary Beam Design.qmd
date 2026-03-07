@@ -48,7 +48,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Middle Internal Primary Beam Calculations}
+                \centerline{Middle Edge Primary Beam Calculations}
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 29/03/2023} \\ \cline{3-5}
@@ -64,8 +64,8 @@ format:
 ```{python}
 # Define beam type and section
 beam = 'Primary'
-Type = 'Internal' # 'Internal' or 'Edge'
-section = '457 x 191x 161'
+Type = 'Edge' # 'Internal' or 'Edge'
+section = '457 x 191x 133'
 lx = 8250
 H = 6000
 
