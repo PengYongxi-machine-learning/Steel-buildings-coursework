@@ -20,11 +20,12 @@ format:
           \usepackage{fancyhdr}
           \usepackage{lastpage}
           \usepackage{multicol}
+          \usepackage{ifthen}
 
           \pagestyle{fancy}
           \fancyhf{} 
           \renewcommand{\headrulewidth}{0pt}
-          
+          \newcounter{score}
 
           \fancyhead[C]{
             \noindent
@@ -269,9 +270,10 @@ Since `{python} c1` < `{python} crw` and `{python} c2` < `{python} crf`, the sec
 # Bending Resistance of the fully connected composite beam
 gammac = 1.5
 a_c = 0.85
-Le =ly
+Le = ly
 beff = Le/4
 ht = 180
+SD = ly/(h+ht)
 hp = 80 + 15
 if beam == 'Primary':
   hc = ht -hp/2
@@ -281,12 +283,14 @@ fcd = a_c*fck/gammac
 Ncf = fcd*beff*hc*1e-3
 Napl = fy*A*1e-3
 Nac = Napl - Ncf
-if Nac >0:
-  x =Nac/(2*fy*b)
-  Mplrd = (Napl*1e3*(h/2 + ht - hc/2) - Nac*1e3*(x/2 + ht - hc/2))*1e-6
+if Nac > 0:
+  x = ht + Nac*1e3/(2*fy*b)
+  Mplrd = (Napl*1e3*(h/2 + ht - hc/2) - Nac*1e3*((x-ht)/2 + ht - hc/2))*1e-6
+  nac = 1
 else:
   x = Napl*1e3/(fcd*beff)
   Mplrd = (Napl*1e3*(h/2 + ht - x/2))*1e-6
+  nac = 0
 if Mplrd > Med:
   output_moment = 'the fully connected composite beam is safe in bending'
 else:
@@ -302,26 +306,34 @@ else:
   \item[]Factored strength of concrete, $f_{cd}$ = `{python} fcd` $N/mm²$
   \item[]Depth of steel, $h$ = `{python} h` mm
   \item[]Depth of concrete and comflor slab, $h_{t}$ = `{python} ht` mm
+  \item[]Span to depth ratio, $\frac{S}{D}$ = $\frac{L_{y}}{h + h_{t}}$ = `{python} SD`
   \item[]Height of the comflor slab, $h_{p}$ = `{python} hp` mm
   \item[]Height of the concrete in compression, $h_{c}$ = $h_{t} - h_{comflor}$ = `{python} hc` mm
   \item[]Total strength of concrete, $N_{cf}$ = $f_{cd}\cdot b_{eff} \cdot h_{c}$ = `{python} Ncf` kN
   \item[]Plastic strength of the steel, $N_{apl}$ = $f_{y}\cdot A$ = `{python} Napl` kN
-  \item[]If the $N_{cf}$ is less than the $N_{apl}$, the neutral axis is within the steel section, 
-  \item[]$N_{ac}$ = $N_{apl} - N_{cf}$ = `{python} Nac` kN
-  \item[]Neutral axis depth, $x$ = $\frac{N_{ac}}{2\cdot f_{y}\cdot b}$ = `{python} x` mm
-  \item[]Design moment capacity, $M_{rd}$ = $N_{apl}\cdot(\frac{h}{2} + h_{t} - \frac{h_{c}}{2}) - N_{ac} \cdot (\frac{x}{2} + h_{t} - \frac{h_{c}}{2})$ = `{python} Mplrd` kN·m
-  \item[]If the $N_{cf}$ is greater than the $N_{apl}$, the neutral axis is within the concrete section, 
-  \item[]Neutral axis depth, $x$ = $\frac{N_{apl}}{f_{cd}\cdot b_{eff}}$ = `{python} x` mm
-  \item[]Design moment capacity, $M_{rd}$ = $N_{apl}\cdot(\frac{h}{2} + h_{t} - \frac{x}{2})$ = `{python} Mplrd` kN·m
-  \item[]Therefore `{python} output_moment`
 \end{description}
 
+\setcounter{score}{`{python} int(nac)`}
+\ifthenelse{\value{score}>0}{
+\begin{description}
+  \item[]$N_{cf}$ is less than the $N_{apl}$, the neutral axis is within the steel section, 
+  \item[]$N_{ac}$ = $N_{apl} - N_{cf}$ = `{python} Nac` kN
+  \item[]Neutral axis depth, $x$ = $h_t + \frac{N_{ac}}{2\cdot f_{y}\cdot b}$ = `{python} x` mm
+  \item[]Design moment capacity, $M_{rd}$ = $N_{apl}\cdot(\frac{h}{2} + h_{t} - \frac{h_{c}}{2}) - N_{ac} \cdot (\frac{x-h_t}{2} + h_{t} - \frac{h_{c}}{2})$ = `{python} Mplrd` kN·m
+\end {description}}{
+\begin{description}
+  \item[]$N_{cf}$ is greater than the $N_{apl}$, the neutral axis is within the concrete section, 
+  \item[]Neutral axis depth, $x$ = $\frac{N_{apl}}{f_{cd}\cdot b_{eff}}$ = `{python} x` mm
+  \item[]Design moment capacity, $M_{rd}$ = $N_{apl}\cdot(\frac{h}{2} + h_{t} - \frac{x}{2})$ = `{python} Mplrd` kN·m
+\end{description}}
+
+ Therefore `{python} output_moment`
 ```{python}
 # Shear Resistance of the stud shear connectors
 gammav = 1.25
 a = 1
 dstud = 19.0
-b0 = 144.5
+b0 = 145
 hp = 60
 hsc = 95
 nr =2
@@ -353,8 +365,7 @@ else:
 #
 # Shear Resistance of the Stud Shear Connectors
 \begin{description}
-  \item[]$\alpha$ = `{python} a`, $\gamma_{v}$ = `{python} gammav`
-  \item[]Diameter of the stud shear connector, $d_{stud}$ = `{python} dstud` mm
+  \item[]$\alpha$ = `{python} a`, $\gamma_{v}$ = `{python} gammav`, $d_{stud}$ = `{python} dstud` mm
   \item[]Stud Shear Resistance $P_{stud}$ = $\frac{0.29\cdot \alpha \cdot d_{stud}^{2} \cdot (f_{ck}\cdot E_{cm})^{0.5}}{\gamma_{v}}$ = `{python} pstud` kN
   \item[]Concrete Shear Resistance $P_{concrete}$ = $\frac{0.8\cdot \pi \cdot d_{stud}^{2} \cdot f_{u}}{4\cdot \gamma_{v}}$ = `{python} pcon` kN --- (EC4 Clause 6.6.4.2)
   \item[]Unfactored Stud Shear Resistance $P_{rd,unfactored}$ = $0.7\cdot min(P_{stud}, P_{concrete})$ = `{python} prdi` kN
