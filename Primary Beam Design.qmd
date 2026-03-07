@@ -48,7 +48,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Left Edge Secondary Beam Calculations}
+                \centerline{Middle Internal Primary Beam Calculations}
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 29/03/2023} \\ \cline{3-5}
@@ -62,19 +62,24 @@ format:
 \selectfont 
 
 ```{python}
-import math
-
 # Define beam type and section
 beam = 'Primary'
-Type = 'Edge' # 'Internal' or 'Edge'
+Type = 'Internal' # 'Internal' or 'Edge'
 section = '457 x 191x 161'
+lx = 8250
+H = 6000
 
+import math
 %precision 2
 # Floor area and height
-lx = 1500
-ly = 13500
-ls = math.sqrt(lx**2 + ly**2)
-H = 6000
+if lx == 8250:
+    SB = 2
+else:
+    SB = 1
+if Type == 'Edge':
+    ly = 13500/2
+else:
+    ly = 13500
 
 # floor loads
 gt_f = 0.7
@@ -82,7 +87,6 @@ gs_f = 2.63
 gc_f = 0.5
 gste_f = 0.3
 gser_f = 1.4
-
 qpar_f = 1.0
 qimp_f = 4.0
 if Type == 'Edge':
@@ -94,17 +98,20 @@ else:
 Gtyp_f = gt_f + gs_f + gc_f + gste_f + gser_f
 Qtyp_f = qpar_f + qimp_f
 wtyp_f = 1.35*Gtyp_f + 1.5*Qtyp_f
-qtyp_f = wtyp_f*lx*1e-3
 qclad = 1.5*qcl*H*1e-3
-if Type == 'Edge':
-  qtotal = qclad + qtyp_f
-else:
-  qtotal = qtyp_f
 
 # Moment and shear
 lb = lx
-Med = qtotal*(lb*1e-3)**2/8
-Ved = qtotal*(lb*1e-3)/2
+if SB == 1:
+    ptotal = 1e-6*wtyp_f*lb*ly/2
+    Med = ptotal*(lb*1e-3)/4 + qclad*(lb*1e-3)**2/8
+    Ved = ptotal/2 + qclad*(lb*1e-3)/2
+    beamcount = 1
+else:
+    ptotal = 1e-6*2*wtyp_f*lb*ly/3
+    Med = ptotal*(lb*1e-3)/6 + qclad*(lb*1e-3)**2/8
+    Ved = ptotal/2+ qclad*(lx*1e-3)/2
+    beamcount = 2
 ```
 
 # 
@@ -143,23 +150,23 @@ Ved = qtotal*(lb*1e-3)/2
     \item[]$L_{x}$ = `{python} lx` $mm$
     \item[]$L_{y}$ = `{python} ly` $mm$
     \item[]Height of between floor, $H$ = `{python} H` $mm$
+    \item[]Length of the beam, $L_{b}$ = $L_{x}$ = `{python} lb` $mm$
 \end{description}
 
-\setcounter{score}{`{python} int(beamscore)`}
-\ifthenelse{\value{score} > 0}{
+\setcounter{score}{`{python} int(beamcount)`}
+\ifthenelse{\value{score} > 1}{
 \begin{description}
-  \item[]Length of the slanted beam, $L_{s}$ = $\sqrt{L_{x}^{2} + L_{y}^{2}}$ = `{python} ls` $mm$
-  \item[]Length of the beam, $L_{b}$ = $L_{s}$ = `{python} lb` $mm$
-  \item[]UDL, $q_{Total}$ = $\frac{0.5\cdot W_{typ}\cdot L_{x}\cdot L_{y}}{L_{s}}$ + $1.5\cdot Q_{cladding}\cdot H$ = `{python} qtotal` $kN/m$
+    \item[]Point loads, $P_{Total}$ = $\frac{2}{3}\cdot W_{typ}\cdot L_b\ \cdot L_y$ = `{python} ptotal` $kN$
+    \item[]UDL, $q_{Total}$ = $1.5\cdot Q_{cladding}\cdot H$ = `{python} qclad` $kN/m$
+    \item[]Moment, $M_{ed}$ = $\frac{P_{Total}\cdot L_b}{6} + \frac{q_{Total}\cdot L_{b}^{2}}{8}$ = `{python} Med` $kNm$
+    \item[]Shear, $V_{ed}$ = $\frac{P_{Total}\cdot L_{b}}{2}+\frac{q_{Total}\cdot L_{b}}{2}$ = `{python} Ved` $kN$
 \end{description}}{
 \begin{description}
-    \item[]Length of the beam, $L_{b}$ = $L_{y}$ = `{python} lb` $mm$
-    \item[]UDL, $q_{Total}$ = $W_{typ}\cdot L_{x}$ + $1.5\cdot Q_{cladding}\cdot H$ = `{python} qtotal` $kN/m$
+    \item[]Point loads, $P_{Total}$ = $\frac{1}{2}\cdot W_{typ}\cdot L_b\cdot L_y$ = `{python} ptotal` $kN$
+    \item[]UDL, $q_{Total}$ =  $1.5\cdot Q_{cladding}\cdot H$ = `{python} qclad` $kN/m$
+    \item[]Moment, $M_{ed}$ = $\frac{P_{Total}\cdot L_{b}}{4} + \frac{q_{Total}\cdot L_{b}^{2}}{8}$ = `{python} Med` $kNm$
+    \item[]Shear, $V_{ed}$ = $\frac{P_{Total}}{2} + \frac{q_{Total}\cdot L_b}{2}$ = `{python} Ved` $kN$
 \end{description}}
-\begin{description}
-    \item[]Moment, $M_{ed}$ = $\frac{q_{Total}\cdot L_{b}^{2}}{8}$ = `{python} Med` $kNm$
-    \item[]Shear, $V_{ed}$ = $\frac{q_{Total}\cdot L_{b}}{2}$ = `{python} Ved` $kN$
-\end{description}
 
 ```{python}
 import pandas as pd
@@ -286,15 +293,12 @@ Since `{python} c1` < `{python} crw` and `{python} c2` < `{python} crf`, the sec
 # Bending Resistance of the fully connected composite beam
 gammac = 1.5
 a_c = 0.85
-Le = ly
+Le = lx
 beff = Le/4
 ht = 180
-SD = ly/(h+ht)
+SD = lx/(h+ht)
 hp = 80 + 15
-if beam == 'Primary':
-  hc = ht -hp/2
-else:
-  hc = ht - hp
+hc = ht -hp/2
 fcd = a_c*fck/gammac
 Ncf = fcd*beff*hc*1e-3
 Napl = fy*A*1e-3
@@ -318,13 +322,13 @@ else:
 #
 # Bending Resistance of the Composite Beam (Full connection)
 \begin{description}
-  \item[]Effective width, $b_{eff}$ = $\frac{L_{y}}{4}$ = `{python} beff` mm
+  \item[]Effective width, $b_{eff}$ = $\frac{L_{x}}{4}$ = `{python} beff` mm
   \item[]Factored strength of concrete, $f_{cd}$ = `{python} fcd` $N/mm²$
   \item[]Depth of steel, $h$ = `{python} h` mm
   \item[]Depth of concrete and comflor slab, $h_{t}$ = `{python} ht` mm
   \item[]Span to depth ratio, $\frac{S}{D}$ = $\frac{L_{y}}{h + h_{t}}$ = `{python} SD`
   \item[]Height of the comflor slab, $h_{p}$ = `{python} hp` mm
-  \item[]Height of the concrete in compression, $h_{c}$ = $h_{t} - h_{comflor}$ = `{python} hc` mm
+  \item[]Height of the concrete in compression, $h_{c}$ = $h_{t} - \frac{h_{p}}{2}$ = `{python} hc` mm
   \item[]Total strength of concrete, $N_{cf}$ = $f_{cd}\cdot b_{eff} \cdot h_{c}$ = `{python} Ncf` kN
   \item[]Plastic strength of the steel, $N_{apl}$ = $f_{y}\cdot A$ = `{python} Napl` kN
 \end{description}
@@ -359,7 +363,10 @@ pcon = (0.8*math.pi*dstud**2*fu)*1e-3/(4*gammav)
 prdi = 0.7*min(pstud, pcon)
 kt = min((0.7*b0)/(nr**0.5*hp)*((hsc/hp)-1), 0.7)
 prd = prdi*kt
-lcrs = ly/2
+if SB == 1:
+    lcrs = lx/2
+elif SB == 2:
+    lcrs = lx/3
 nstud = 2*lcrs/spacing
 vstud = prd*nstud
 eta_s = vstud/Ncf
@@ -388,11 +395,20 @@ else:
   \item[]$b_{0}$ = `{python} b0` mm, $h_{sc}$ = `{python} hsc` mm
   \item[]Shear Connector Factor $k_{t}$ = $min(\frac{0.70\cdot b_{0}}{n_{r}^{0.5}\cdot h_{p}}\cdot(\frac{h_{sc}}{h_{p}}-1), 0.7)$ = `{python} kt` --- (EC4 Clause 6.6.1.2)
   \item[]Factored Stud Shear resistance,$P_{rd}$ = $P_{rd,unfactored}\cdot k_{t}$ = `{python} prd` kN
-  \item[]Critical length of the beam, $l_{crs}$ = $\frac{l_{y}}{2}$ = `{python} lcrs` mm
+\end{description}
+\setcounter{score}{`{python} int(beamcount)`}
+\ifthenelse{\value{score} > 1}{
+\begin{description}
+  \item[]Critical length of the beam, $l_{crs}$ = $\frac{L_{x}}{3}$ = `{python} lcrs` mm
+\end{description}}{
+\begin{description}
+    \item[]Critical length of the beam, $l_{crs}$ = $\frac{L_{x}}{2}$ = `{python} lcrs` mm
+\end{description}}
+\begin{description}
   \item[]Number of stud shear connectors, $n_{stud}$ = $\frac{2\cdot l_{crs}}{spacing}$ = `{python} nstud`
   \item[]Total Shear resistance of shear connectors, $V_{stud}$ = $p_{rd}\cdot n_{stud}$ = `{python} vstud` kN
   \item[]Shear connection efficiency, $\eta_{s}$ = $\frac{V_{stud}}{N_{cf}}$ = `{python} eta_s`
-  \item[]Shear connection efficiency limit based on slip, $\eta_{s1}$ = $1-(\frac{355}{f_{y}})\cdot(1.433 - 0.054\cdot l_{x})$ = `{python} etas_slip`
+  \item[]Shear connection efficiency limit based on slip, $\eta_{s1}$ = $1-(\frac{355}{f_{y}})\cdot(1.433 - 0.054\cdot L_{x})$ = `{python} etas_slip`
   \item[]Shear connection efficiency limit based on moment, $\eta_{s2}$ = $0.4\cdot\frac{M_{ed}}{M_{plrd}}$ = `{python} etas_moment`
   \item[]Final shear connection efficiency, $\eta_{final}$ = $max(\eta_{s}, \eta_{s1}, \eta_{s2}, 0.28)$ = `{python} eta_final`
 \end{description}
@@ -451,7 +467,7 @@ else:
 
 # Crushing resistance of the concrete
 \begin{description}
-  \item[]Shear stress in the composite structure, $v_{ed}$ = $\frac{V_{stud}\cdot 10^{3}}{2\cdot h_{c} \cdot l_{crs}}$ = `{python} vced` N/mm²
+  \item[]Shear stress in the composite structure, $v_{ed}$ = $\frac{V_{stud}}{2\cdot h_{c} \cdot l_{crs}}$ = `{python} vced` N/mm²
   \item[]Design shear strength of the concrete, $vf_{cd}$ = $0.6(1-\frac{f_{ck}}{250})\cdot f_{cd}$ = `{python} vfcd` N/mm²
   \item[]Angle of inclination of the concrete struts, $\theta$ = `{python} theta` °
 \end{description}
@@ -479,11 +495,11 @@ Adefls = A*(zg - hc)
 Adeflc = beff*hc**2/(2*n) 
 axis = (n * A * zg + 0.5*beff*hc**2)/(n * A + beff*hc)
 Inertia = Iy + A*(zg-axis)**2 + (beff*hc/n)*((hc**2/12)+(axis-hc/2)**2)
-qsls = Qtyp_f*lx*1e-3
-deflec_comp = 5*qsls*ly**4/(384*E*Inertia)
-deflec_steel = 5*qsls*ly**4/(384*E*Iy)
+qsls = Qtyp_f*ly*1e-3
+deflec_comp = 5*qsls*lx**4/(384*E*Inertia)
+deflec_steel = 5*qsls*lx**4/(384*E*Iy)
 deflec_partial = deflec_comp + 0.3*(1-eta_final)*(deflec_steel - deflec_comp)
-deflec_lim = ly/360
+deflec_lim = lx/360
 if deflec_partial > deflec_lim:
   outputdeflec = 'The partially connected composite beam does not satisfy the deflection limit'
 else:
@@ -499,16 +515,16 @@ else:
   \item[]$\frac{b_{eff}\cdot h_{c}^{2}}{2\cdot n}$ = `{python} Adeflc` mm³
   \item[]Neutral axis, $x$ = $\frac{n\cdot A\cdot z_{g} + 0.5\cdot b_{eff}\cdot h_{c}^{2}}{n\cdot A + b_{eff}\cdot h_{c}}$ = `{python} axis` mm
   \item[]$I$ = $I_{y} + A\cdot (z_{g}-x)^{2} + \frac{b_{eff}\cdot h_{c}}{n}\cdot(\frac{h_{c}^{2}}{12}+(x-\frac{h_{c}}{2})^{2})$ = `{python} Inertia` mm⁴
-  \item[]$q_{sls}$ = `{python} qsls` kN/m
-  \item[]Deflection of the composite beam, $\delta_{comp}$ = $\frac{5\cdot q\cdot L^{4}}{384\cdot E \cdot I}$ = `{python} deflec_comp` mm
+  \item[]$q_{sls}$ = $Q_{typ,f}\cdot L_y$ `{python} qsls` kN/m
+  \item[]Deflection of the composite beam, $\delta_{comp}$ = $\frac{5\cdot q_{sls}\cdot L_x^{4}}{384\cdot E \cdot I}$ = `{python} deflec_comp` mm
 \end{description}
 
 {{< pagebreak >}}
 
 #
 \begin{description}
-  \item[]Deflection of the steel beam, $\delta_{steel}$ = $\frac{5\cdot q\cdot L^{4}}{384\cdot E \cdot I_y}$ = `{python} deflec_steel` mm
+  \item[]Deflection of the steel beam, $\delta_{steel}$ = $\frac{5\cdot q_{sls}\cdot L_x^{4}}{384\cdot E \cdot I_y}$ = `{python} deflec_steel` mm
   \item[]Deflection of composite beam, $\delta_{partial}$ = $\delta_{comp} + 0.3\cdot(1-\eta_{final})\cdot(\delta_{steel} - \delta_{comp})$ = `{python} deflec_partial` mm
-  \item[]Deflection limit, $\delta_{lim}$ = $\frac{L}{360}$ = `{python} deflec_lim` mm
+  \item[]Deflection limit, $\delta_{lim}$ = $\frac{L_x}{360}$ = `{python} deflec_lim` mm
   \item[]`{python} outputdeflec`
 \end{description}
