@@ -62,15 +62,18 @@ format:
 \selectfont 
 
 ```{python}
+import math
+
 # Define beam type and section
-beam = 'Secondary' # 'Primary' or 'Secondary'
-Type = 'Edge' # 'Internal' or 'Edge'
+beam = 'Secondary' 
+Type = 'Edge' # 'Internal' or 'Edge' or 'Slanted'
 section = '457 x 191x 161'
 
 %precision 2
 # Floor area and height
 lx = 1500
 ly = 13500
+ls = math.sqrt(lx**2 + ly**2)
 H = 6000
 
 # floor loads
@@ -84,8 +87,10 @@ qpar_f = 1.0
 qimp_f = 4.0
 if Type == 'Edge':
   qcl = 1.2
+elif Type == 'Slanted':
+  qcl = 1.2
 else:
-  qcl = 0.8
+  qcl = 0.0
 
 # ULS floor load
 Gtyp_f = gt_f + gs_f + gc_f + gste_f + gser_f
@@ -95,12 +100,21 @@ qtyp_f = wtyp_f*lx*1e-3
 qclad = 1.5*qcl*H*1e-3
 if Type == 'Edge':
   qtotal = qclad + qtyp_f
+  beamscore = 0
+elif Type == 'Slanted':
+  qtotal = 0.5*wtyp_f*lx*ly/ls*1e-3 + qclad
+  beamscore = 1
 else:
   qtotal = qtyp_f
+  beamscore = 0
 
 # Moment and shear
-Med = qtotal*(ly*1e-3)**2/8
-Ved = qtotal*(ly*1e-3)/2
+if Type == 'Slanted':
+  lb = ls
+else:
+  lb = ly
+Med = qtotal*(lb*1e-3)**2/8
+Ved = qtotal*(lb*1e-3)/2
 ```
 
 # 
@@ -136,17 +150,29 @@ Ved = qtotal*(ly*1e-3)/2
 #
 # Axial and bending loads on the beam
 \begin{description}
-    \item[]$L_{x}$ = `{python} lx` $m$
-    \item[]$L_{y}$ = `{python} ly` $m$
+    \item[]$L_{x}$ = `{python} lx` $mm$
+    \item[]$L_{y}$ = `{python} ly` $mm$
     \item[]Height of between floor, $H$ = `{python} H` $mm$
+\end{description}
+
+\setcounter{score}{`{python} int(beamscore)`}
+\ifthenelse{\value{score} > 0}{
+\begin{description}
+  \item[]Length of the slanted beam, $L_{s}$ = $\sqrt{L_{x}^{2} + L_{y}^{2}}$ = `{python} ls` $mm$
+  \item[]Length of the beam, $L_{b}$ = $L_{s}$ = `{python} lb` $mm$
+  \item[]UDL, $q_{Total}$ = $\frac{0.5\cdot W_{typ}\cdot L_{x}\cdot L_{y}}{L_{s}}$ + $1.5\cdot Q_{cladding}\cdot H$ = `{python} qtotal` $kN/m$
+\end{description}}{
+\begin{description}
+    \item[]Length of the beam, $L_{b}$ = $L_{y}$ = `{python} lb` $mm$
     \item[]UDL, $q_{Total}$ = $W_{typ}\cdot L_{x}$ + $1.5\cdot Q_{cladding}\cdot H$ = `{python} qtotal` $kN/m$
-    \item[]Moment, $M_{ed}$ = $\frac{q_{Total}\cdot L_{y}^{2}}{8}$ = `{python} Med` $kNm$
-    \item[]Shear, $V_{ed}$ = $\frac{q_{Total}\cdot L_{y}}{2}$ = `{python} Ved` $kN$
+\end{description}}
+\begin{description}
+    \item[]Moment, $M_{ed}$ = $\frac{q_{Total}\cdot L_{b}^{2}}{8}$ = `{python} Med` $kNm$
+    \item[]Shear, $V_{ed}$ = $\frac{q_{Total}\cdot L_{b}}{2}$ = `{python} Ved` $kN$
 \end{description}
 
 ```{python}
 import pandas as pd
-import math
 
 df_all = pd.read_csv('section_mm.csv')
 if df_all.columns[0] == 'Unnamed: 0':
