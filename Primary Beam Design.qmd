@@ -70,8 +70,8 @@ beam = 'Primary'
 lx_list = [6000, 8250, 7500]
 Type_list = ['Perimeter','Internal']
 section = '457 x 191x 161'
-ix = 2
-it = 1
+ix = 0
+it = 0
 
 # Floor area and height
 H = 6000

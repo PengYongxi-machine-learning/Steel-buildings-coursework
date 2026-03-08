@@ -48,10 +48,10 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Design of Columns}
+                \centerline{Floor 1 - Left Edge Design of Columns}
                 \vspace*{1mm}
             } \\ \cline{2-5}
-            & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 30/02/2077} \\ \cline{3-5}
+            & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
             & & \textbf{Checked by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
             \end{tabularx}
             \egroup
@@ -61,21 +61,20 @@ format:
 %precision 2
 import math
 # Define section choice
-section = '356 x 406x 551'
-lx_list = [3000, 6000, 88250, 7500]
-Type_list = ['Corner', 'Edge', 'Internal,']
+section = '203 x 203x 127'
+lx_list = [6000, 8250, 7500]
+Type_list = ['Corner', 'Perimeter1', 'Perimeter2', 'Internal']
 ixl = 0
 ixr = 0
-it = 0 
+it = 0
 floor = 1
 
 # Start of desing
 Type = Type_list[it]
 lxl = lx_list[ixl]
-lxr = lx_list[ixr]
-ly = 13500  
+lxr = lx_list[ixr] 
 H = 6000
-
+ly = 13500
 # dead floor
 gt_f = 0.7
 gs_f = 3.38
@@ -85,7 +84,11 @@ gser_f = 1.4
 # impose floor
 qpar_f = 1.0
 qimp_f = 4.0
-qclad = 1.2
+if Type == 'Internal':
+  qclad = 0.0
+else:
+  qclad = 1.2
+
 # dead roof
 gt_r = 1.0
 gs_r = 3.38
@@ -104,11 +107,12 @@ wtyp_f = 1.35*Gtyp_f + 1.5*Qtyp_f
 Gtyp_r = gt_r + gs_r + gc_r + gste_r + gser_r
 Qtyp_r = qimp_r
 wtyp_r = 1.35*Gtyp_r + 1.5*Qtyp_r
-
+v = 1e-6*wtyp_f*ly*lxl/8 + 1.5*qclad*lxl*H*1e-6/2
+print(wtyp_f, ly, lxl, qclad)
 if Type == 'Corner':
   score = 1
 else:
-  score =0
+  score = 0
 ```
 
 \Large 
@@ -125,6 +129,7 @@ else:
 # Floor Loads
 \begin{multicols}{2}
 \begin{description}
+    \item[] `{python} v` column
     \item[]$G_{tiles}$ = `{python} gt_f` $kN/m^2$
     \item[]$G_{steel}$ = `{python} gste_f` $kN/m^2$
     \item[]$G_{cladding}$ = `{python} gc_f` $kN/m^2$
@@ -153,30 +158,30 @@ else:
 #
 # ULS floor uniform area load
 \begin{description}
-    \item[]Typical dead load, $G_{typ}$ = $G_{tiles} + G_{steel} + G_{cladding} + G_{slab} + G_{services}$ = `{python} Gtyp_f` $kN/m^2$
-    \item[]Typical imposed load, $Q_{typ}$ = $Q_{partitions} + Q_{imposed}$ = `{python} Qtyp_f` $kN/m^2$
-    \item[]Typical load, $W_{typ}$ = $1.35\cdot G_{typ} + 1.5 \cdot Q_{typ}$ = `{python} wtyp_f` $kN/m^2$
+    \item[]Typical dead load, $G_{typ,f}$ = $G_{tiles} + G_{steel} + G_{cladding} + G_{slab} + G_{services}$ = `{python} Gtyp_f` $kN/m^2$
+    \item[]Typical imposed load, $Q_{typ,f}$ = $Q_{partitions} + Q_{imposed}$ = `{python} Qtyp_f` $kN/m^2$
+    \item[]Typical load, $W_{typ,f}$ = $1.35\cdot G_{typ,f} + 1.5 \cdot Q_{typ,f}$ = `{python} wtyp_f` $kN/m^2$
 \end{description}
 
 # ULS roof uniform area load
 \begin{description}
-    \item[]Typical dead load, $G_{typ}$ = $G_{tiles} + G_{steel} + G_{cladding} + G_{slab} + G_{services}$ = `{python} Gtyp_r` $kN/m^2$
-    \item[]Typical imposed load, $Q_{typ}$ = $Q_{imposed}$ = `{python} Qtyp_r` $kN/m^2$
-    \item[]Typical load, $W_{typ}$ = $1.35\cdot G_{typ} + 1.5 \cdot Q_{typ}$ = `{python} wtyp_r` $kN/m^2$
+    \item[]Typical dead load, $G_{typ,r}$ = $G_{tiles} + G_{steel} + G_{cladding} + G_{slab} + G_{services}$ = `{python} Gtyp_r` $kN/m^2$
+    \item[]Typical imposed load, $Q_{typ,r}$ = $Q_{imposed}$ = `{python} Qtyp_r` $kN/m^2$
+    \item[]Typical load, $W_{typ,r}$ = $1.35\cdot G_{typ,r} + 1.5 \cdot Q_{typ,r}$ = `{python} wtyp_r` $kN/m^2$
 \end{description}
 
 # Description of column geometry
 \setcounter{score}{`{python} int(score)`}
-\ifthenelse{\value{score}=1}{
+\ifthenelse{\value{score} = 0}{
 \begin{description}
     \item[]Column height, $H$ = `{python} H` $mm$
-    \item[]Horizontal to the nearest left column $L_{x, left}$ = `{python} lxl` $mm$
-    \item[]Horizontal to the nearest right column $L_{x, right}$ = `{python} lxr` $mm$
+    \item[]Horizontal to the nearest left column $L_{xl}$ = `{python} lxl` $mm$
+    \item[]Horizontal to the nearest right column $L_{xr}$ = `{python} lxr` $mm$
     \item[]Vertical spacing between columns $L_{y}$ = `{python} ly` $mm$
 \end{description}}{
 \begin{description}
     \item[]Column height, $H$ = `{python} H` $mm$
-    \item[]Horizontal spacing between columns $L_{x, left}$ = `{python} lxr` $mm$
+    \item[]Horizontal spacing between columns $L_{x}$ = `{python} lxr` $mm$
     \item[]Vertical spacing between columns $L_{y}$ = `{python} ly` $mm$
 \end{description}}
 
@@ -248,7 +253,7 @@ else:
   \item[]Shear modulus: G = `{python} G` $N\cdot mm^{-2}$
 \end{description}
 
-# Section Properties of `{python} section`
+# Section Properties of UC `{python} section`
 \begin{multicols}{2}
 \begin{description}
   \item[] Overall depth, $h$ = `{python} h` mm  
@@ -284,26 +289,43 @@ else:
 # eccentricity
 ecc_y = (100 + h/2)
 ecc_z = (100 + tw/2)
+# Cladding load
+vclady = 0.5*1.5*qclad*H*ly*1e-6
+vcladxl = 0.5*1.5*qclad*H*lxl*1e-6
+vcladxr = 0.5*1.5*qclad*H*lxr*1e-6
 # Axial load and moment on column
-vedlf, vedlr = 0.25*wtyp_f*lxl*ly*1e-6, 0.25*wtyp_r*lxl*ly*1e-6
-vedrf, vedrr = 0.25*wtyp_f*lxr*ly*1e-6, 0.25*wtyp_r*lxr*ly*1e-6
-vedvf, vedvr = 0.25*wtyp_f*(lxl/2 + lxr/2)*ly*1e-6, 0.25*wtyp_r*(lxl/2 + lxr/2)*ly*1e-6
-vedef, veder = 0.125*wtyp_f*lxl*ly*1e-6, 0.125*wtyp_r*lxl*ly*1e-6
+if Type == 'Internal':
+  vedlf, vedlr = 0.25*wtyp_f*lxl*ly*1e-6, 0.25*wtyp_r*lxl*ly*1e-6 
+  vedrf, vedrr = 0.25*wtyp_f*lxr*ly*1e-6 , 0.25*wtyp_r*lxr*ly*1e-6 
+  vedvf, vedvr = 0.25*wtyp_f*(lxl/2 + lxr/2)*ly*1e-6, 0.25*wtyp_r*(lxl/2 + lxr/2)*ly*1e-6
+else:
+  vedlf, vedlr = 0.25*wtyp_f*lxl*ly*1e-6 + vcladxl, 0.25*wtyp_r*lxl*ly*1e-6 + vcladxl
+  vedrf, vedrr = 0.25*wtyp_f*lxr*ly*1e-6 + vcladxr, 0.25*wtyp_r*lxr*ly*1e-6 + vcladxr
+  vedvf, vedvr = 0.25*wtyp_f*(lxl/2 + lxr/2)*ly*1e-6 + vclady, 0.25*wtyp_r*(lxl/2 + lxr/2)*ly*1e-6 + vclady
+
+vedef, veder = 0.125*wtyp_f*lxl*ly*1e-6 + vcladxl, 0.125*wtyp_r*lxl*ly*1e-6 + vcladxl
+
 if Type == 'Corner':
   BC =2 
   Ned = nfloor*vedrf + vedrr + nfloor*veder + veder
   Myed = vedlf*ecc_y*1e-3
   Mzed = veder*ecc_z*1e-3
-elif Type == 'Edge':
+elif Type == 'Edge1':
   BC = 3
   Ned = nfloor*vedlf + vedlr + nfloor*vedrf + vedrr + nfloor*vedvf + vedvr
   Myed = (vedlf - vedrf)*ecc_y*1e-3
   Mzed = vedvf*ecc_z*1e-13
-else:
+elif Type == 'Internal':
   BC = 4
-  Ned = nfloor*vedlf + vedlr + nfloor*vedrf + vedrr + nfloor*vedvf + vedvr
+  Ned = nfloor*vedlf + vedlr + nfloor*vedrf + vedrr + 2*nfloor*vedvf + 2*vedvr
   Myed = (vedlf - vedrf)*ecc_y*1e-3
   Mzed = (vedvf - vedvf)*ecc_z*1e-3
+elif Type == 'Edge2':
+  BC = 5
+  Ned = nfloor*vedlf + vedlr + nfloor*vedrf + vedrr + nfloor*vedvf + vedvr
+  Myed = vedlf*ecc_z*ecc_y*1e-3
+  Mzed = (vedvf - vedvf)*1e-13
+
 ```
 
 #
@@ -312,44 +334,69 @@ else:
   \item[]Number of floors above column = `{python} num_floor`
   \item[]Eccentricity about y-axis, $e_{y}$ = $100 +\frac{h}{2}$ = `{python} ecc_y` mm
   \item[]Eccentricity about z-axis, $e_{z}$ = $100 +\frac{tw}{2}$ = `{python} ecc_z` mm
+  \item[]$Q_{clad} = 1.35\cdot Q_{clad}$
 \end{description}
+
 \setcounter{score}{`{python} int(BC)`}
+
 \ifthenelse{\value{score}=2}{
 \begin{description}
-    \item[]Reaction forces for Edge beams, 
-    \item[]Reaction from secondary beam due to floor load, $V_{ed,f}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_x\cdot L_y$ = `{python} vedrf` kN
-    \item[]Reaction from secondary beam due to roof load, $V_{ed,r}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_x\cdot L_y$ = `{python} vedrr` kN
-    \item[]Reaction from primary beam due to floor load, $V_{ed,vf} = \frac{1}{8} \cdot W_{typ,f}\cdot L_x \cdot L_y$ = `{python} vedvf` kN 
-    \item[]Reaction from primary beam due to roof load, $V_{ed,vr} = \frac{1}{8} \cdot W_{typ,r}\cdot L_x \cdot L_y$ = `{python} vedvr` kN
-    \item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\cdot (V_{ed,f} + V_{ed,vf})+ V_{ed,r} + V_{ed,vr}$ = `{python} Ned` kN
-    \item[]Design Moment about y-axis, $M_{y}$ = $V_{ed,f} \cdot e_{y}$ = `{python} Myed` kNm
-    \item[]Design Moment about z-axis, $M_{z}$ = $V_{ed,vf} \cdot e_{z}$ = `{python} Mzed` kNm
-\end{description}}{
-\ifhtennelse{\value{score}=3}{`
+  \item[]Reaction forces for edge beams, 
+  \item[]Secondary beam due to floor load, $V_{ed,f}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_x\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_x$ = `{python} vedrf` kN
+  \item[]Secondary beam due to roof load, $V_{ed,r}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_x\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_x$ = `{python} vedrr` kN
+  \item[]Primary beam due to floor load, $V_{ed,vf}$ = $\frac{1}{8} \cdot W_{typ,f}\cdot L_x \cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} vedef` kN
+  \item[]Primary beam due to roof load, $V_{ed,vr}$ = $\frac{1}{8} \cdot W_{typ,r}\cdot L_x \cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} veder` kN
+  \item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\cdot (V_{ed,f} + V_{ed,vf}) + V_{ed,r} + V_{ed,vr}$ = `{python} Ned` kN
+  \item[]Design moment about y-axis, $M_{y}$ = $V_{ed,f} \cdot e_{y}$ = `{python} Myed` kNm
+  \item[]Design moment about z-axis, $M_{z}$ = $V_{ed,vf} \cdot e_{z}$ = `{python} Mzed` kNm
+\end{description}
+}{
+\ifthenelse{\value{score}=3}{
 \begin{description}
-    \item[]Reaction forces for Perimeter beams, 
-    \item[]Left Reaction from secondary beam due to floor load, $V_{ed,lf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xl}\cdot L_y$ = `{python} vedlf` kN
-    \item[]Left Reaction from secondary beam due to roof load, $V_{ed,lr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xl}\cdot L_y$ = `{python} vedlr` kN
-    \item[]Right Reaction from secondary beam due to floor load, $V_{ed,rf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xr}\cdot L_y$ = `{python} vedrf` kN
-    \item[]Right Reaction from secondary beam due to roof load, $V_{ed,rr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xr}\cdot L_y$ = `{python} vedrr` kN
-    \item[]Reaction from primary beam due to floor load, $V_{ed,vf} = \frac{1}{4} \cdot W_{typ,f}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y$ = `{python} vedvf` kN 
-    \item[]Reaction from primary beam due to roof load, $V_{ed,vr} = \frac{1}{4} \cdot W_{typ,r}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y$ = `{python} vedvr` kN
-    \item[]Design axial load on column, $N_{ed}$ = $`{python} nfloor`\cdot (V_{ed,lf} + V_{ed,rf} + V_{ed,vf})+ V_{ed,lr} + V_{ed,rr} + V_{ed,vr}$ = `{python} Ned` kN
-    \item[]Design Moment about y-axis, $M_{y}$ = $(V_{ed,lf}-V_{ed,rf}) \cdot e_{y}$ = `{python} Myed` kNm
-    \item[]Design Moment about z-axis, $M_{z}$ = $V_{ed,vf} \cdot e_{z}$ = `{python} Mzed` kNm
-end{description}}{
+  \item[]Reaction forces for perimeter beams, 
+  \item[]Left secondary beam due to floor load, $V_{ed,lf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xl}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xl}$ = `{python} vedlf` kN
+  \item[]Left secondary beam due to roof load, $V_{ed,lr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xl}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xl}$ = `{python} vedlr` kN
+  \item[]Right secondary beam due to floor load, $V_{ed,rf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xr}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xr}$ = `{python} vedrf` kN
+  \item[]Right secondary beam due to roof load, $V_{ed,rr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xr}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xr}$ = `{python} vedrr` kN
+  \item[]Primary beam due to floor load, $V_{ed,vf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} vedvf` kN
+  \item[]Primary beam due to roof load, $V_{ed,vr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} vedvr` kN
+  \item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\cdot (V_{ed,lf} + V_{ed,rf} + V_{ed,vf}) + V_{ed,lr} + V_{ed,rr} + V_{ed,vr}$ = `{python} Ned` kN
+  \item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,lf} - V_{ed,rf}) \cdot e_{y}$ = `{python} Myed` kNm
+  \item[]Design moment about z-axis, $M_{z}$ = $V_{ed,vf} \cdot e_{z}$ = `{python} Mzed` kNm
+\end{description}
+}{
+\ifthenelse{\value{score}=4}{
 \begin{description}
-    \item[]Reaction forces for Internal beams, 
-    \item[]Left Reaction from secondary beam due to floor load, $V_{ed,lf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xl}\cdot L_y$ = `{python} vedlf` kN
-    \item[]Left Reaction from secondary beam due to roof load, $V_{ed,lr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xl}\cdot L_y$ = `{python} vedlr` kN
-    \item[]Right Reaction from secondary beam due to floor load, $V_{ed,rf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xr}\cdot L_y$ = `{python} vedrf` kN
-    \item[]Right Reaction from secondary beam due to roof load, $V_{ed,rr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xr}\cdot L_y$ = `{python} vedrr` kN
-    \item[]Reaction from primary beam due to floor load, $V_{ed,vf} = \frac{1}{4} \cdot W_{typ,f}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y$ = `{python} vedvf` kN 
-    \item[]Reaction from primary beam due to roof load, $V_{ed,vr} = \frac{1}{4} \cdot W_{typ,r}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y$ = `{python} vedvr` kN
-    \item[]Design axial load on column, $N_{ed}$ = $`{python} nfloor`\cdot (V_{ed,lf} + V_{ed,rf} + V_{ed,vf})+ V_{ed,lr} + V_{ed,rr} + V_{ed,vr}$ = `{python} Ned` kN
-    \item[]Design Moment about y-axis, $M_{y}$ = $(V_{ed,lf}-V_{ed,rf}) \cdot e_{y}$ = `{python} Myed` kNm
-    \item[]Design Moment about z-axis, $M_{z}$ = $(V_{ed,vf} - V_{ed,vf}) \cdot e_{z}$ = `{python} Mzed` kNm
-\end{description}}}
+  \item[]Reaction forces for internal beams, 
+  \item[]Secondary beam due to floor load, $V_{ed,lf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xl}\cdot L_y$ = `{python} vedlf` kN
+  \item[]Secondary beam due to roof load, $V_{ed,lr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xl}\cdot L_y$ = `{python} vedlr` kN
+  \item[]Secondary beam due to floor load, $V_{ed,rf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xr}\cdot L_y$ = `{python} vedrf` kN
+  \item[]Secondary beam due to roof load, $V_{ed,rr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xr}\cdot L_y$ = `{python} vedrr` kN
+  \item[]Primary beam due to floor load, $V_{ed,vf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y$ = `{python} vedvf` kN
+  \item[]Primary beam due to roof load, $V_{ed,vr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y$ = `{python} vedvr` kN
+  \item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\cdot (V_{ed,lf} + V_{ed,rf} + 2V_{ed,vf}) + V_{ed,lr} + V_{ed,rr} + 2V_{ed,vr}$ = `{python} Ned` kN
+  \item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,lf} - V_{ed,rf}) \cdot e_{y}$ = `{python} Myed` kNm
+  \item[]Design moment about z-axis, $M_{z}$ = $(V_{ed,vf} - V_{ed,vf}) \cdot e_{z}$ = `{python} Mzed` kNm
+\end{description}
+}{
+\ifthenelse{\value{score}=5}{
+\begin{description}
+  \item[]Reaction forces for Edge beams (type 2), 
+  \item[]Left secondary beam due to floor load, $V_{ed,lf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xl}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xl}$ = `{python} vedlf` kN
+  \item[]Left secondary beam due to roof load, $V_{ed,lr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xl}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xl}$ = `{python} vedlr` kN
+  \item[]Right secondary beam due to floor load, $V_{ed,rf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xr}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xr}$ = `{python} vedrf` kN
+  \item[]Right secondary beam due to roof load, $V_{ed,rr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xr}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xr}$ = `{python} vedrr` kN
+  \item[]Primary beam due to floor load, $V_{ed,vf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} vedvf` kN
+  \item[]Primary beam due to roof load, $V_{ed,vr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} vedvr` kN
+  \item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\cdot (V_{ed,lf} + V_{ed,rf} + V_{ed,vf}) + V_{ed,lr} + V_{ed,rr} + V_{ed,vr}$ = `{python} Ned` kN
+  \item[]Design moment about y-axis, $M_{y}$ = $V_{ed,lf} \cdot e_{z} \cdot e_{y}$ = `{python} Myed` kNm
+  \item[]Design moment about z-axis, $M_{z}$ = $(V_{ed,vf} - V_{ed,vf}) \cdot e_{z}$ = `{python} Mzed` kNm
+\end{description}
+}{
+\begin{description}
+  \item[]No matching boundary condition found for $BC$ = `{python} BC`.
+\end{description}
+}}}}
 
 {{< pagebreak >}}
 
@@ -435,7 +482,7 @@ else:
 \begin{description}
   \item[]$\chi$ = min($\chi_{y},\chi_{z}$) = `{python} chi`
   \item[]$N_{RD}$ = $\chi\cdot A\cdot f_{y}$ = `{python} Nrd` kN --- (EN 1993-1-1 :2022, Eq 8.68)
-  \item[]Maximum axial compressive force is `{python} Ned` kN.
+  \item[]$N_{ed}$ = `{python} Ned` kN.
   \item[]Therefore, `{python} output_axial`
 \end{description}
 
@@ -476,13 +523,13 @@ else:
 \begin{description}
     \item[]Critical moment, $M_{cr}$= $\frac{\pi^{2} \cdot E \cdot I_{z}}{L_{cr}^{2}} \cdot \left( \frac{I_{w}}{I_{z}} + \frac{G \cdot I_{t} \cdot L_{cr}^{2}}{\pi^{2} \cdot E \cdot I_{t}} \right)$ = `{python} Mcr` kNm
     \item[]For $\frac{h}{b}$ > 1.2 and $t_{f}$ <= 40 mm, 
-    \item[]$\alpha_{LT}$ = min($0.12\cdot \sqrt{\frac{W_{el,y}}{W_{el,z}}}$, 0.34) = `{python} alt` --- (EN 1993-1-1 :2022, Table 8.5)
+    \item[]$\alpha_{LT}$ = $\min(0.12\cdot \sqrt{\frac{W_{el,y}}{W_{el,z}}}, 0.34)$ = `{python} alt` --- (EN 1993-1-1 :2022, Table 8.5)
     \item[]$\phi_{LT}$ = $0.5\cdot(1 + \alpha_{LT}\cdot(\lambda_z - 0.2) + \lambda_z^{2})$ = `{python} phi_lt` --- (EN 1993-1-1 :2022, Eq 8.82)
-    \item[]$\chi_{LT}$ = $min(\frac{1}{\phi_{LT} + \sqrt{\phi_{LT}^{2} - \lambda_z^{2}}},1)$ = `{python} chi_lt` --- (EN 1993-1-1 :2022, Eq 8.81)
+    \item[]$\chi_{LT}$ = $\min(\frac{1}{\phi_{LT} + \sqrt{\phi_{LT}^{2} - \lambda_z^{2}}},1)$ = `{python} chi_lt` --- (EN 1993-1-1 :2022, Eq 8.81)
     \item[]Moment resistance (y-axis), $M_{brd}$ = $\frac{\chi_{LT} \cdot W_{pl,y} \cdot f_{y}}{\gamma_1}$ = `{python} Mbrd` kNm --- (EN 1993-1-1 :2022, Eq 8.79)
-    \item[]Maximum moment about y-axis, $M_{yed}$ = `{python} Myed` kNm
+    \item[]Design moment about y-axis, $M_{yed}$ = `{python} Myed` kNm
     \item[]Moment resistance (z-axis), $M_{crd,z}$ = $\frac{W_{pl,z} \cdot f_{y}}{\gamma_1}$ = `{python} Mcrdz` kNm --- (EN 1993-1-1 :2022, Eq 8.20)
-    \item[]Maximum moment about z-axis, $M_{zed}$ = `{python} Mzed` kNm
+    \item[]Design moment about z-axis, $M_{zed}$ = `{python} Mzed` kNm
     \item[]Therefore, `{python} output_moment`
 \end{description}
 
