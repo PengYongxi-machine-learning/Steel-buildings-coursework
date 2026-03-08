@@ -58,61 +58,103 @@ format:
           }
 ---
 ```{python}
-%precision 2
 import math
-# Define section choice
+%precision 2
+# Setup
 section = '203 x 203x 127'
-lx_list = [6000, 8250, 7500]
-Type_list = ['Corner', 'Perimeter1', 'Perimeter2', 'Internal']
-ixl = 0
-ixr = 0
-it = 0
-floor = 1
+lx_list = [6000, 8250, 7500, 1500, 3000, 2750, 3750, 1875]
+Type_list = ['Edge', 'Perimeter1', 'Perimeter2', 'Internal', 'Corner']
 
-# Start of desing
+# Select indices for geometry and scenario
+ixl = 0     # Index for primary lx
+ixs = 3     # Index for secondary lx
+it = 0      # Scenario index
 Type = Type_list[it]
 lxl = lx_list[ixl]
-lxr = lx_list[ixr] 
-H = 6000
-ly = 13500
-# dead floor
+s_lx = lx_list[ixs]
+
+# Scenario in primary and secondary beams
+if Type == 'Edge':
+    Typep = 'Perimeter'
+    Types = 'Edge'
+elif Type == 'Perimeter1':
+    Typep = 'Perimeter'
+    Types = 'Internal'
+elif Type == 'Perimeter2':
+    Typep = 'Internal'
+    Types = 'Edge'
+else:
+    Typep = 'Internal'
+    Types = 'Internal'
+
+# Heights for Floor and Roof
+H_f = 6000
+H_r = 4000
+
+# Dead floor
 gt_f = 0.7
 gs_f = 3.38
 gc_f = 0.5
 gste_f = 0.3
 gser_f = 1.4
-# impose floor
+
+# Impose floor
 qpar_f = 1.0
 qimp_f = 4.0
-if Type == 'Internal':
-  qclad = 0.0
-else:
-  qclad = 1.2
+qcl = 1.2
 
-# dead roof
+# Dead roof
 gt_r = 1.0
 gs_r = 3.38
 gc_r = 0.5
 gste_r = 0.2
 gser_r = 1.0
-#impose roof
+
+# Impose roof
 qimp_r = 1.5
 
-# Define ULS floor load
-Gtyp_f = gt_f + gs_f + gc_f + gste_f + gser_f
-Qtyp_f = qpar_f + qimp_f
-wtyp_f = 1.35*Gtyp_f + 1.5*Qtyp_f
+# ULS loads
+wtyp_f = 1.35 * (gt_f + gs_f + gc_f + gste_f + gser_f) + 1.5 * (qpar_f + qimp_f)
+wtyp_r = 1.35 * (gt_r + gs_r + gc_r + gste_r + gser_r) + 1.5 * qimp_r
 
-# Define ULS roof load
-Gtyp_r = gt_r + gs_r + gc_r + gste_r + gser_r
-Qtyp_r = qimp_r
-wtyp_r = 1.35*Gtyp_r + 1.5*Qtyp_r
-v = 1e-6*wtyp_f*ly*lxl/8 + 1.5*qclad*lxl*H*1e-6/2
-print(wtyp_f, ly, lxl, qclad)
-if Type == 'Corner':
-  score = 1
+# Cladding loads specific to beam types & levels
+p_qclad_f = 0.0 if Typep == 'Internal' else 1.5 * qcl * H_f * 1e-3
+s_qclad_f = 0.0 if Types == 'Internal' else 1.5 * qcl * H_f * 1e-3
+
+
+# Primary beam Ved
+p_ly = 13500 / 2 if Typep == 'Perimeter' else 13500 
+SB = 2 if lxl == 8250 else 1
+p_lb = lxl
+
+if SB == 1:
+    # Floor Calculations
+    ptotal_f = 1e-6 * wtyp_f * p_lb * p_ly / 2
+    p_Ved_f = ptotal_f / 2 + p_qclad_f * (p_lb * 1e-3) / 2
+    
+    # Roof Calculations
+    ptotal_r = 1e-6 * wtyp_r * p_lb * p_ly / 2
+    p_Ved_r = ptotal_r / 2
 else:
-  score = 0
+    # Floor Calculations
+    ptotal_f = 1e-6 * wtyp_f * p_lb * p_ly / 3
+    p_Ved_f = ptotal_f + p_qclad_f * (lxl * 1e-3) / 2
+    # Roof Calculations
+    ptotal_r = 1e-6 * wtyp_r * p_lb * p_ly / 3
+    p_Ved_r = ptotal_r
+
+# Ssecondary beam Ved
+s_ly = 13500
+qtyp_applied_f = wtyp_f * s_lx * 1e-3
+qtyp_applied_r = wtyp_r * s_lx * 1e-3
+if Types == 'Edge':
+    qtotal_f = s_qclad_f + qtyp_applied_f
+    qtotal_r =  qtyp_applied_r
+else:
+    qtotal_f = qtyp_applied_f
+    qtotal_r = qtyp_applied_r
+s_Ved_f = qtotal_f * (s_ly * 1e-3) / 2
+s_Ved_r = qtotal_r * (s_ly * 1e-3) / 2
 ```
 
 \Large 
@@ -137,7 +179,7 @@ else:
     \item[]$G_{services}$ = `{python} gser_f` $kN/m^2$
     \item[]$Q_{partitions}$ = `{python} qpar_f` $kN/m^2$
     \item[]$Q_{imposed}$ = `{python} qimp_f` $kN/m^2$
-    \item[]$Q_{cladding}$ = `{python} qclad` $kN/m^2$
+    \item[]$Q_{cladding}$ = `{python} qcl` $kN/m^2$
 \end{description}
 \end{multicols}
 
@@ -171,19 +213,9 @@ else:
 \end{description}
 
 # Description of column geometry
-\setcounter{score}{`{python} int(score)`}
-\ifthenelse{\value{score} = 0}{
 \begin{description}
-    \item[]Column height, $H$ = `{python} H` $mm$
-    \item[]Horizontal to the nearest left column $L_{xl}$ = `{python} lxl` $mm$
-    \item[]Horizontal to the nearest right column $L_{xr}$ = `{python} lxr` $mm$
-    \item[]Vertical spacing between columns $L_{y}$ = `{python} ly` $mm$
-\end{description}}{
-\begin{description}
-    \item[]Column height, $H$ = `{python} H` $mm$
-    \item[]Horizontal spacing between columns $L_{x}$ = `{python} lxr` $mm$
-    \item[]Vertical spacing between columns $L_{y}$ = `{python} ly` $mm$
-\end{description}}
+    \item[]Column height of the floor, $H$ = `{python} H` $mm$
+\end{description}
 
 {{< pagebreak >}}
 
@@ -289,43 +321,28 @@ else:
 # eccentricity
 ecc_y = (100 + h/2)
 ecc_z = (100 + tw/2)
-# Cladding load
-vclady = 0.5*1.5*qclad*H*ly*1e-6
-vcladxl = 0.5*1.5*qclad*H*lxl*1e-6
-vcladxr = 0.5*1.5*qclad*H*lxr*1e-6
+
 # Axial load and moment on column
-if Type == 'Internal':
-  vedlf, vedlr = 0.25*wtyp_f*lxl*ly*1e-6, 0.25*wtyp_r*lxl*ly*1e-6 
-  vedrf, vedrr = 0.25*wtyp_f*lxr*ly*1e-6 , 0.25*wtyp_r*lxr*ly*1e-6 
-  vedvf, vedvr = 0.25*wtyp_f*(lxl/2 + lxr/2)*ly*1e-6, 0.25*wtyp_r*(lxl/2 + lxr/2)*ly*1e-6
-else:
-  vedlf, vedlr = 0.25*wtyp_f*lxl*ly*1e-6 + vcladxl, 0.25*wtyp_r*lxl*ly*1e-6 + vcladxl
-  vedrf, vedrr = 0.25*wtyp_f*lxr*ly*1e-6 + vcladxr, 0.25*wtyp_r*lxr*ly*1e-6 + vcladxr
-  vedvf, vedvr = 0.25*wtyp_f*(lxl/2 + lxr/2)*ly*1e-6 + vclady, 0.25*wtyp_r*(lxl/2 + lxr/2)*ly*1e-6 + vclady
-
-vedef, veder = 0.125*wtyp_f*lxl*ly*1e-6 + vcladxl, 0.125*wtyp_r*lxl*ly*1e-6 + vcladxl
-
 if Type == 'Corner':
   BC =2 
-  Ned = nfloor*vedrf + vedrr + nfloor*veder + veder
-  Myed = vedlf*ecc_y*1e-3
-  Mzed = veder*ecc_z*1e-3
+  Ned = nfloor*p_Ved_f + p_Ved_r + nfloor*s_Ved_f + s_Ved_r
+  Myed = p_Ved_f*ecc_y*1e-3
+  Mzed = s_Ved_f*ecc_z*1e-3
 elif Type == 'Edge1':
   BC = 3
-  Ned = nfloor*vedlf + vedlr + nfloor*vedrf + vedrr + nfloor*vedvf + vedvr
-  Myed = (vedlf - vedrf)*ecc_y*1e-3
-  Mzed = vedvf*ecc_z*1e-13
+  Ned = nfloor*p_Ved_f + p_Ved_r + 2*nfloor*s_Ved_f + 2*s_Ved_r
+  Myed = (s_Ved_f - s_Ved_f)*ecc_y*1e-3
+  Mzed = p_Ved_f*ecc_z*1e-13
 elif Type == 'Internal':
   BC = 4
-  Ned = nfloor*vedlf + vedlr + nfloor*vedrf + vedrr + 2*nfloor*vedvf + 2*vedvr
-  Myed = (vedlf - vedrf)*ecc_y*1e-3
-  Mzed = (vedvf - vedvf)*ecc_z*1e-3
+  Ned = 2*nfloor*p_Ved_f + 2*p_Ved_r + 2*nfloor*s_Ved_f + 2*s_Ved_r
+  Myed = (p_Ved_f - p_Ved_f)*ecc_y*1e-3
+  Mzed = (s_Ved_f - s_Ved_f)*ecc_z*1e-3
 elif Type == 'Edge2':
   BC = 5
-  Ned = nfloor*vedlf + vedlr + nfloor*vedrf + vedrr + nfloor*vedvf + vedvr
-  Myed = vedlf*ecc_z*ecc_y*1e-3
-  Mzed = (vedvf - vedvf)*1e-13
-
+  Ned =  nfloor*s_Ved_f + s_Ved_r + 2*pfloor*s_Ved_f + 2*p_Ved_r
+  Myed = p_Ved_f*ecc_y*1e-3
+  Mzed = (s_Ved_f - s_ved_f)*ecc_z*1e-13
 ```
 
 #
@@ -334,7 +351,7 @@ elif Type == 'Edge2':
   \item[]Number of floors above column = `{python} num_floor`
   \item[]Eccentricity about y-axis, $e_{y}$ = $100 +\frac{h}{2}$ = `{python} ecc_y` mm
   \item[]Eccentricity about z-axis, $e_{z}$ = $100 +\frac{tw}{2}$ = `{python} ecc_z` mm
-  \item[]$Q_{clad} = 1.35\cdot Q_{clad}$
+  \item[]$Q_{clad} = 1.35\cdot Q_{clad}$ = `{python} qclad` $kN/m$
 \end{description}
 
 \setcounter{score}{`{python} int(BC)`}
@@ -342,7 +359,7 @@ elif Type == 'Edge2':
 \ifthenelse{\value{score}=2}{
 \begin{description}
   \item[]Reaction forces for edge beams, 
-  \item[]Secondary beam due to floor load, $V_{ed,f}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_x\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_x$ = `{python} vedrf` kN
+  \item[]Secondary beam due to floor load, $V_{s,f}$ = $\frac{1}{4} \cdot q_{typ,f}\cdot L_x\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} vedrf` kN
   \item[]Secondary beam due to roof load, $V_{ed,r}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_x\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_x$ = `{python} vedrr` kN
   \item[]Primary beam due to floor load, $V_{ed,vf}$ = $\frac{1}{8} \cdot W_{typ,f}\cdot L_x \cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} vedef` kN
   \item[]Primary beam due to roof load, $V_{ed,vr}$ = $\frac{1}{8} \cdot W_{typ,r}\cdot L_x \cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} veder` kN
