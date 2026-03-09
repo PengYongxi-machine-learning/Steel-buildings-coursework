@@ -48,23 +48,38 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Floor 8 - Right Perimeter Design of Columns}
+                \centerline{ Lateral Deflection Calculation }
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
-            & & \textbf{Checked by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
+            & & \textbf{Checked by} \quad  Vincent Chan & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
             \end{tabularx}
             \egroup
           }
 ---
+\Large 
+\linespread{1.4}
+\selectfont
+
 ```{python}
+%precision 2
+Ac1 = 9000
+Ac2 = 9000
+Ad = 32100
+Lh = 8.25
+dfactor = 1.35
+ifactor = 1.05
+wfactor = 1.5
+
+#Material properties
+E = 210000
+
+# Height and length of the building
 L = 54
 Hr = 4
 Hg = 6
 H = 8*Hr + Hg
-dfactor = 1.35
-ifactor = 1.05
-wfactor = 1.5
+
 # Dead floor
 gt_f = 0.7
 gs_f = 3.38
@@ -92,6 +107,7 @@ wtyp_r = dfactor * Gtyp_r + ifactor * Qtyp_r
 # Wind load
 wk = 1.3
 ```
+
 #
 # Floor Loads
 \begin{multicols}{2}
@@ -130,7 +146,7 @@ wk = 1.3
 {{< pagebreak >}}
 ```{python}
 # wind load per floor
-Wtotal = wfactor*L*H*wk
+wtotal = wfactor*L*H*wk
 Fb = wtotal/4
 wudl = Fb/H
 wr = wudl*Hr*0.5
@@ -140,13 +156,154 @@ wf2 = wudl*Hg
 # floor load
 A = (60+45)*54/2
 Fstorey = wtyp_f*A
-EHF1 = 0.5*0.005*Fstorey
+EHF1 = 0.25*0.005*Fstorey
 Froof = wtyp_r*A
-EHF2 = 0.5*0.05*Froof
+EHF2 = 0.25*0.005*Froof
 
 #load per floor
-fg = wf1 + EHf1
-ff = wf2 + EHF1
-fr = wr + EHf2
+ff = wf1 + EHF1
+fg = wf2 + EHF1
+fr = wr + EHF2
 ```
+
 #
+# Wind load per floor
+\begin{description}
+    \item[]Total area of the wind face = `{python} L*H` $m^2$
+    \item[]$W_{total}$ = `{python} wtotal` $kN$
+    \item[]wind load per bracing, $F_b$ = `{python} Fb` $kN$
+    \item[]wind load per meter, $W_{udl}$ = `{python} wudl` $kN/m$
+    \item[]wind load on roof, $W_r$ = `{python} wr` $kN$
+    \item[]wind load on 4 meter floor, $W_{f1}$ = `{python} wf1` $kN$
+    \item[]wind load on 6 meter floor, $W_{f2}$ = `{python} wf2` $kN$
+\end{description}
+
+# Dead and imposed load per floor
+\begin{description}
+    \item[]Area of floor, A = `{python} A` $m^2$
+    \item[]Total floor load, $F_{storey}$ = $W_{typ, f}\cdot A$ =`{python} Fstorey` $kN$
+    \item[]Total roof load, $F_{roof}$ = $W_{typ, r}\cdot A$ = `{python} Froof` $kN$
+    \item[]Equivalent horizontal force on floor, $EHF_1$ = `{python} EHF1` $kN$
+    \item[]Equivalent horizontal force on roof, $EHF_2$ = `{python} EHF2` $kN$
+\end{description}
+
+{{< pagebreak >}}
+
+#
+# Total load per floor
+\begin{description}
+    \item[]Total load on 4 meter floor, $F_f$ = `{python} ff` $kN$
+    \item[]Total load on 6 meter floor, $F_g$ = `{python} fg` $kN$
+    \item[]Total load on roof, $F_r$ = `{python} fr` $kN$
+\end{description}
+
+```{python}
+import numpy as np
+import pandas as pd
+import math
+def sci(value):
+    exp_num = math.floor(math.log10(abs(value)))
+    base = value / (10 ** exp_num)
+    return value, base, exp_num
+
+# Define storey
+storey = np.array([9,8,7,6,5,4,3,2,1])
+
+# Nodal force list
+Nodal_forces = []
+nodel_initial = fr
+for i in range(1, 10):
+    if i <= 8:
+        Nodal_forces.append(nodel_initial)
+        nodel_initial = ff
+    else:
+        nodel_initial = fg
+        Nodal_forces.append(nodel_initial)
+nodal_force = np.array(Nodal_forces)
+
+# Total shear loadlist
+Total_shear = []
+shear_initial = fr
+for i in range(1, 10):
+    if i <= 8:
+        Total_shear.append(shear_initial)
+        shear_initial += ff
+    else:
+        shear_initial += fg-ff
+        Total_shear.append(shear_initial)
+total_shear = np.array(Total_shear)
+
+# Total axial load list
+Total_load = []
+load_initial = Froof/4
+for i in range(1, 10):
+    Total_load.append(load_initial)
+    load_initial += Fstorey/4
+total_load = np.array(Total_load)
+
+# Diagonal column geometry
+Hs = np.array([4,4,4,4,4,4,4,4,6])
+Ld = np.sqrt(Hs**2 + Lh**2)
+
+# Moment
+moment_amr = 38 + 4 -np.cumsum(Hs)
+M = np.sum(total_shear * moment_amr)
+I, Ib, Ie = sci(Ac1*(Lh*1e3)**2/2)
+phi, phib, phie = sci(M*1e6/(E*I))
+a = 9 - storey
+```
+
+# Parameters for deflection calculation
+\begin{description}
+    \item[]Interstorey height = $H_s$ 
+    \item[]Elastic modulus, $E$ = `{python} E` $MPa$
+    \item[]Area of the diagonal column, $A_d$ = `{python} Ad` $mm^2$
+    \item[]Area of vertical column, $A_{c1}$ = `{python} Ac1` $mm^2$
+    \item[]Length of diagonal column at the ground floor, $L_h$ = `{python} Ld[-1]` $m$
+    \item[]Length of the diagonal column for other floors, $L_d$ = `{python} Ld[0]` $m$
+    \item[] Resultant moment, $M$ = `{python} M` $kN\cdot m$
+    \item[] Moment of inertia of the vertical column, $I$ = `{python} Ib` $\times 10^{`{python} Ie`}$ $mm^4$
+    \item[] Flexural deflection coefficient, $\phi$ =  `{python} phib` $\times 10^{`{python} phie`}$ $mm$
+    
+\end{description}
+
+{{< pagebreak >}}
+
+#
+
+```{python}
+#| output: asis
+import pandas as pd
+n = len(storey)
+delta_sh = total_shear*Ld*1e6/(Ad*E)*(Ld/Hs)
+delta_f = 1e6*(phi*Hs**2)/(6*n)*(3*n**2 - 3*a**2 - 3*a - 1)
+delta_t = delta_sh + delta_f
+a_cr = (total_shear*Hs*1e3)/(total_load*delta_t)
+# Build one table from all result arrays.
+df = pd.DataFrame({
+    'Storey' : storey,
+    r"$H_s$ (mm)": Hs,
+    r"$F$ (kN)": nodal_force,
+    r"$V_{ed}$ (kN)": total_shear,
+    r"$N_{ed}$ (kN)": total_load,
+    r"$\delta_{sh}$ (mm)": delta_sh,
+    r"$\delta_f$ (mm)": delta_f,
+    r"$\delta_t$ (mm)": delta_t,
+    r"$\alpha_{cr}$": a_cr
+})
+
+# Generate LaTeX table with custom formatting
+latex_table = df.to_latex(
+    index=False,
+    float_format="%.2f",
+    column_format="|c|c|c|c|c|c|c|c|c|c|",
+    escape=False
+)
+
+# Wrap with small font and tight spacing
+print(r"\normalfont")
+print(r"\setlength{\tabcolsep}{8pt}")
+print(latex_table)
+
+```
+Note: $\alpha_{cr} = \frac{V_{ed}H_s}{N_{ed}\delta_t}$
