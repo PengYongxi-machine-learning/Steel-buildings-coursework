@@ -339,7 +339,7 @@ Notes:
     \item[1.]$\delta_{sh} = \frac{V_{ed}L_d}{A_dE}\cdot(\frac{L_d}{L_h})^2$  
     \item[2.]$\delta_f = \frac{\phi H_s^2}{6n}(3n^2 - 3a^2 - 3a - 1)$  
     \item[3.]n = 9, for 9 storeys 
-    \item[4.]a = 9 - storey number
+    \item[4.]a = 9 - storey number (first column)
     \item[5.]$\delta_t = \delta_{sh} + \delta_f$ 
     \item[6.]$\alpha_{cr} = \frac{V_{ed}H_s}{N_{ed}\delta_t}$ 
 \end{description}
