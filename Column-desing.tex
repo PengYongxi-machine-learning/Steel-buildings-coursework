@@ -1,0 +1,491 @@
+% Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  letterpaper,
+  DIV=11,
+  numbers=noendperiod]{scrartcl}
+\usepackage{xcolor}
+\usepackage[top=5mm,left=5mm,right=5mm,bottom=20mm,headheight=35mm,headsep=5mm,includehead=true]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+% Make \paragraph and \subparagraph free-standing
+\makeatletter
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\makeatother
+
+
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+
+
+
+
+
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+ 
+
+
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{multicol}
+\usepackage{ifthen}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\newcounter{score}
+
+\fancyhead[C]{
+  \noindent
+  \bgroup
+  \def\arraystretch{1.4}
+  \begin{tabularx}{\textwidth}{|p{5.5cm}|p{1.8cm}|X|p{1.2cm}|p{1.8cm}|}
+  \hline
+  \multirow{5}{5.5cm}{
+      \vspace*{1mm}
+      \includegraphics[width=4.5cm]{logo} \\
+      \fontsize{6pt}{7pt}\selectfont
+      \textbf{CIVIL \& ENVIRONMENTAL ENGINEERING,}\\
+      SKEMPTON BUILDING, IMPERIAL COLLEGE\\
+      LONDON, SOUTH KENSINGTON CAMPUS,\\
+      LONDON SW7 2AZ.\\[3mm]
+      \normalsize\textbf{CALCULATION SHEET}
+  }
+  & \textbf{Job No.} & & \textbf{Sheet} & \textbf{Ref} \\ \cline{2-5}
+  & \textbf{Job Title} & Steel Design Coursework & \multicolumn{2}{l|}{\thepage\ of \pageref{LastPage}} \\ \cline{2-5}
+  & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
+      \textbf{Subject} \newline
+      \vspace*{1mm}
+      \centerline{Floor 1 - Right Edge Design of Columns}
+      \vspace*{1mm}
+  } \\ \cline{2-5}
+  & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
+  & & \textbf{Checked by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
+  \end{tabularx}
+  \egroup
+}
+\KOMAoption{captions}{tableheading}
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Table of contents}
+\else
+  \newcommand\contentsname{Table of contents}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{List of Figures}
+\else
+  \newcommand\listfigurename{List of Figures}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{List of Tables}
+\else
+  \newcommand\listtablename{List of Tables}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figure}
+\else
+  \newcommand\figurename{Figure}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Table}
+\else
+  \newcommand\tablename{Table}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+
+\author{}
+\date{}
+\begin{document}
+
+
+\Large 
+\linespread{1.4}
+\selectfont
+
+\section{}\label{section}
+
+\section{}\label{section-1}
+
+\section{}\label{section-2}
+
+\section{}\label{section-3}
+
+\section{}\label{section-4}
+
+\section{}\label{section-5}
+
+\section{Floor Loads}\label{floor-loads}
+
+\begin{multicols}{2}
+\begin{description}
+    \item[]$G_{tiles}$ = 0.70 $kN/m^2$
+    \item[]$G_{steel}$ = 0.30 $kN/m^2$
+    \item[]$G_{cladding}$ = 0.50 $kN/m^2$
+    \item[]$G_{slab}$ = 3.38 $kN/m^2$
+    \item[]$G_{services}$ = 1.40 $kN/m^2$
+    \item[]$Q_{partitions}$ = 1.00 $kN/m^2$
+    \item[]$Q_{imposed}$ = 4.00 $kN/m^2$
+    \item[]$Q_{cladding}$ = 1.20 $kN/m^2$
+\end{description}
+\end{multicols}
+
+\section{Roof Loads}\label{roof-loads}
+
+\begin{multicols}{2}
+\begin{description}
+    \item[]$G_{tiles}$ = 1.00 $kN/m^2$
+    \item[]$G_{steel}$ = 0.20 $kN/m^2$
+    \item[]$G_{cladding}$ = 0.50 $kN/m^2$
+    \item[]$G_{slab}$ = 3.38 $kN/m^2$
+    \item[]$G_{services}$ = 1.00 $kN/m^2$
+    \item[]$Q_{imposed}$ = 1.50 $kN/m^2$
+\end{description}
+\end{multicols}
+
+\newpage{}
+
+\section{}\label{section-6}
+
+\section{ULS floor uniform area load}\label{uls-floor-uniform-area-load}
+
+\begin{description}
+    \item[]Typical dead load, $G_{typ,f}$ = $G_{tiles} + G_{steel} + G_{cladding} + G_{slab} + G_{services}$ = 6.28 $kN/m^2$
+    \item[]Typical imposed load, $Q_{typ,f}$ = $Q_{partitions} + Q_{imposed}$ = 5.00 $kN/m^2$
+    \item[]Typical load, $W_{typ,f}$ = $1.35\cdot G_{typ,f} + 1.5 \cdot Q_{typ,f}$ = 15.98 $kN/m^2$
+\end{description}
+
+\section{ULS roof uniform area load}\label{uls-roof-uniform-area-load}
+
+\begin{description}
+    \item[]Typical dead load, $G_{typ,r}$ = $G_{tiles} + G_{steel} + G_{cladding} + G_{slab} + G_{services}$ = 6.08 $kN/m^2$
+    \item[]Typical imposed load, $Q_{typ,r}$ = $Q_{imposed}$ = 1.50 $kN/m^2$
+    \item[]Typical load, $W_{typ,r}$ = $1.35\cdot G_{typ,r} + 1.5 \cdot Q_{typ,r}$ = 10.46 $kN/m^2$
+\end{description}
+
+\section{According to previous beam calculation
+sheet}\label{according-to-previous-beam-calculation-sheet}
+
+\begin{description}
+    \item[]Column height of the floor, $H$ = 6000 $mm$
+    \item[]Primary reaction force $V_{ed,p} =\frac{1}{2}\cdot W_{tpy}\cdot L_{x}\cdot L_{y} + \frac{1}{2}\cdot Q_{clad}\cdot L_x \cdot H$
+    \item[]Secondary reaction force $V_{ed,s} = \frac{q_{uls}\cdot L_y}{2}$, $q_{uls}$ = $W_{tpy}\cdot L_x + 1.5\cdot Q_{clad}\cdot H$
+    \item[]For roof case, the load of cladding will be removed
+\end{description}
+
+\newpage{}
+
+\section{}\label{section-7}
+
+\section{Material Properties}\label{material-properties}
+
+\begin{description}
+  \item[]Ultimate strength: $f_{u}$ = 500.00 $N\cdot mm^{-2}$  
+  \item[]Yield strength: $f_{y}$ = 355.00 $N \cdot mm^{-2}$  
+  \item[]Young modulus: E = 210000 $N\cdot mm^{-2}$  
+  \item[]Shear modulus: G = 81000 $N\cdot mm^{-2}$
+\end{description}
+
+\section{Section Properties of UC 203 x 203x
+127}\label{section-properties-of-uc-203-x-203x-127}
+
+\begin{multicols}{2}
+\begin{description}
+  \item[] Overall depth, $h$ = 241.40 mm  
+  \item[] Width of section, $b$ = 213.90 mm  
+  \item[] Web thickness, $t_{w}$ = 18.10 mm  
+  \item[] Flange thickness, $t_{f}$ = 30.10 mm  
+  \item[] Depth between fillet, $h_{w}$ = 160.80 mm  
+  \item[] Root radius, $r$ = 10.20 mm  
+  \item[] Area of section, $A$ = 1.62 $\cdot 10^{4}$ $mm^{2}$ 
+  \item[] 2nd moment Y-Y, $I_{y}$ = 1.54 $\cdot 10^{8}$ $mm^{4}$  
+  \item[] 2nd moment Z-Z, $I_{z}$ = 4.92 $\cdot 10^{7}$ $mm^{4}$  
+  \item[] Radius of gyration Y-Y, $i_{y}$ = 97.50 mm  
+  \item[] Radius of gyration Z-Z, $i_{z}$ = 55.00 mm  
+  \item[] Elastic modulus Y-Y, $W_{el,y}$ = 1.28 $\cdot 10^{6}$ $mm^{3}$  
+  \item[] Elastic modulus Z-Z, $W_{el,z}$ = 4.60 $\cdot 10^{5}$ $mm^{3}$  
+  \item[] Plastic modulus Y-Y, $W_{pl,y}$ = 1.52 $\cdot 10^{6}$ $mm^{3}$  
+  \item[] Plastic modulus Z-Z, $W_{pl,z}$ = 7.04 $\cdot 10^{5}$ $mm^{3}$  
+  \item[] Warping constant, $I_{w}$ = 5.49 $\cdot 10^{11}$ $mm^{6}$  
+  \item[] Torsional constant, $I_{t}$ = 4.27 $\cdot 10^{6}$   $mm^{4}$  
+\end{description}
+\end{multicols}
+
+\newpage{}
+
+\section{}\label{section-8}
+
+\section{Design axial load and moment on
+column}\label{design-axial-load-and-moment-on-column}
+
+\begin{description}
+  \item[]Number of floors above column = 8
+  \item[]Eccentricity about y-axis, $e_{y}$ = $100 +\frac{h}{2}$ = 220.70 mm
+  \item[]Eccentricity about z-axis, $e_{z}$ = $100 +\frac{tw}{2}$ = 109.05 mm
+  \item[]$Q_{clad} = 1.35\cdot Q_{clad}$ = 10.80 $kN/m$
+\end{description}
+
+\setcounter{score}{2}
+
+\ifthenelse{\value{score}=2}{
+\begin{description}
+  \item[]Reaction forces for beams connected to edge column, 
+  \item[]Secondary beam due to floor load, $V_{ed,sf}$ =  275.12 kN
+  \item[]Secondary beam due to roof load, $V_{ed,sr}$ = 132.36 kN
+  \item[]Primary beam due to floor load, $V_{ed,pf}$ = 242.72 kN
+  \item[]Primary beam due to roof load, $V_{ed,pr}$  = 132.36 kN
+  \item[]Design axial load, $N_{ed}$ = $7.50\cdot (V_{ed,pf} + V_{ed,sf}) + V_{ed,sr} + V_{ed,pr}$ = 4148.54 kN
+  \item[]Design moment about y-axis, $M_{y}$ = $V_{ed,pf} \cdot e_{y}$ = 53.57 kNm
+  \item[]Design moment about z-axis, $M_{z}$ = $V_{ed,sf} \cdot e_{z}$ = 30.00 kNm
+\end{description}
+}{
+\ifthenelse{\value{score}=3}{
+\begin{description}
+  \item[]Reaction forces for beams connected to perimeter column, 
+  \item[]Secondary beam due to floor load, $V_{ed,sf}$ =  275.12 kN
+  \item[]Secondary beam due to roof load, $V_{ed,sr}$ = 132.36 kN
+  \item[]Primary beam due to floor load, $V_{ed,pf}$ = 242.72 kN
+  \item[]Primary beam due to roof load, $V_{ed,pr}$  = 132.36 kN
+  \item[]Design axial load, $N_{ed}$ = $7.50\cdot (V_{ed,pf} + 2\cdot V_{ed,pf}) + V_{ed,pr} + V_{ed,sr}$ = 4148.54 kN
+  \item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,sf} - V_{ed,sf}) \cdot e_{y}$ = 53.57 kNm
+  \item[]Design moment about z-axis, $M_{z}$ = $V_{ed,pf} \cdot e_{z}$ = 30.00 kNm
+\end{description}
+}{
+\ifthenelse{\value{score}=4}{
+\begin{description}
+  \item[]Reaction forces for beams connected to internal column, 
+  \item[]Secondary beam due to floor load, $V_{ed,sf}$ =  275.12 kN
+  \item[]Secondary beam due to roof load, $V_{ed,sr}$ = 132.36 kN
+  \item[]Primary beam due to floor load, $V_{ed,pf}$ = 242.72 kN
+  \item[]Primary beam due to roof load, $V_{ed,pr}$  = 132.36 kN
+  \item[]Design axial load, $N_{ed}$ = $27.50\cdot(V_{ed,pf} + V_{ed,sf}) + 2V_{ed,pr} + 2V_{ed,sr}$ = 4148.54 kN
+  \item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,sf} - V_{ed,sf}) \cdot e_{y}$ = 53.57 kNm
+  \item[]Design moment about z-axis, $M_{z}$ = $(V_{ed,pf} - V_{ed,pf}) \cdot e_{z}$ = 30.00 kNm
+\end{description}
+}{
+\ifthenelse{\value{score}=5}{
+\begin{description}
+  \item[]Reaction forces for Perimeter beams (type 2), 
+  \item[]Reaction forces for beams connected to internal column, 
+  \item[]Secondary beam due to floor load, $V_{ed,sf}$ =  275.12 kN
+  \item[]Secondary beam due to roof load, $V_{ed,sr}$ = 132.36 kN
+  \item[]Primary beam due to floor load, $V_{ed,pf}$ = 242.72 kN
+  \item[]Primary beam due to roof load, $V_{ed,pr}$  = 132.36 kN
+  \item[]Design axial load, $N_{ed}$ = $27.50\cdot (V_{ed,sf} + V_{ed,pf}) + V_{ed,sr} + V_{ed,pr}$ = 4148.54 kN
+  \item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,sf}- V_{ed,sf})\cdot e_{y}$ = 53.57 kNm
+  \item[]Design moment about z-axis, $M_{z}$ = $V_{ed,pf}\cdot e_{z}$ = 30.00 kNm
+\end{description}
+}{
+\begin{description}
+  \item[]No matching boundary condition found for $BC$ = 2.
+\end{description}
+}}}}
+
+\newpage{}
+
+\section{}\label{section-9}
+
+\section{Section Classification}\label{section-classification}
+
+According to EN 1993-1-1:2022 Eq 5.1, \(\epsilon\) =
+\(\sqrt{\frac{235}{f_{y}}}\) = 0.81
+
+\begin{multicols}{2}
+\begin{description}
+  \item[]$c_{w}$ = $\frac{(b-t_{w}-2\cdot r)}{2}$ = 160.80  
+  \item[] $\frac{c_{w}}{t_{w}}$ = 8.88
+  \item[]Class 1 limit for web, 72 $\epsilon $ = 22.78
+  \item[]$c_{f}$ = $h_{w}$ = 87.70 
+  \item[]$\frac{c_{f}}{t_{f}}$ = 2.91
+  \item[]Class 1 limit for flange, 9 $\epsilon$ = 7.32
+\end{description}  
+\end{multicols}
+
+Since 8.88 \textless{} 22.78 and 2.91 \textless{} 7.32, the section
+belongs to class 1
+
+\section{Buckling resistance about y-y
+axis}\label{buckling-resistance-about-y-y-axis}
+
+\begin{description}
+  \item[]$L_{cr,y}$ = 6000 mm
+  \item[]$N_{cr,y}$ = $\frac{\pi^{2}\cdot E\cdot I_{y}}{{L_{cr,y}}^{2}}$ = 8866.19 kN
+  \item[]$\lambda_{y}$ =  $\sqrt{\frac{N_{Rk}}{N_{cr,y}}}$ = $\sqrt{\frac{A\cdot f_{y}}{N_{cr,y}}}$ = 0.81 --- (EN 1993-1-1 :2022, Eq 8.69)
+  \item[]$\frac{h}{b}$ = 1.13 < 1.2
+  \item[]$t_{f}$ = 30.10 mm < 100~mm
+  \item[]Use buckling curve B,  $\alpha_{y}$ = 0.34 --- (EN 1993-1-1 :2022, Table 8.2)
+  \item[]$\phi_{y}$ = $0.5 \cdot (1 + \alpha_{y} \cdot (\lambda_{y} - 0.2) + {\lambda_{y}}^{2})$ = 0.93 --- (EN 1993-1-1 :2022, Eq 8.74)
+  \item[]$\chi_{y}$ = $\frac{1}{\phi_{y} + \sqrt{{\phi_{y}}^{2} - {\lambda_{y}}^{2}}}$ = 0.72 --- (EN 1993-1-1 :2022, Eq 8.73)
+\end{description}
+
+\newpage{}
+
+\section{}\label{section-10}
+
+\section{Buckling resistance about z-z
+axis}\label{buckling-resistance-about-z-z-axis}
+
+\begin{description}
+  \item[]$L_{cr,z}$ = 6000 mm
+  \item[]$N_{cr,z}$ = $\frac{\pi^{2}\cdot E\cdot I_{z}}{{L_{cr,z}}^{2}}$ = 2832.58 kN
+  \item[]$\lambda_{z}$ = $\sqrt{\frac{N_{Rk}}{N_{cr,z}}}$ = $\sqrt{\frac{A\cdot f_{y}}{N_{cr,z}}}$ = 1.42 --- (EN 1993-1-1 :2022, Eq 8.69)
+  \item[]$\frac{h}{b}$ = 1.13 < 1.2
+  \item[]$t_{f}$ = 30.10 mm < 100~mm
+  \item[]Use buckling curve C,  $\alpha_{z}$ = 0.49 --- (EN 1993-1-1 :2022, Table 8.2)
+  \item[]$\phi_{z}$ = $0.5 \cdot (1 + \alpha_{z} \cdot (\lambda_{z} - 0.2) + {\lambda_{z}}^{2})$ = 1.82 --- (EN 1993-1-1 :2022, Eq 8.74)
+  \item[]$\chi_{z}$ = $\frac{1}{\phi_{z} + \sqrt{{\phi_{z}}^{2} - {\lambda_{z}}^{2}}}$ = 0.34 --- (EN 1993-1-1 :2022, Eq 8.73)
+  
+\end{description}
+
+\section{Axial load resistance}\label{axial-load-resistance}
+
+\begin{description}
+  \item[]$\chi$ = min($\chi_{y},\chi_{z}$) = 0.34
+  \item[]$N_{RD}$ = $\chi\cdot A\cdot f_{y}$ = 1956.19 kN --- (EN 1993-1-1 :2022, Eq 8.68)
+  \item[]$N_{ed}$ = 4148.54 kN.
+  \item[]Therefore, the section is not safe in resisting axial load
+\end{description}
+
+\newpage{}
+
+\section{}\label{section-11}
+
+\section{Lateral torsional buckling
+check}\label{lateral-torsional-buckling-check}
+
+\begin{description}
+    \item[]Critical moment, $M_{cr}$= $\frac{\pi^{2} \cdot E \cdot I_{z}}{L_{cr}^{2}} \cdot \left( \frac{I_{w}}{I_{z}} + \frac{G \cdot I_{t} \cdot L_{cr}^{2}}{\pi^{2} \cdot E \cdot I_{t}} \right)$ = 3373.12 kNm
+    \item[]For $\frac{h}{b}$ > 1.2 and $t_{f}$ <= 40 mm, 
+    \item[]$\alpha_{LT}$ = $\min(0.12\cdot \sqrt{\frac{W_{el,y}}{W_{el,z}}}, 0.34)$ = 0.27 --- (EN 1993-1-1 :2022, Table 8.5)
+    \item[]$\phi_{LT}$ = $0.5\cdot(1 + \alpha_{LT}\cdot(\lambda_z - 0.2) + \lambda_z^{2})$ = 0.91 --- (EN 1993-1-1 :2022, Eq 8.82)
+    \item[]$\chi_{LT}$ = $\min(\frac{1}{\phi_{LT} + \sqrt{\phi_{LT}^{2} - \lambda_z^{2}}},1)$ = 0.76 --- (EN 1993-1-1 :2022, Eq 8.81)
+    \item[]Moment resistance (y-axis), $M_{brd}$ = $\frac{\chi_{LT} \cdot W_{pl,y} \cdot f_{y}}{\gamma_1}$ = 409.37 kNm --- (EN 1993-1-1 :2022, Eq 8.79)
+    \item[]Design moment about y-axis, $M_{yed}$ = 53.57 kNm
+    \item[]Moment resistance (z-axis), $M_{crd,z}$ = $\frac{W_{pl,z} \cdot f_{y}}{\gamma_1}$ = 249.92 kNm --- (EN 1993-1-1 :2022, Eq 8.20)
+    \item[]Design moment about z-axis, $M_{zed}$ = 30.00 kNm
+    \item[]Therefore, the section is safe in resisting bending
+\end{description}
+
+\section{Axial and bending interaction
+check}\label{axial-and-bending-interaction-check}
+
+\begin{description}
+    \item[]Assume simple construction and refer to EN 1993-1-1 :2022, Eq 8.59 
+    \item[]$\frac{N_{ed}}{N_{rk}} + \frac{M_{y}}{M_{brd}} + \frac{M_{z}}{M_{cr,dz}}$ = 2.37
+    \item[]Therefore, the result is greater than 1\, the section is not safe in resisting interaction
+\end{description}
+
+
+
+
+\end{document}
