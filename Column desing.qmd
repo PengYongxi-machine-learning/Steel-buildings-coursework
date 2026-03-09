@@ -48,7 +48,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Floor 4 - Left Edge Design of Columns}
+                \centerline{Floor 1 - Internal Design of Columns}
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -62,18 +62,18 @@ import math
 %precision 2
 # Setup
 floor = 4
-section = '203 x 203x 127'
-ixl = 0     # Index for primary lx
-ixs = 0     # Index for secondary lx
-it = 0      # Scenario index
+section = '305 x 305x 240'
+ixl = 2     # Index for primary lx
+ixs = 3     # Index for secondary lx
+it = 4      # Scenario index
 
 # Automation start here
 lp_list = [6000, 8250, 7500]
 ls_list = [1500, 3000, 2750, 3750, 1875]
 Type_list = ['Edge', 'Perimeter1', 'Perimeter2', 'Internal', 'Corner']
-Type = Type_list[it]
-lxl = lp_list[ixl]
-s_lx = ls_list[ixs]
+Type = Type_list[it-1]
+lxl = lp_list[ixl-1]
+s_lx = ls_list[ixs-1]
 
 # Scenario in primary and secondary beams
 if Type == 'Edge':
