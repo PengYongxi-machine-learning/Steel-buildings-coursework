@@ -48,7 +48,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Floor 8 - Right Perimeter Design of Columns}
+                \centerline{Floor 1 - Top Right Perimeter Design of Columns}
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -61,11 +61,11 @@ format:
 import math
 %precision 2
 # Setup
-floor = 8
-section = '203 x 203x 52'
-ixp = 1     # Index for primary lx
-ixs = 1     # Index for secondary lx
-it = 3      # Scenario index
+floor = 1
+section = '356 x 406x 287'
+ixp =  3    # Index for primary lx
+ixs = 4     # Index for secondary lx
+it = 2      # Scenario index
 
 # Automation start here
 lp_list = [6000, 8250, 7500]
@@ -341,7 +341,7 @@ elif Type == 'Perimeter1':
   BC = 3
   Ned = nfloor*p_Ved_f + p_Ved_r + 2*nfloor*s_Ved_f + 2*s_Ved_r
   Myed = (s_Ved_f - s_Ved_f)*ecc_y*1e-3
-  Mzed = p_Ved_f*ecc_z*1e-13
+  Mzed = p_Ved_f*ecc_z*1e-3
 elif Type == 'Internal':
   BC = 4
   Ned = 2*nfloor*p_Ved_f + 2*p_Ved_r + 2*nfloor*s_Ved_f + 2*s_Ved_r
@@ -351,7 +351,7 @@ elif Type == 'Perimeter2':
   BC = 5
   Ned = nfloor*s_Ved_f + s_Ved_r + 2*nfloor*s_Ved_f + 2*p_Ved_r
   Myed = p_Ved_f*ecc_y*1e-3
-  Mzed = (s_Ved_f - s_Ved_f)*ecc_z*1e-13
+  Mzed = (s_Ved_f - s_Ved_f)*ecc_z*1e-3
 else:
   raise ValueError(f"Unsupported Type: {Type}")
 ```
