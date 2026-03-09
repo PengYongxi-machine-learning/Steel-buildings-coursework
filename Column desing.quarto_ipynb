@@ -1,0 +1,1996 @@
+{
+ "cells": [
+  {
+   "cell_type": "raw",
+   "id": "cc3ec0a8",
+   "metadata": {},
+   "source": [
+    "---\n",
+    "format:\n",
+    "  pdf:\n",
+    "    echo: false\n",
+    "    geometry:\n",
+    "      - top=5mm\n",
+    "      - left=5mm\n",
+    "      - right=5mm\n",
+    "      - bottom=20mm\n",
+    "      - headheight=35mm\n",
+    "      - headsep=5mm\n",
+    "      - includehead=true\n",
+    "    include-in-header:\n",
+    "      - text: |\n",
+    "          \\usepackage{tabularx}\n",
+    "          \\usepackage{multirow}\n",
+    "          \\usepackage{graphicx}\n",
+    "          \\usepackage{xcolor}\n",
+    "          \\usepackage{fancyhdr}\n",
+    "          \\usepackage{lastpage}\n",
+    "          \\usepackage{multicol}\n",
+    "          \\usepackage{ifthen}\n",
+    "\n",
+    "          \\pagestyle{fancy}\n",
+    "          \\fancyhf{}\n",
+    "          \\renewcommand{\\headrulewidth}{0pt}\n",
+    "          \\newcounter{score}\n",
+    "\n",
+    "          \\fancyhead[C]{\n",
+    "            \\noindent\n",
+    "            \\bgroup\n",
+    "            \\def\\arraystretch{1.4}\n",
+    "            \\begin{tabularx}{\\textwidth}{|p{5.5cm}|p{1.8cm}|X|p{1.2cm}|p{1.8cm}|}\n",
+    "            \\hline\n",
+    "            \\multirow{5}{5.5cm}{\n",
+    "                \\vspace*{1mm}\n",
+    "                \\includegraphics[width=4.5cm]{logo} \\\\\n",
+    "                \\fontsize{6pt}{7pt}\\selectfont\n",
+    "                \\textbf{CIVIL \\& ENVIRONMENTAL ENGINEERING,}\\\\\n",
+    "                SKEMPTON BUILDING, IMPERIAL COLLEGE\\\\\n",
+    "                LONDON, SOUTH KENSINGTON CAMPUS,\\\\\n",
+    "                LONDON SW7 2AZ.\\\\[3mm]\n",
+    "                \\normalsize\\textbf{CALCULATION SHEET}\n",
+    "            }\n",
+    "            & \\textbf{Job No.} & & \\textbf{Sheet} & \\textbf{Ref} \\\\ \\cline{2-5}\n",
+    "            & \\textbf{Job Title} & Steel Design Coursework & \\multicolumn{2}{l|}{\\thepage\\ of \\pageref{LastPage}} \\\\ \\cline{2-5}\n",
+    "            & \\multicolumn{4}{p{\\dimexpr\\textwidth-5.5cm-8\\tabcolsep-5\\arrayrulewidth\\relax}|}{\n",
+    "                \\textbf{Subject} \\newline\n",
+    "                \\vspace*{1mm}\n",
+    "                \\centerline{Floor 4 - Left Edge Design of Columns}\n",
+    "                \\vspace*{1mm}\n",
+    "            } \\\\ \\cline{2-5}\n",
+    "            & \\multirow{2}{*}{\\textbf{Client}} & \\textbf{Made by} \\quad  Pablo Peng & \\multicolumn{2}{l|}{\\textbf{Date} \\quad 03/03/2026} \\\\ \\cline{3-5}\n",
+    "            & & \\textbf{Checked by} \\quad  Pablo Peng & \\multicolumn{2}{l|}{\\textbf{Date}} \\\\ \\hline\n",
+    "            \\end{tabularx}\n",
+    "            \\egroup\n",
+    "          }\n",
+    "---"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "de173428",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import math\n",
+    "%precision 2\n",
+    "# Setup\n",
+    "floor = 4\n",
+    "section = '203 x 203x 127'\n",
+    "ixl = 0     # Index for primary lx\n",
+    "ixs = 0     # Index for secondary lx\n",
+    "it = 0      # Scenario index\n",
+    "\n",
+    "# Automation start here\n",
+    "lp_list = [6000, 8250, 7500]\n",
+    "ls_list = [1500, 3000, 2750, 3750, 1875]\n",
+    "Type_list = ['Edge', 'Perimeter1', 'Perimeter2', 'Internal', 'Corner']\n",
+    "Type = Type_list[it]\n",
+    "lxl = lp_list[ixl]\n",
+    "s_lx = ls_list[ixs]\n",
+    "\n",
+    "# Scenario in primary and secondary beams\n",
+    "if Type == 'Edge':\n",
+    "    Typep = 'Perimeter'\n",
+    "    Types = 'Edge'\n",
+    "    BC = 2\n",
+    "elif Type == 'Perimeter1':\n",
+    "    Typep = 'Perimeter'\n",
+    "    Types = 'Internal'\n",
+    "    BC = 3\n",
+    "elif Type == 'Perimeter2':\n",
+    "    Typep = 'Internal'\n",
+    "    Types = 'Edge'\n",
+    "    BC = 5\n",
+    "else:\n",
+    "    Typep = 'Internal'\n",
+    "    Types = 'Internal'\n",
+    "    BC = 4\n",
+    "\n",
+    "# Heights for Floor and Roof\n",
+    "if floor == 1:\n",
+    "  H = 6000\n",
+    "else:\n",
+    "  H = 4000\n",
+    "\n",
+    "# Dead floor\n",
+    "gt_f = 0.7\n",
+    "gs_f = 3.38\n",
+    "gc_f = 0.5\n",
+    "gste_f = 0.3\n",
+    "gser_f = 1.4\n",
+    "\n",
+    "# Impose floor\n",
+    "qpar_f = 1.0\n",
+    "qimp_f = 4.0\n",
+    "qcl = 1.2\n",
+    "\n",
+    "# Dead roof\n",
+    "gt_r = 1.0\n",
+    "gs_r = 3.38\n",
+    "gc_r = 0.5\n",
+    "gste_r = 0.2\n",
+    "gser_r = 1.0\n",
+    "\n",
+    "# Impose roof\n",
+    "qimp_r = 1.5\n",
+    "\n",
+    "# ULS loads\n",
+    "Gtyp_f = gt_f + gs_f + gc_f + gste_f + gser_f\n",
+    "Qtyp_f = qpar_f + qimp_f\n",
+    "wtyp_f = 1.35 * Gtyp_f + 1.5 * Qtyp_f\n",
+    "Gtyp_r = gt_r + gs_r + gc_r + gste_r + gser_r\n",
+    "Qtyp_r = qimp_r\n",
+    "wtyp_r = 1.35 * Gtyp_r + 1.5 * Qtyp_r\n",
+    "\n",
+    "# Cladding loads specific to beam types & levels\n",
+    "p_qclad_f = 0.0 if Typep == 'Internal' else 1.5 * qcl * H * 1e-3\n",
+    "s_qclad_f = 0.0 if Types == 'Internal' else 1.5 * qcl * H * 1e-3\n",
+    "# Primary beam Ved\n",
+    "p_ly = 13500 / 2 if Typep == 'Perimeter' else 13500 \n",
+    "SB = 2 if lxl == 8250 else 1\n",
+    "p_lb = lxl\n",
+    "if SB == 1:\n",
+    "    # Floor Calculations\n",
+    "    ptotal_f = 1e-6 * wtyp_f * p_lb * p_ly / 2\n",
+    "    p_Ved_f = ptotal_f / 2 + p_qclad_f * (p_lb * 1e-3) / 2\n",
+    "    \n",
+    "    # Roof Calculations\n",
+    "    ptotal_r = 1e-6 * wtyp_r * p_lb * p_ly / 2\n",
+    "    p_Ved_r = ptotal_r / 2\n",
+    "else:\n",
+    "    # Floor Calculations\n",
+    "    ptotal_f = 1e-6 * wtyp_f * p_lb * p_ly / 3\n",
+    "    p_Ved_f = ptotal_f + p_qclad_f * (lxl * 1e-3) / 2\n",
+    "    # Roof Calculations\n",
+    "    ptotal_r = 1e-6 * wtyp_r * p_lb * p_ly / 3\n",
+    "    p_Ved_r = ptotal_r\n",
+    "# Ssecondary beam Ved\n",
+    "s_ly = 13500\n",
+    "qtyp_applied_f = wtyp_f * s_lx * 1e-3\n",
+    "qtyp_applied_r = wtyp_r * s_lx * 1e-3\n",
+    "if Types == 'Edge':\n",
+    "    qtotal_f = s_qclad_f + qtyp_applied_f\n",
+    "    qtotal_r =  qtyp_applied_r\n",
+    "else:\n",
+    "    qtotal_f = qtyp_applied_f\n",
+    "    qtotal_r = qtyp_applied_r\n",
+    "s_Ved_f = qtotal_f * (s_ly * 1e-3) / 2\n",
+    "s_Ved_r = qtotal_r * (s_ly * 1e-3) / 2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "08dcf31f",
+   "metadata": {
+    "user_expressions": [
+     {
+      "expression": "gt_f",
+      "result": {
+       "data": {
+        "text/plain": "0.70"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "gste_f",
+      "result": {
+       "data": {
+        "text/plain": "0.30"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "gc_f",
+      "result": {
+       "data": {
+        "text/plain": "0.50"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "gs_f",
+      "result": {
+       "data": {
+        "text/plain": "3.38"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "gser_f",
+      "result": {
+       "data": {
+        "text/plain": "1.40"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "qpar_f",
+      "result": {
+       "data": {
+        "text/plain": "1.00"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "qimp_f",
+      "result": {
+       "data": {
+        "text/plain": "4.00"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "qcl",
+      "result": {
+       "data": {
+        "text/plain": "1.20"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "gt_r",
+      "result": {
+       "data": {
+        "text/plain": "1.00"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "gste_r",
+      "result": {
+       "data": {
+        "text/plain": "0.20"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "gc_r",
+      "result": {
+       "data": {
+        "text/plain": "0.50"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "gs_r",
+      "result": {
+       "data": {
+        "text/plain": "3.38"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "gser_r",
+      "result": {
+       "data": {
+        "text/plain": "1.00"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "qimp_r",
+      "result": {
+       "data": {
+        "text/plain": "1.50"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Gtyp_f",
+      "result": {
+       "data": {
+        "text/plain": "6.28"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Qtyp_f",
+      "result": {
+       "data": {
+        "text/plain": "5.00"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "wtyp_f",
+      "result": {
+       "data": {
+        "text/plain": "15.98"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Gtyp_r",
+      "result": {
+       "data": {
+        "text/plain": "6.08"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Qtyp_r",
+      "result": {
+       "data": {
+        "text/plain": "1.50"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "wtyp_r",
+      "result": {
+       "data": {
+        "text/plain": "10.46"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "H",
+      "result": {
+       "data": {
+        "text/plain": "4000"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     }
+    ]
+   },
+   "source": [
+    "\\Large \n",
+    "\\linespread{1.4}\n",
+    "\\selectfont \n",
+    "\n",
+    "# \n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "\n",
+    "# Floor Loads\n",
+    "\\begin{multicols}{2}\n",
+    "\\begin{description}\n",
+    "    \\item[]$G_{tiles}$ = `{python} gt_f` $kN/m^2$\n",
+    "    \\item[]$G_{steel}$ = `{python} gste_f` $kN/m^2$\n",
+    "    \\item[]$G_{cladding}$ = `{python} gc_f` $kN/m^2$\n",
+    "    \\item[]$G_{slab}$ = `{python} gs_f` $kN/m^2$\n",
+    "    \\item[]$G_{services}$ = `{python} gser_f` $kN/m^2$\n",
+    "    \\item[]$Q_{partitions}$ = `{python} qpar_f` $kN/m^2$\n",
+    "    \\item[]$Q_{imposed}$ = `{python} qimp_f` $kN/m^2$\n",
+    "    \\item[]$Q_{cladding}$ = `{python} qcl` $kN/m^2$\n",
+    "\\end{description}\n",
+    "\\end{multicols}\n",
+    "\n",
+    "# Roof Loads\n",
+    "\\begin{multicols}{2}\n",
+    "\\begin{description}\n",
+    "    \\item[]$G_{tiles}$ = `{python} gt_r` $kN/m^2$\n",
+    "    \\item[]$G_{steel}$ = `{python} gste_r` $kN/m^2$\n",
+    "    \\item[]$G_{cladding}$ = `{python} gc_r` $kN/m^2$\n",
+    "    \\item[]$G_{slab}$ = `{python} gs_r` $kN/m^2$\n",
+    "    \\item[]$G_{services}$ = `{python} gser_r` $kN/m^2$\n",
+    "    \\item[]$Q_{imposed}$ = `{python} qimp_r` $kN/m^2$\n",
+    "\\end{description}\n",
+    "\\end{multicols}\n",
+    "\n",
+    "{{< pagebreak >}}\n",
+    "\n",
+    "#\n",
+    "# ULS floor uniform area load\n",
+    "\\begin{description}\n",
+    "    \\item[]Typical dead load, $G_{typ,f}$ = $G_{tiles} + G_{steel} + G_{cladding} + G_{slab} + G_{services}$ = `{python} Gtyp_f` $kN/m^2$\n",
+    "    \\item[]Typical imposed load, $Q_{typ,f}$ = $Q_{partitions} + Q_{imposed}$ = `{python} Qtyp_f` $kN/m^2$\n",
+    "    \\item[]Typical load, $W_{typ,f}$ = $1.35\\cdot G_{typ,f} + 1.5 \\cdot Q_{typ,f}$ = `{python} wtyp_f` $kN/m^2$\n",
+    "\\end{description}\n",
+    "\n",
+    "# ULS roof uniform area load\n",
+    "\\begin{description}\n",
+    "    \\item[]Typical dead load, $G_{typ,r}$ = $G_{tiles} + G_{steel} + G_{cladding} + G_{slab} + G_{services}$ = `{python} Gtyp_r` $kN/m^2$\n",
+    "    \\item[]Typical imposed load, $Q_{typ,r}$ = $Q_{imposed}$ = `{python} Qtyp_r` $kN/m^2$\n",
+    "    \\item[]Typical load, $W_{typ,r}$ = $1.35\\cdot G_{typ,r} + 1.5 \\cdot Q_{typ,r}$ = `{python} wtyp_r` $kN/m^2$\n",
+    "\\end{description}\n",
+    "\n",
+    "# According to previous beam calculation sheet\n",
+    "\\begin{description}\n",
+    "    \\item[]Column height of the floor, $H$ = `{python} H` $mm$\n",
+    "    \\item[]Primary reaction force $V_{ed,p} =\\frac{1}{2}\\cdot W_{tpy}\\cdot L_{x}\\cdot L_{y} + \\frac{1}{2}\\cdot Q_{clad}\\cdot L_x \\cdot H$\n",
+    "    \\item[]Secondary reaction force $V_{ed,s} = \\frac{q_{uls}\\cdot L_y}{2}$, $q_{uls}$ = $W_{tpy}\\cdot L_x + 1.5\\cdot Q_{clad}\\cdot H$\n",
+    "    \\item[]For roof case, the load of cladding will be removed\n",
+    "\\end{description}\n",
+    "\n",
+    "{{< pagebreak >}}"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "f90669d1",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import math\n",
+    "\n",
+    "df_all = pd.read_csv('section_mm.csv')\n",
+    "if df_all.columns[0] == 'Unnamed: 0':\n",
+    "  df_all = df_all.rename(columns = {'Unnamed: 0' : 'Section Profile'})\n",
+    "\n",
+    "# Scientific notation formatter\n",
+    "def sci(value):\n",
+    "    exp_num = math.floor(math.log10(abs(value)))\n",
+    "    base = value / (10 ** exp_num)\n",
+    "    return value, base, exp_num\n",
+    "\n",
+    "#material\n",
+    "fu= 500.0\n",
+    "fy = 355.0\n",
+    "E = 210000\n",
+    "G = 81000\n",
+    "\n",
+    "df = df_all[df_all['Section Profile'] == section]\n",
+    "#section\n",
+    "h = float(df['h (mm)'].iloc[0])\n",
+    "b = float(df['b (mm)'].iloc[0])\n",
+    "tw = float(df['tw (mm)'].iloc[0])\n",
+    "tf = float(df['tf (mm)'].iloc[0])\n",
+    "d = float(df['d (mm)'].iloc[0])\n",
+    "r= float(df['r(mm)'].iloc[0])\n",
+    "A, A1, A2 = sci(float(df['A (mm^2)'].iloc[0]))\n",
+    "Iy, Iy1, Iy2 = sci(float(df['Iy (mm^4)'].iloc[0]))\n",
+    "Iz, Iz1, Iz2 = sci(float(df['Iz (mm^4)'].iloc[0]))\n",
+    "Ry = float(df['Ry (mm)'].iloc[0])\n",
+    "Rz = float(df['Rz (mm)'].iloc[0])\n",
+    "Wey, Wey1, Wey2 = sci(float(df['W_el,y (mm^3)'].iloc[0]))\n",
+    "Wez, Wez1, Wez2 = sci(float(df['W_el,z (mm^3)'].iloc[0]))\n",
+    "Wpy, Wpy1, Wpy2 = sci(float(df['W_pl,y (mm3)'].iloc[0]))\n",
+    "Wpz, Wpz1, Wpz2 = sci(float(df['W_pl,z (mm^3)'].iloc[0]))\n",
+    "Iw, Iw1, Iw2 = sci(float(df['I_w (mm^6)'].iloc[0]))\n",
+    "It, It1, It2 = sci(float(df['I_T (mm^4)'].iloc[0]))\n",
+    "\n",
+    "ratio = h/b\n",
+    "if ratio > 1.2:\n",
+    "  if tf <= 40:\n",
+    "    ay = 0.21\n",
+    "    az = 0.34\n",
+    "  else:\n",
+    "    ay = 0.34\n",
+    "    az = 0.49\n",
+    "else:\n",
+    "  if tf <= 100:\n",
+    "    ay = 0.34\n",
+    "    az = 0.49\n",
+    "  else:\n",
+    "    ay = 0.70\n",
+    "    az = 0.70"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "840424ea",
+   "metadata": {
+    "user_expressions": [
+     {
+      "expression": "fu",
+      "result": {
+       "data": {
+        "text/plain": "500.00"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "fy",
+      "result": {
+       "data": {
+        "text/plain": "355.00"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "E",
+      "result": {
+       "data": {
+        "text/plain": "210000"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "G",
+      "result": {
+       "data": {
+        "text/plain": "81000"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "section",
+      "result": {
+       "data": {
+        "text/plain": "'203 x 203x 127'"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "h",
+      "result": {
+       "data": {
+        "text/plain": "241.40"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "b",
+      "result": {
+       "data": {
+        "text/plain": "213.90"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "tw",
+      "result": {
+       "data": {
+        "text/plain": "18.10"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "tf",
+      "result": {
+       "data": {
+        "text/plain": "30.10"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "d",
+      "result": {
+       "data": {
+        "text/plain": "160.80"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "r",
+      "result": {
+       "data": {
+        "text/plain": "10.20"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "A1",
+      "result": {
+       "data": {
+        "text/plain": "1.62"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "A2",
+      "result": {
+       "data": {
+        "text/plain": "4"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Iy1",
+      "result": {
+       "data": {
+        "text/plain": "1.54"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Iy2",
+      "result": {
+       "data": {
+        "text/plain": "8"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Iz1",
+      "result": {
+       "data": {
+        "text/plain": "4.92"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Iz2",
+      "result": {
+       "data": {
+        "text/plain": "7"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Ry",
+      "result": {
+       "data": {
+        "text/plain": "97.50"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Rz",
+      "result": {
+       "data": {
+        "text/plain": "55.00"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Wey1",
+      "result": {
+       "data": {
+        "text/plain": "1.28"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Wey2",
+      "result": {
+       "data": {
+        "text/plain": "6"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Wez1",
+      "result": {
+       "data": {
+        "text/plain": "4.60"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Wez2",
+      "result": {
+       "data": {
+        "text/plain": "5"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Wpy1",
+      "result": {
+       "data": {
+        "text/plain": "1.52"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Wpy2",
+      "result": {
+       "data": {
+        "text/plain": "6"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Wpz1",
+      "result": {
+       "data": {
+        "text/plain": "7.04"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Wpz2",
+      "result": {
+       "data": {
+        "text/plain": "5"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Iw1",
+      "result": {
+       "data": {
+        "text/plain": "5.49"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Iw2",
+      "result": {
+       "data": {
+        "text/plain": "11"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "It1",
+      "result": {
+       "data": {
+        "text/plain": "4.27"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "It2",
+      "result": {
+       "data": {
+        "text/plain": "6"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     }
+    ]
+   },
+   "source": [
+    "#\n",
+    "# Material Properties\n",
+    "\\begin{description}\n",
+    "  \\item[]Ultimate strength: $f_{u}$ = `{python} fu` $N\\cdot mm^{-2}$  \n",
+    "  \\item[]Yield strength: $f_{y}$ = `{python} fy` $N \\cdot mm^{-2}$  \n",
+    "  \\item[]Young modulus: E = `{python} E` $N\\cdot mm^{-2}$  \n",
+    "  \\item[]Shear modulus: G = `{python} G` $N\\cdot mm^{-2}$\n",
+    "\\end{description}\n",
+    "\n",
+    "# Section Properties of UC `{python} section`\n",
+    "\\begin{multicols}{2}\n",
+    "\\begin{description}\n",
+    "  \\item[] Overall depth, $h$ = `{python} h` mm  \n",
+    "  \\item[] Width of section, $b$ = `{python} b` mm  \n",
+    "  \\item[] Web thickness, $t_{w}$ = `{python} tw` mm  \n",
+    "  \\item[] Flange thickness, $t_{f}$ = `{python} tf` mm  \n",
+    "  \\item[] Depth between fillet, $h_{w}$ = `{python} d` mm  \n",
+    "  \\item[] Root radius, $r$ = `{python} r` mm  \n",
+    "  \\item[] Area of section, $A$ = `{python} A1` $\\cdot 10^{`{python} A2`}$ $mm^{2}$ \n",
+    "  \\item[] 2nd moment Y-Y, $I_{y}$ = `{python} Iy1` $\\cdot 10^{`{python} Iy2`}$ $mm^{4}$  \n",
+    "  \\item[] 2nd moment Z-Z, $I_{z}$ = `{python} Iz1` $\\cdot 10^{`{python} Iz2`}$ $mm^{4}$  \n",
+    "  \\item[] Radius of gyration Y-Y, $i_{y}$ = `{python} Ry` mm  \n",
+    "  \\item[] Radius of gyration Z-Z, $i_{z}$ = `{python} Rz` mm  \n",
+    "  \\item[] Elastic modulus Y-Y, $W_{el,y}$ = `{python} Wey1` $\\cdot 10^{`{python} Wey2`}$ $mm^{3}$  \n",
+    "  \\item[] Elastic modulus Z-Z, $W_{el,z}$ = `{python} Wez1` $\\cdot 10^{`{python} Wez2`}$ $mm^{3}$  \n",
+    "  \\item[] Plastic modulus Y-Y, $W_{pl,y}$ = `{python} Wpy1` $\\cdot 10^{`{python} Wpy2`}$ $mm^{3}$  \n",
+    "  \\item[] Plastic modulus Z-Z, $W_{pl,z}$ = `{python} Wpz1` $\\cdot 10^{`{python} Wpz2`}$ $mm^{3}$  \n",
+    "  \\item[] Warping constant, $I_{w}$ = `{python} Iw1` $\\cdot 10^{`{python} Iw2`}$ $mm^{6}$  \n",
+    "  \\item[] Torsional constant, $I_{t}$ = `{python} It1` $\\cdot 10^{`{python} It2`}$   $mm^{4}$  \n",
+    "\\end{description}\n",
+    "\\end{multicols}\n",
+    "\n",
+    "{{< pagebreak >}}"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "815d57a8",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Count number of floors above the column\n",
+    "num_floor = 9 - floor\n",
+    "if num_floor == 8:\n",
+    "    nfloor =7.5\n",
+    "else: \n",
+    "    nfloor = num_floor\n",
+    "# eccentricity\n",
+    "ecc_y = (100 + h/2)\n",
+    "ecc_z = (100 + tw/2)\n",
+    "\n",
+    "# Axial load and moment on column\n",
+    "if Type == 'Edge':\n",
+    "  BC =2 \n",
+    "  Ned = nfloor*p_Ved_f + p_Ved_r + nfloor*s_Ved_f + s_Ved_r\n",
+    "  Myed = p_Ved_f*ecc_y*1e-3\n",
+    "  Mzed = s_Ved_f*ecc_z*1e-3\n",
+    "elif Type == 'Perimeter1':\n",
+    "  BC = 3\n",
+    "  Ned = nfloor*p_Ved_f + p_Ved_r + 2*nfloor*s_Ved_f + 2*s_Ved_r\n",
+    "  Myed = (s_Ved_f - s_Ved_f)*ecc_y*1e-3\n",
+    "  Mzed = p_Ved_f*ecc_z*1e-13\n",
+    "elif Type == 'Internal':\n",
+    "  BC = 4\n",
+    "  Ned = 2*nfloor*p_Ved_f + 2*p_Ved_r + 2*nfloor*s_Ved_f + 2*s_Ved_r\n",
+    "  Myed = (p_Ved_f - p_Ved_f)*ecc_y*1e-3\n",
+    "  Mzed = (s_Ved_f - s_Ved_f)*ecc_z*1e-3\n",
+    "elif Type == 'Perimeter2':\n",
+    "  BC = 5\n",
+    "  Ned = nfloor*s_Ved_f + s_Ved_r + 2*nfloor*s_Ved_f + 2*p_Ved_r\n",
+    "  Myed = p_Ved_f*ecc_y*1e-3\n",
+    "  Mzed = (s_Ved_f - s_Ved_f)*ecc_z*1e-13\n",
+    "else:\n",
+    "  raise ValueError(f\"Unsupported Type: {Type}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "6bddbba4",
+   "metadata": {
+    "user_expressions": [
+     {
+      "expression": "num_floor",
+      "result": {
+       "data": {
+        "text/plain": "5"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "ecc_y",
+      "result": {
+       "data": {
+        "text/plain": "220.70"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "ecc_z",
+      "result": {
+       "data": {
+        "text/plain": "109.05"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "p_qclad_f",
+      "result": {
+       "data": {
+        "text/plain": "7.20"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "int(BC)",
+      "result": {
+       "data": {
+        "text/plain": "2"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "s_Ved_f",
+      "result": {
+       "data": {
+        "text/plain": "210.38"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "s_Ved_r",
+      "result": {
+       "data": {
+        "text/plain": "105.89"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "p_Ved_f",
+      "result": {
+       "data": {
+        "text/plain": "183.38"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "p_Ved_r",
+      "result": {
+       "data": {
+        "text/plain": "105.89"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "nfloor",
+      "result": {
+       "data": {
+        "text/plain": "5"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Ned",
+      "result": {
+       "data": {
+        "text/plain": "2180.55"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Myed",
+      "result": {
+       "data": {
+        "text/plain": "40.47"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Mzed",
+      "result": {
+       "data": {
+        "text/plain": "22.94"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "s_Ved_f",
+      "result": {
+       "data": {
+        "text/plain": "210.38"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "s_Ved_r",
+      "result": {
+       "data": {
+        "text/plain": "105.89"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "p_Ved_f",
+      "result": {
+       "data": {
+        "text/plain": "183.38"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "p_Ved_r",
+      "result": {
+       "data": {
+        "text/plain": "105.89"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "nfloor",
+      "result": {
+       "data": {
+        "text/plain": "5"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Ned",
+      "result": {
+       "data": {
+        "text/plain": "2180.55"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Myed",
+      "result": {
+       "data": {
+        "text/plain": "40.47"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Mzed",
+      "result": {
+       "data": {
+        "text/plain": "22.94"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "s_Ved_f",
+      "result": {
+       "data": {
+        "text/plain": "210.38"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "s_Ved_r",
+      "result": {
+       "data": {
+        "text/plain": "105.89"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "p_Ved_f",
+      "result": {
+       "data": {
+        "text/plain": "183.38"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "p_Ved_r",
+      "result": {
+       "data": {
+        "text/plain": "105.89"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "nfloor",
+      "result": {
+       "data": {
+        "text/plain": "5"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Ned",
+      "result": {
+       "data": {
+        "text/plain": "2180.55"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Myed",
+      "result": {
+       "data": {
+        "text/plain": "40.47"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Mzed",
+      "result": {
+       "data": {
+        "text/plain": "22.94"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "s_Ved_f",
+      "result": {
+       "data": {
+        "text/plain": "210.38"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "s_Ved_r",
+      "result": {
+       "data": {
+        "text/plain": "105.89"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "p_Ved_f",
+      "result": {
+       "data": {
+        "text/plain": "183.38"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "p_Ved_r",
+      "result": {
+       "data": {
+        "text/plain": "105.89"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "nfloor",
+      "result": {
+       "data": {
+        "text/plain": "5"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Ned",
+      "result": {
+       "data": {
+        "text/plain": "2180.55"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Myed",
+      "result": {
+       "data": {
+        "text/plain": "40.47"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Mzed",
+      "result": {
+       "data": {
+        "text/plain": "22.94"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "BC",
+      "result": {
+       "data": {
+        "text/plain": "2"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     }
+    ]
+   },
+   "source": [
+    "#\n",
+    "# Design axial load and moment on column\n",
+    "\\begin{description}\n",
+    "  \\item[]Number of floors above column = `{python} num_floor`\n",
+    "  \\item[]Eccentricity about y-axis, $e_{y}$ = $100 +\\frac{h}{2}$ = `{python} ecc_y` mm\n",
+    "  \\item[]Eccentricity about z-axis, $e_{z}$ = $100 +\\frac{tw}{2}$ = `{python} ecc_z` mm\n",
+    "  \\item[]$Q_{clad} = 1.35\\cdot Q_{clad}$ = `{python} p_qclad_f` $kN/m$\n",
+    "\\end{description}\n",
+    "\n",
+    "\\setcounter{score}{`{python} int(BC)`}\n",
+    "\n",
+    "\\ifthenelse{\\value{score}=2}{\n",
+    "\\begin{description}\n",
+    "  \\item[]Reaction forces for beams connected to edge column, \n",
+    "  \\item[]Secondary beam due to floor load, $V_{ed,sf}$ =  `{python} s_Ved_f` kN\n",
+    "  \\item[]Secondary beam due to roof load, $V_{ed,sr}$ = `{python} s_Ved_r` kN\n",
+    "  \\item[]Primary beam due to floor load, $V_{ed,pf}$ = `{python} p_Ved_f` kN\n",
+    "  \\item[]Primary beam due to roof load, $V_{ed,pr}$  = `{python} p_Ved_r` kN\n",
+    "  \\item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\\cdot (V_{ed,pf} + V_{ed,sf}) + V_{ed,sr} + V_{ed,pr}$ = `{python} Ned` kN\n",
+    "  \\item[]Design moment about y-axis, $M_{y}$ = $V_{ed,pf} \\cdot e_{y}$ = `{python} Myed` kNm\n",
+    "  \\item[]Design moment about z-axis, $M_{z}$ = $V_{ed,sf} \\cdot e_{z}$ = `{python} Mzed` kNm\n",
+    "\\end{description}\n",
+    "}{\n",
+    "\\ifthenelse{\\value{score}=3}{\n",
+    "\\begin{description}\n",
+    "  \\item[]Reaction forces for beams connected to perimeter column, \n",
+    "  \\item[]Secondary beam due to floor load, $V_{ed,sf}$ =  `{python} s_Ved_f` kN\n",
+    "  \\item[]Secondary beam due to roof load, $V_{ed,sr}$ = `{python} s_Ved_r` kN\n",
+    "  \\item[]Primary beam due to floor load, $V_{ed,pf}$ = `{python} p_Ved_f` kN\n",
+    "  \\item[]Primary beam due to roof load, $V_{ed,pr}$  = `{python} p_Ved_r` kN\n",
+    "  \\item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\\cdot (V_{ed,pf} + 2\\cdot V_{ed,pf}) + V_{ed,pr} + V_{ed,sr}$ = `{python} Ned` kN\n",
+    "  \\item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,sf} - V_{ed,sf}) \\cdot e_{y}$ = `{python} Myed` kNm\n",
+    "  \\item[]Design moment about z-axis, $M_{z}$ = $V_{ed,pf} \\cdot e_{z}$ = `{python} Mzed` kNm\n",
+    "\\end{description}\n",
+    "}{\n",
+    "\\ifthenelse{\\value{score}=4}{\n",
+    "\\begin{description}\n",
+    "  \\item[]Reaction forces for beams connected to internal column, \n",
+    "  \\item[]Secondary beam due to floor load, $V_{ed,sf}$ =  `{python} s_Ved_f` kN\n",
+    "  \\item[]Secondary beam due to roof load, $V_{ed,sr}$ = `{python} s_Ved_r` kN\n",
+    "  \\item[]Primary beam due to floor load, $V_{ed,pf}$ = `{python} p_Ved_f` kN\n",
+    "  \\item[]Primary beam due to roof load, $V_{ed,pr}$  = `{python} p_Ved_r` kN\n",
+    "  \\item[]Design axial load, $N_{ed}$ = $2`{python} nfloor`\\cdot(V_{ed,pf} + V_{ed,sf}) + 2V_{ed,pr} + 2V_{ed,sr}$ = `{python} Ned` kN\n",
+    "  \\item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,sf} - V_{ed,sf}) \\cdot e_{y}$ = `{python} Myed` kNm\n",
+    "  \\item[]Design moment about z-axis, $M_{z}$ = $(V_{ed,pf} - V_{ed,pf}) \\cdot e_{z}$ = `{python} Mzed` kNm\n",
+    "\\end{description}\n",
+    "}{\n",
+    "\\ifthenelse{\\value{score}=5}{\n",
+    "\\begin{description}\n",
+    "  \\item[]Reaction forces for Perimeter beams (type 2), \n",
+    "  \\item[]Reaction forces for beams connected to internal column, \n",
+    "  \\item[]Secondary beam due to floor load, $V_{ed,sf}$ =  `{python} s_Ved_f` kN\n",
+    "  \\item[]Secondary beam due to roof load, $V_{ed,sr}$ = `{python} s_Ved_r` kN\n",
+    "  \\item[]Primary beam due to floor load, $V_{ed,pf}$ = `{python} p_Ved_f` kN\n",
+    "  \\item[]Primary beam due to roof load, $V_{ed,pr}$  = `{python} p_Ved_r` kN\n",
+    "  \\item[]Design axial load, $N_{ed}$ = $2`{python} nfloor`\\cdot (V_{ed,sf} + V_{ed,pf}) + V_{ed,sr} + V_{ed,pr}$ = `{python} Ned` kN\n",
+    "  \\item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,sf}- V_{ed,sf})\\cdot e_{y}$ = `{python} Myed` kNm\n",
+    "  \\item[]Design moment about z-axis, $M_{z}$ = $V_{ed,pf}\\cdot e_{z}$ = `{python} Mzed` kNm\n",
+    "\\end{description}\n",
+    "}{\n",
+    "\\begin{description}\n",
+    "  \\item[]No matching boundary condition found for $BC$ = `{python} BC`.\n",
+    "\\end{description}\n",
+    "}}}}\n",
+    "\n",
+    "{{< pagebreak >}}"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "32b82812",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ep = math.sqrt(235/fy)\n",
+    "crf = 9*ep\n",
+    "crw = 28*ep\n",
+    "cw = d\n",
+    "c1 = cw/tw\n",
+    "cf = (b-tw-2*r)/2\n",
+    "c2 = cf/tf"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "f80f5348",
+   "metadata": {
+    "user_expressions": [
+     {
+      "expression": "ep",
+      "result": {
+       "data": {
+        "text/plain": "0.81"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "cw",
+      "result": {
+       "data": {
+        "text/plain": "160.80"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "c1",
+      "result": {
+       "data": {
+        "text/plain": "8.88"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "crw",
+      "result": {
+       "data": {
+        "text/plain": "22.78"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "cf",
+      "result": {
+       "data": {
+        "text/plain": "87.70"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "c2",
+      "result": {
+       "data": {
+        "text/plain": "2.91"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "crf",
+      "result": {
+       "data": {
+        "text/plain": "7.32"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "c1",
+      "result": {
+       "data": {
+        "text/plain": "8.88"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "crw",
+      "result": {
+       "data": {
+        "text/plain": "22.78"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "c2",
+      "result": {
+       "data": {
+        "text/plain": "2.91"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "crf",
+      "result": {
+       "data": {
+        "text/plain": "7.32"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     }
+    ]
+   },
+   "source": [
+    "#\n",
+    "# Section Classification\n",
+    "\n",
+    "According to EN 1993-1-1:2022 Eq 5.1, $\\epsilon$ = $\\sqrt{\\frac{235}{f_{y}}}$ = `{python} ep` \n",
+    "\n",
+    "\\begin{multicols}{2}\n",
+    "\\begin{description}\n",
+    "  \\item[]$c_{w}$ = $\\frac{(b-t_{w}-2\\cdot r)}{2}$ = `{python} cw`  \n",
+    "  \\item[] $\\frac{c_{w}}{t_{w}}$ = `{python} c1`\n",
+    "  \\item[]Class 1 limit for web, 72 $\\epsilon $ = `{python} crw`\n",
+    "  \\item[]$c_{f}$ = $h_{w}$ = `{python} cf` \n",
+    "  \\item[]$\\frac{c_{f}}{t_{f}}$ = `{python} c2`\n",
+    "  \\item[]Class 1 limit for flange, 9 $\\epsilon$ = `{python} crf`\n",
+    "\\end{description}  \n",
+    "\\end{multicols}\n",
+    "\n",
+    "Since `{python} c1` < `{python} crw` and `{python} c2` < `{python} crf`, the section belongs to class 1  "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "c31e15bd",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def buckle (Lcr, I, E, A, fy, a):\n",
+    "  Ncr = (math.pi**2 * E * I) / ((Lcr)**2)*1e-3\n",
+    "  lam = math.sqrt(( A*fy / (Ncr*1e3) ))\n",
+    "  phi = 0.5*(1 + a*(lam - 0.2) + lam**2)\n",
+    "  chi = min(1/(phi + math.sqrt(phi**2 - lam**2)),1)\n",
+    "  return Ncr, lam, phi, chi\n",
+    "\n",
+    "Lcr = H\n",
+    "Ncry, lamy, phiy, chiy = buckle(Lcr, Iy, E, A, fy, ay)\n",
+    "Ncrz, lamz, phiz, chiz = buckle(Lcr, Iz, E, A, fy, az)\n",
+    "\n",
+    "gamma1 = 1.0\n",
+    "chi = min([chiy,chiz])\n",
+    "Nrd = chi*A*fy*1e-3/gamma1\n",
+    "from IPython.display import Latex\n",
+    "if Nrd > Ned:\n",
+    "    output_axial = 'the section is safe in resisting axial load'\n",
+    "else:\n",
+    "    output_axial = 'the section is not safe in resisting axial load'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c75ecec0",
+   "metadata": {
+    "user_expressions": [
+     {
+      "expression": "Lcr",
+      "result": {
+       "data": {
+        "text/plain": "4000"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Ncry",
+      "result": {
+       "data": {
+        "text/plain": "19948.94"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "lamy",
+      "result": {
+       "data": {
+        "text/plain": "0.54"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "ratio",
+      "result": {
+       "data": {
+        "text/plain": "1.13"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "tf",
+      "result": {
+       "data": {
+        "text/plain": "30.10"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "ay",
+      "result": {
+       "data": {
+        "text/plain": "0.34"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "phiy",
+      "result": {
+       "data": {
+        "text/plain": "0.70"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "chiy",
+      "result": {
+       "data": {
+        "text/plain": "0.87"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Lcr",
+      "result": {
+       "data": {
+        "text/plain": "4000"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Ncrz",
+      "result": {
+       "data": {
+        "text/plain": "6373.30"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "lamz",
+      "result": {
+       "data": {
+        "text/plain": "0.95"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "ratio",
+      "result": {
+       "data": {
+        "text/plain": "1.13"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "tf",
+      "result": {
+       "data": {
+        "text/plain": "30.10"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "az",
+      "result": {
+       "data": {
+        "text/plain": "0.49"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "phiz",
+      "result": {
+       "data": {
+        "text/plain": "1.13"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "chiz",
+      "result": {
+       "data": {
+        "text/plain": "0.57"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "chi",
+      "result": {
+       "data": {
+        "text/plain": "0.57"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Nrd",
+      "result": {
+       "data": {
+        "text/plain": "3275.19"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Ned",
+      "result": {
+       "data": {
+        "text/plain": "2180.55"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "output_axial",
+      "result": {
+       "data": {
+        "text/plain": "'the section is safe in resisting axial load'"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     }
+    ]
+   },
+   "source": [
+    "# Buckling resistance about y-y axis\n",
+    "\n",
+    "\\begin{description}\n",
+    "  \\item[]$L_{cr,y}$ = `{python} Lcr` mm\n",
+    "  \\item[]$N_{cr,y}$ = $\\frac{\\pi^{2}\\cdot E\\cdot I_{y}}{{L_{cr,y}}^{2}}$ = `{python} Ncry` kN\n",
+    "  \\item[]$\\lambda_{y}$ =  $\\sqrt{\\frac{N_{Rk}}{N_{cr,y}}}$ = $\\sqrt{\\frac{A\\cdot f_{y}}{N_{cr,y}}}$ = `{python} lamy` --- (EN 1993-1-1 :2022, Eq 8.69)\n",
+    "  \\item[]$\\frac{h}{b}$ = `{python} ratio` < 1.2\n",
+    "  \\item[]$t_{f}$ = `{python} tf` mm < 100~mm\n",
+    "  \\item[]Use buckling curve B,  $\\alpha_{y}$ = `{python} ay` --- (EN 1993-1-1 :2022, Table 8.2)\n",
+    "  \\item[]$\\phi_{y}$ = $0.5 \\cdot (1 + \\alpha_{y} \\cdot (\\lambda_{y} - 0.2) + {\\lambda_{y}}^{2})$ = `{python} phiy` --- (EN 1993-1-1 :2022, Eq 8.74)\n",
+    "  \\item[]$\\chi_{y}$ = $\\frac{1}{\\phi_{y} + \\sqrt{{\\phi_{y}}^{2} - {\\lambda_{y}}^{2}}}$ = `{python} chiy` --- (EN 1993-1-1 :2022, Eq 8.73)\n",
+    "\\end{description}\n",
+    "\n",
+    "{{< pagebreak >}}\n",
+    "\n",
+    "#\n",
+    "# Buckling resistance about z-z axis\n",
+    "\\begin{description}\n",
+    "  \\item[]$L_{cr,z}$ = `{python} Lcr` mm\n",
+    "  \\item[]$N_{cr,z}$ = $\\frac{\\pi^{2}\\cdot E\\cdot I_{z}}{{L_{cr,z}}^{2}}$ = `{python} Ncrz` kN\n",
+    "  \\item[]$\\lambda_{z}$ = $\\sqrt{\\frac{N_{Rk}}{N_{cr,z}}}$ = $\\sqrt{\\frac{A\\cdot f_{y}}{N_{cr,z}}}$ = `{python} lamz` --- (EN 1993-1-1 :2022, Eq 8.69)\n",
+    "  \\item[]$\\frac{h}{b}$ = `{python} ratio` < 1.2\n",
+    "  \\item[]$t_{f}$ = `{python} tf` mm < 100~mm\n",
+    "  \\item[]Use buckling curve C,  $\\alpha_{z}$ = `{python} az` --- (EN 1993-1-1 :2022, Table 8.2)\n",
+    "  \\item[]$\\phi_{z}$ = $0.5 \\cdot (1 + \\alpha_{z} \\cdot (\\lambda_{z} - 0.2) + {\\lambda_{z}}^{2})$ = `{python} phiz` --- (EN 1993-1-1 :2022, Eq 8.74)\n",
+    "  \\item[]$\\chi_{z}$ = $\\frac{1}{\\phi_{z} + \\sqrt{{\\phi_{z}}^{2} - {\\lambda_{z}}^{2}}}$ = `{python} chiz` --- (EN 1993-1-1 :2022, Eq 8.73)\n",
+    "  \n",
+    "\\end{description}\n",
+    "  \n",
+    "# Axial load resistance\n",
+    "\\begin{description}\n",
+    "  \\item[]$\\chi$ = min($\\chi_{y},\\chi_{z}$) = `{python} chi`\n",
+    "  \\item[]$N_{RD}$ = $\\chi\\cdot A\\cdot f_{y}$ = `{python} Nrd` kN --- (EN 1993-1-1 :2022, Eq 8.68)\n",
+    "  \\item[]$N_{ed}$ = `{python} Ned` kN.\n",
+    "  \\item[]Therefore, `{python} output_axial`\n",
+    "\\end{description}"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "62376e8f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "Mcr = ((math.pi**2 * E * Iz) / Lcr**2) * math.sqrt(Iw/Iz + (G * It * (Lcr)**2)/ (math.pi**2 * E * It))*1e-6\n",
+    "if ratio > 1.2:\n",
+    "    if tf <= 40:\n",
+    "        alt = min(0.12*math.sqrt(Wey/Wez), 0.34)\n",
+    "    else:\n",
+    "        alt = min(0.16*math.sqrt(Wey/Wez), 0.49)\n",
+    "else:\n",
+    "    alt = min(0.16*math.sqrt(Wey/Wez), 0.49)\n",
+    "\n",
+    "phi_lt = 0.5*(1 + alt*(min(lamy,lamz) - 0.2) + min(lamy,lamz)**2)\n",
+    "chi_lt = min(1/(phi_lt + math.sqrt(phi_lt**2 - min(lamy,lamz)**2)),1)\n",
+    "\n",
+    "Myrk = Wpy*fy*1e-6\n",
+    "Mzrk = Wpz*fy*1e-6\n",
+    "Mbrd = chi_lt*Myrk/gamma1\n",
+    "Mcrdz = Mzrk/gamma1\n",
+    "\n",
+    "if Mbrd > Myed and Mcrdz > Mzed:\n",
+    "    output_moment = 'the section is safe in resisting bending'\n",
+    "else:\n",
+    "    output_moment = 'the section is not safe in resisting bending'\n",
+    "\n",
+    "int_ratio = Ned/Nrd + Myed/Mbrd + Mzed/Mcrdz\n",
+    "if int_ratio < 1.0:\n",
+    "    output_interaction = 'the result is less than 1, the section is safe in resisting interaction'\n",
+    "else:\n",
+    "    output_interaction = 'the result is greater than 1, the section is not safe in resisting interaction'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "69a9e7e7",
+   "metadata": {
+    "user_expressions": [
+     {
+      "expression": "Mcr",
+      "result": {
+       "data": {
+        "text/plain": "5084.50"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "alt",
+      "result": {
+       "data": {
+        "text/plain": "0.27"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "phi_lt",
+      "result": {
+       "data": {
+        "text/plain": "0.69"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "chi_lt",
+      "result": {
+       "data": {
+        "text/plain": "0.89"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Mbrd",
+      "result": {
+       "data": {
+        "text/plain": "481.33"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Myed",
+      "result": {
+       "data": {
+        "text/plain": "40.47"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Mcrdz",
+      "result": {
+       "data": {
+        "text/plain": "249.92"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "Mzed",
+      "result": {
+       "data": {
+        "text/plain": "22.94"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "output_moment",
+      "result": {
+       "data": {
+        "text/plain": "'the section is safe in resisting bending'"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "int_ratio",
+      "result": {
+       "data": {
+        "text/plain": "0.84"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "output_interaction",
+      "result": {
+       "data": {
+        "text/plain": "'the result is less than 1, the section is safe in resisting interaction'"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     }
+    ]
+   },
+   "source": [
+    "{{< pagebreak >}}\n",
+    "\n",
+    "#\n",
+    "# Lateral torsional buckling check\n",
+    "\\begin{description}\n",
+    "    \\item[]Critical moment, $M_{cr}$= $\\frac{\\pi^{2} \\cdot E \\cdot I_{z}}{L_{cr}^{2}} \\cdot \\left( \\frac{I_{w}}{I_{z}} + \\frac{G \\cdot I_{t} \\cdot L_{cr}^{2}}{\\pi^{2} \\cdot E \\cdot I_{t}} \\right)$ = `{python} Mcr` kNm\n",
+    "    \\item[]For $\\frac{h}{b}$ > 1.2 and $t_{f}$ <= 40 mm, \n",
+    "    \\item[]$\\alpha_{LT}$ = $\\min(0.12\\cdot \\sqrt{\\frac{W_{el,y}}{W_{el,z}}}, 0.34)$ = `{python} alt` --- (EN 1993-1-1 :2022, Table 8.5)\n",
+    "    \\item[]$\\phi_{LT}$ = $0.5\\cdot(1 + \\alpha_{LT}\\cdot(\\lambda_z - 0.2) + \\lambda_z^{2})$ = `{python} phi_lt` --- (EN 1993-1-1 :2022, Eq 8.82)\n",
+    "    \\item[]$\\chi_{LT}$ = $\\min(\\frac{1}{\\phi_{LT} + \\sqrt{\\phi_{LT}^{2} - \\lambda_z^{2}}},1)$ = `{python} chi_lt` --- (EN 1993-1-1 :2022, Eq 8.81)\n",
+    "    \\item[]Moment resistance (y-axis), $M_{brd}$ = $\\frac{\\chi_{LT} \\cdot W_{pl,y} \\cdot f_{y}}{\\gamma_1}$ = `{python} Mbrd` kNm --- (EN 1993-1-1 :2022, Eq 8.79)\n",
+    "    \\item[]Design moment about y-axis, $M_{yed}$ = `{python} Myed` kNm\n",
+    "    \\item[]Moment resistance (z-axis), $M_{crd,z}$ = $\\frac{W_{pl,z} \\cdot f_{y}}{\\gamma_1}$ = `{python} Mcrdz` kNm --- (EN 1993-1-1 :2022, Eq 8.20)\n",
+    "    \\item[]Design moment about z-axis, $M_{zed}$ = `{python} Mzed` kNm\n",
+    "    \\item[]Therefore, `{python} output_moment`\n",
+    "\\end{description}\n",
+    "\n",
+    "# Axial and bending interaction check\n",
+    "\\begin{description}\n",
+    "    \\item[]Assume simple construction and refer to EN 1993-1-1 :2022, Eq 8.59 \n",
+    "    \\item[]$\\frac{N_{ed}}{N_{rk}} + \\frac{M_{y}}{M_{brd}} + \\frac{M_{z}}{M_{cr,dz}}$ = `{python} int_ratio`\n",
+    "    \\item[]Therefore, `{python} output_interaction`\n",
+    "\\end{description}\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3",
+   "path": "C:\\Users\\MSI-NB\\AppData\\Roaming\\Python\\share\\jupyter\\kernels\\python3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

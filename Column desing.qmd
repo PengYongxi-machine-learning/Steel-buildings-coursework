@@ -48,7 +48,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Floor 1 - Left Edge Design of Columns}
+                \centerline{Floor 4 - Left Edge Design of Columns}
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -61,35 +61,43 @@ format:
 import math
 %precision 2
 # Setup
+floor = 4
 section = '203 x 203x 127'
-lx_list = [6000, 8250, 7500, 1500, 3000, 2750, 3750, 1875]
-Type_list = ['Edge', 'Perimeter1', 'Perimeter2', 'Internal', 'Corner']
-
-# Select indices for geometry and scenario
 ixl = 0     # Index for primary lx
-ixs = 3     # Index for secondary lx
+ixs = 0     # Index for secondary lx
 it = 0      # Scenario index
+
+# Automation start here
+lp_list = [6000, 8250, 7500]
+ls_list = [1500, 3000, 2750, 3750, 1875]
+Type_list = ['Edge', 'Perimeter1', 'Perimeter2', 'Internal', 'Corner']
 Type = Type_list[it]
-lxl = lx_list[ixl]
-s_lx = lx_list[ixs]
+lxl = lp_list[ixl]
+s_lx = ls_list[ixs]
 
 # Scenario in primary and secondary beams
 if Type == 'Edge':
     Typep = 'Perimeter'
     Types = 'Edge'
+    BC = 2
 elif Type == 'Perimeter1':
     Typep = 'Perimeter'
     Types = 'Internal'
+    BC = 3
 elif Type == 'Perimeter2':
     Typep = 'Internal'
     Types = 'Edge'
+    BC = 5
 else:
     Typep = 'Internal'
     Types = 'Internal'
+    BC = 4
 
 # Heights for Floor and Roof
-H_f = 6000
-H_r = 4000
+if floor == 1:
+  H = 6000
+else:
+  H = 4000
 
 # Dead floor
 gt_f = 0.7
@@ -114,19 +122,20 @@ gser_r = 1.0
 qimp_r = 1.5
 
 # ULS loads
-wtyp_f = 1.35 * (gt_f + gs_f + gc_f + gste_f + gser_f) + 1.5 * (qpar_f + qimp_f)
-wtyp_r = 1.35 * (gt_r + gs_r + gc_r + gste_r + gser_r) + 1.5 * qimp_r
+Gtyp_f = gt_f + gs_f + gc_f + gste_f + gser_f
+Qtyp_f = qpar_f + qimp_f
+wtyp_f = 1.35 * Gtyp_f + 1.5 * Qtyp_f
+Gtyp_r = gt_r + gs_r + gc_r + gste_r + gser_r
+Qtyp_r = qimp_r
+wtyp_r = 1.35 * Gtyp_r + 1.5 * Qtyp_r
 
 # Cladding loads specific to beam types & levels
-p_qclad_f = 0.0 if Typep == 'Internal' else 1.5 * qcl * H_f * 1e-3
-s_qclad_f = 0.0 if Types == 'Internal' else 1.5 * qcl * H_f * 1e-3
-
-
+p_qclad_f = 0.0 if Typep == 'Internal' else 1.5 * qcl * H * 1e-3
+s_qclad_f = 0.0 if Types == 'Internal' else 1.5 * qcl * H * 1e-3
 # Primary beam Ved
 p_ly = 13500 / 2 if Typep == 'Perimeter' else 13500 
 SB = 2 if lxl == 8250 else 1
 p_lb = lxl
-
 if SB == 1:
     # Floor Calculations
     ptotal_f = 1e-6 * wtyp_f * p_lb * p_ly / 2
@@ -142,7 +151,6 @@ else:
     # Roof Calculations
     ptotal_r = 1e-6 * wtyp_r * p_lb * p_ly / 3
     p_Ved_r = ptotal_r
-
 # Ssecondary beam Ved
 s_ly = 13500
 qtyp_applied_f = wtyp_f * s_lx * 1e-3
@@ -171,7 +179,6 @@ s_Ved_r = qtotal_r * (s_ly * 1e-3) / 2
 # Floor Loads
 \begin{multicols}{2}
 \begin{description}
-    \item[] `{python} v` column
     \item[]$G_{tiles}$ = `{python} gt_f` $kN/m^2$
     \item[]$G_{steel}$ = `{python} gste_f` $kN/m^2$
     \item[]$G_{cladding}$ = `{python} gc_f` $kN/m^2$
@@ -212,9 +219,12 @@ s_Ved_r = qtotal_r * (s_ly * 1e-3) / 2
     \item[]Typical load, $W_{typ,r}$ = $1.35\cdot G_{typ,r} + 1.5 \cdot Q_{typ,r}$ = `{python} wtyp_r` $kN/m^2$
 \end{description}
 
-# Description of column geometry
+# According to previous beam calculation sheet
 \begin{description}
     \item[]Column height of the floor, $H$ = `{python} H` $mm$
+    \item[]Primary reaction force $V_{ed,p} =\frac{1}{2}\cdot W_{tpy}\cdot L_{x}\cdot L_{y} + \frac{1}{2}\cdot Q_{clad}\cdot L_x \cdot H$
+    \item[]Secondary reaction force $V_{ed,s} = \frac{q_{uls}\cdot L_y}{2}$, $q_{uls}$ = $W_{tpy}\cdot L_x + 1.5\cdot Q_{clad}\cdot H$
+    \item[]For roof case, the load of cladding will be removed
 \end{description}
 
 {{< pagebreak >}}
@@ -312,7 +322,6 @@ else:
 
 ```{python}
 # Count number of floors above the column
-num_force = [2, 3, 4 ,5]
 num_floor = 9 - floor
 if num_floor == 8:
     nfloor =7.5
@@ -323,12 +332,12 @@ ecc_y = (100 + h/2)
 ecc_z = (100 + tw/2)
 
 # Axial load and moment on column
-if Type == 'Corner':
+if Type == 'Edge':
   BC =2 
   Ned = nfloor*p_Ved_f + p_Ved_r + nfloor*s_Ved_f + s_Ved_r
   Myed = p_Ved_f*ecc_y*1e-3
   Mzed = s_Ved_f*ecc_z*1e-3
-elif Type == 'Edge1':
+elif Type == 'Perimeter1':
   BC = 3
   Ned = nfloor*p_Ved_f + p_Ved_r + 2*nfloor*s_Ved_f + 2*s_Ved_r
   Myed = (s_Ved_f - s_Ved_f)*ecc_y*1e-3
@@ -338,11 +347,13 @@ elif Type == 'Internal':
   Ned = 2*nfloor*p_Ved_f + 2*p_Ved_r + 2*nfloor*s_Ved_f + 2*s_Ved_r
   Myed = (p_Ved_f - p_Ved_f)*ecc_y*1e-3
   Mzed = (s_Ved_f - s_Ved_f)*ecc_z*1e-3
-elif Type == 'Edge2':
+elif Type == 'Perimeter2':
   BC = 5
-  Ned =  nfloor*s_Ved_f + s_Ved_r + 2*pfloor*s_Ved_f + 2*p_Ved_r
+  Ned = nfloor*s_Ved_f + s_Ved_r + 2*nfloor*s_Ved_f + 2*p_Ved_r
   Myed = p_Ved_f*ecc_y*1e-3
-  Mzed = (s_Ved_f - s_ved_f)*ecc_z*1e-13
+  Mzed = (s_Ved_f - s_Ved_f)*ecc_z*1e-13
+else:
+  raise ValueError(f"Unsupported Type: {Type}")
 ```
 
 #
@@ -351,63 +362,58 @@ elif Type == 'Edge2':
   \item[]Number of floors above column = `{python} num_floor`
   \item[]Eccentricity about y-axis, $e_{y}$ = $100 +\frac{h}{2}$ = `{python} ecc_y` mm
   \item[]Eccentricity about z-axis, $e_{z}$ = $100 +\frac{tw}{2}$ = `{python} ecc_z` mm
-  \item[]$Q_{clad} = 1.35\cdot Q_{clad}$ = `{python} qclad` $kN/m$
+  \item[]$Q_{clad} = 1.35\cdot Q_{clad}$ = `{python} p_qclad_f` $kN/m$
 \end{description}
 
 \setcounter{score}{`{python} int(BC)`}
 
 \ifthenelse{\value{score}=2}{
 \begin{description}
-  \item[]Reaction forces for edge beams, 
-  \item[]Secondary beam due to floor load, $V_{s,f}$ = $\frac{1}{4} \cdot q_{typ,f}\cdot L_x\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} vedrf` kN
-  \item[]Secondary beam due to roof load, $V_{ed,r}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_x\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_x$ = `{python} vedrr` kN
-  \item[]Primary beam due to floor load, $V_{ed,vf}$ = $\frac{1}{8} \cdot W_{typ,f}\cdot L_x \cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} vedef` kN
-  \item[]Primary beam due to roof load, $V_{ed,vr}$ = $\frac{1}{8} \cdot W_{typ,r}\cdot L_x \cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} veder` kN
-  \item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\cdot (V_{ed,f} + V_{ed,vf}) + V_{ed,r} + V_{ed,vr}$ = `{python} Ned` kN
-  \item[]Design moment about y-axis, $M_{y}$ = $V_{ed,f} \cdot e_{y}$ = `{python} Myed` kNm
-  \item[]Design moment about z-axis, $M_{z}$ = $V_{ed,vf} \cdot e_{z}$ = `{python} Mzed` kNm
+  \item[]Reaction forces for beams connected to edge column, 
+  \item[]Secondary beam due to floor load, $V_{ed,sf}$ =  `{python} s_Ved_f` kN
+  \item[]Secondary beam due to roof load, $V_{ed,sr}$ = `{python} s_Ved_r` kN
+  \item[]Primary beam due to floor load, $V_{ed,pf}$ = `{python} p_Ved_f` kN
+  \item[]Primary beam due to roof load, $V_{ed,pr}$  = `{python} p_Ved_r` kN
+  \item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\cdot (V_{ed,pf} + V_{ed,sf}) + V_{ed,sr} + V_{ed,pr}$ = `{python} Ned` kN
+  \item[]Design moment about y-axis, $M_{y}$ = $V_{ed,pf} \cdot e_{y}$ = `{python} Myed` kNm
+  \item[]Design moment about z-axis, $M_{z}$ = $V_{ed,sf} \cdot e_{z}$ = `{python} Mzed` kNm
 \end{description}
 }{
 \ifthenelse{\value{score}=3}{
 \begin{description}
-  \item[]Reaction forces for perimeter beams, 
-  \item[]Left secondary beam due to floor load, $V_{ed,lf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xl}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xl}$ = `{python} vedlf` kN
-  \item[]Left secondary beam due to roof load, $V_{ed,lr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xl}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xl}$ = `{python} vedlr` kN
-  \item[]Right secondary beam due to floor load, $V_{ed,rf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xr}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xr}$ = `{python} vedrf` kN
-  \item[]Right secondary beam due to roof load, $V_{ed,rr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xr}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xr}$ = `{python} vedrr` kN
-  \item[]Primary beam due to floor load, $V_{ed,vf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} vedvf` kN
-  \item[]Primary beam due to roof load, $V_{ed,vr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} vedvr` kN
-  \item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\cdot (V_{ed,lf} + V_{ed,rf} + V_{ed,vf}) + V_{ed,lr} + V_{ed,rr} + V_{ed,vr}$ = `{python} Ned` kN
-  \item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,lf} - V_{ed,rf}) \cdot e_{y}$ = `{python} Myed` kNm
-  \item[]Design moment about z-axis, $M_{z}$ = $V_{ed,vf} \cdot e_{z}$ = `{python} Mzed` kNm
+  \item[]Reaction forces for beams connected to perimeter column, 
+  \item[]Secondary beam due to floor load, $V_{ed,sf}$ =  `{python} s_Ved_f` kN
+  \item[]Secondary beam due to roof load, $V_{ed,sr}$ = `{python} s_Ved_r` kN
+  \item[]Primary beam due to floor load, $V_{ed,pf}$ = `{python} p_Ved_f` kN
+  \item[]Primary beam due to roof load, $V_{ed,pr}$  = `{python} p_Ved_r` kN
+  \item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\cdot (V_{ed,pf} + 2\cdot V_{ed,pf}) + V_{ed,pr} + V_{ed,sr}$ = `{python} Ned` kN
+  \item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,sf} - V_{ed,sf}) \cdot e_{y}$ = `{python} Myed` kNm
+  \item[]Design moment about z-axis, $M_{z}$ = $V_{ed,pf} \cdot e_{z}$ = `{python} Mzed` kNm
 \end{description}
 }{
 \ifthenelse{\value{score}=4}{
 \begin{description}
-  \item[]Reaction forces for internal beams, 
-  \item[]Secondary beam due to floor load, $V_{ed,lf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xl}\cdot L_y$ = `{python} vedlf` kN
-  \item[]Secondary beam due to roof load, $V_{ed,lr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xl}\cdot L_y$ = `{python} vedlr` kN
-  \item[]Secondary beam due to floor load, $V_{ed,rf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xr}\cdot L_y$ = `{python} vedrf` kN
-  \item[]Secondary beam due to roof load, $V_{ed,rr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xr}\cdot L_y$ = `{python} vedrr` kN
-  \item[]Primary beam due to floor load, $V_{ed,vf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y$ = `{python} vedvf` kN
-  \item[]Primary beam due to roof load, $V_{ed,vr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y$ = `{python} vedvr` kN
-  \item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\cdot (V_{ed,lf} + V_{ed,rf} + 2V_{ed,vf}) + V_{ed,lr} + V_{ed,rr} + 2V_{ed,vr}$ = `{python} Ned` kN
-  \item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,lf} - V_{ed,rf}) \cdot e_{y}$ = `{python} Myed` kNm
-  \item[]Design moment about z-axis, $M_{z}$ = $(V_{ed,vf} - V_{ed,vf}) \cdot e_{z}$ = `{python} Mzed` kNm
+  \item[]Reaction forces for beams connected to internal column, 
+  \item[]Secondary beam due to floor load, $V_{ed,sf}$ =  `{python} s_Ved_f` kN
+  \item[]Secondary beam due to roof load, $V_{ed,sr}$ = `{python} s_Ved_r` kN
+  \item[]Primary beam due to floor load, $V_{ed,pf}$ = `{python} p_Ved_f` kN
+  \item[]Primary beam due to roof load, $V_{ed,pr}$  = `{python} p_Ved_r` kN
+  \item[]Design axial load, $N_{ed}$ = $2`{python} nfloor`\cdot(V_{ed,pf} + V_{ed,sf}) + 2V_{ed,pr} + 2V_{ed,sr}$ = `{python} Ned` kN
+  \item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,sf} - V_{ed,sf}) \cdot e_{y}$ = `{python} Myed` kNm
+  \item[]Design moment about z-axis, $M_{z}$ = $(V_{ed,pf} - V_{ed,pf}) \cdot e_{z}$ = `{python} Mzed` kNm
 \end{description}
 }{
 \ifthenelse{\value{score}=5}{
 \begin{description}
-  \item[]Reaction forces for Edge beams (type 2), 
-  \item[]Left secondary beam due to floor load, $V_{ed,lf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xl}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xl}$ = `{python} vedlf` kN
-  \item[]Left secondary beam due to roof load, $V_{ed,lr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xl}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xl}$ = `{python} vedlr` kN
-  \item[]Right secondary beam due to floor load, $V_{ed,rf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot L_{xr}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xr}$ = `{python} vedrf` kN
-  \item[]Right secondary beam due to roof load, $V_{ed,rr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot L_{xr}\cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_{xr}$ = `{python} vedrr` kN
-  \item[]Primary beam due to floor load, $V_{ed,vf}$ = $\frac{1}{4} \cdot W_{typ,f}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} vedvf` kN
-  \item[]Primary beam due to roof load, $V_{ed,vr}$ = $\frac{1}{4} \cdot W_{typ,r}\cdot (\frac{L_{xl}}{2} + \frac{L_{xr}}{2}) \cdot L_y + \frac{1}{2} \cdot Q_{clad} \cdot H \cdot L_y$ = `{python} vedvr` kN
-  \item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\cdot (V_{ed,lf} + V_{ed,rf} + V_{ed,vf}) + V_{ed,lr} + V_{ed,rr} + V_{ed,vr}$ = `{python} Ned` kN
-  \item[]Design moment about y-axis, $M_{y}$ = $V_{ed,lf} \cdot e_{z} \cdot e_{y}$ = `{python} Myed` kNm
-  \item[]Design moment about z-axis, $M_{z}$ = $(V_{ed,vf} - V_{ed,vf}) \cdot e_{z}$ = `{python} Mzed` kNm
+  \item[]Reaction forces for Perimeter beams (type 2), 
+  \item[]Reaction forces for beams connected to internal column, 
+  \item[]Secondary beam due to floor load, $V_{ed,sf}$ =  `{python} s_Ved_f` kN
+  \item[]Secondary beam due to roof load, $V_{ed,sr}$ = `{python} s_Ved_r` kN
+  \item[]Primary beam due to floor load, $V_{ed,pf}$ = `{python} p_Ved_f` kN
+  \item[]Primary beam due to roof load, $V_{ed,pr}$  = `{python} p_Ved_r` kN
+  \item[]Design axial load, $N_{ed}$ = $2`{python} nfloor`\cdot (V_{ed,sf} + V_{ed,pf}) + V_{ed,sr} + V_{ed,pr}$ = `{python} Ned` kN
+  \item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,sf}- V_{ed,sf})\cdot e_{y}$ = `{python} Myed` kNm
+  \item[]Design moment about z-axis, $M_{z}$ = $V_{ed,pf}\cdot e_{z}$ = `{python} Mzed` kNm
 \end{description}
 }{
 \begin{description}
