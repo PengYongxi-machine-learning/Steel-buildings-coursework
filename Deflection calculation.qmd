@@ -58,12 +58,95 @@ format:
           }
 ---
 ```{python}
-Gtyp_f = 3.5
-Qtyp_f = 3.0
-wtyp_f = Gtyp_f + Qtyp_f
+L = 54
+Hr = 4
+Hg = 6
+H = 8*Hr + Hg
+dfactor = 1.35
+ifactor = 1.05
+wfactor = 1.5
+# Dead floor
+gt_f = 0.7
+gs_f = 3.38
+gc_f = 0.5
+gste_f = 0.3
+gser_f = 1.4
+# Impose floor
+qpar_f = 1.0
+qimp_f = 4.0
+qcl = 1.2
+Gtyp_f = gt_f + gs_f + gc_f + gste_f + gser_f
+Qtyp_f = qpar_f + qimp_f
+wtyp_f = dfactor * Gtyp_f + ifactor * Qtyp_f
+# Dead roof
+gt_r = 1.0
+gs_r = 3.38
+gc_r = 0.5
+gste_r = 0.2
+gser_r = 1.0
+# Impose roof
+qimp_r = 1.5
+Gtyp_r = gt_r + gs_r + gc_r + gste_r + gser_r
+Qtyp_r = qimp_r
+wtyp_r = dfactor * Gtyp_r + ifactor * Qtyp_r
+# Wind load
+wk = 1.3
 ```
-| Parameter | Value | Unit |
-|---|---:|---|
-| Typical dead load, \(G_{typ,f}\) | `{python} Gtyp_f` | kN/m² |
-| Typical imposed load, \(Q_{typ,f}\) | `{python} Qtyp_f` | kN/m² |
-| Typical load, \(W_{typ,f}\) | `{python} wtyp_f` | kN/m² |
+#
+# Floor Loads
+\begin{multicols}{2}
+\begin{description}
+    \item[]$G_{tiles}$ = `{python} gt_f` $kN/m^2$
+    \item[]$G_{steel}$ = `{python} gste_f` $kN/m^2$
+    \item[]$G_{cladding}$ = `{python} gc_f` $kN/m^2$
+    \item[]$G_{slab}$ = `{python} gs_f` $kN/m^2$
+    \item[]$G_{services}$ = `{python} gser_f` $kN/m^2$
+    \item[]$Q_{partitions}$ = `{python} qpar_f` $kN/m^2$
+    \item[]$Q_{imposed}$ = `{python} qimp_f` $kN/m^2$
+    \item[]$Q_{cladding}$ = `{python} qcl` $kN/m^2$
+\end{description}
+\end{multicols}
+
+# Roof Loads
+\begin{multicols}{2}
+\begin{description}
+    \item[]$G_{tiles}$ = `{python} gt_r` $kN/m^2$
+    \item[]$G_{steel}$ = `{python} gste_r` $kN/m^2$
+    \item[]$G_{cladding}$ = `{python} gc_r` $kN/m^2$
+    \item[]$G_{slab}$ = `{python} gs_r` $kN/m^2$
+    \item[]$G_{services}$ = `{python} gser_r` $kN/m^2$
+    \item[]$Q_{imposed}$ = `{python} qimp_r` $kN/m^2$
+\end{description}
+\end{multicols}
+
+# Wind Load and partial factor
+\begin{description}
+    \item[]$W_k$ = `{python} wk`
+    \item[]Partial factor for Dead load = `{python} dfactor`
+    \item[]Partial factor for imposed load = `{python} ifactor`
+    \item[]Partial factor for wind load = `{python} wfactor`
+\end{description}
+
+{{< pagebreak >}}
+```{python}
+# wind load per floor
+Wtotal = wfactor*L*H*wk
+Fb = wtotal/4
+wudl = Fb/H
+wr = wudl*Hr*0.5
+wf1 = wudl*Hr
+wf2 = wudl*Hg
+
+# floor load
+A = (60+45)*54/2
+Fstorey = wtyp_f*A
+EHF1 = 0.5*0.005*Fstorey
+Froof = wtyp_r*A
+EHF2 = 0.5*0.05*Froof
+
+#load per floor
+fg = wf1 + EHf1
+ff = wf2 + EHF1
+fr = wr + EHf2
+```
+#
