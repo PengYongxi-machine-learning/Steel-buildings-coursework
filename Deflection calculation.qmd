@@ -270,10 +270,11 @@ total_load = np.array(Total_load)
 # Diagonal column geometry
 Hs = np.array([4,4,4,4,4,4,4,4,6])
 Ld = np.sqrt(Hs**2 + Lh**2)
+tem_list = np.cumsum(Hs[::-1])
 
 # Moment
-moment_amr = 38 + 4 -np.cumsum(Hs)
-M = np.sum(total_shear * moment_amr)
+moment_arm = tem_list[::-1]
+M = np.sum(total_shear * moment_arm)
 I, Ib, Ie = sci(Ac*(Lh*1e3)**2/2)
 phi, phib, phie = sci(M*1e6/(E*I))
 a = 9 - storey
@@ -308,20 +309,20 @@ delta_f = 1e6*(phi*Hs**2)/(6*n)*(3*n**2 - 3*a**2 - 3*a - 1)
 delta_t = delta_sh + delta_f
 a_cr = (total_shear*Hs*1e3)/(total_load*delta_t)
 # Build one table from all result arrays.
-df = pd.DataFrame({
+df1 = pd.DataFrame({
     'Storey' : storey,
-    r"$H_s$ (mm)": Hs,
+    r"$H_s$ (m)": Hs,
     r"$F$ (kN)": nodal_force,
     r"$V_{ed}$ (kN)": total_shear,
     r"$N_{ed}$ (kN)": total_load,
     r"$\delta_{sh}$ (mm)": delta_sh,
     r"$\delta_f$ (mm)": delta_f,
-    r"$\delta_t$ (mm)": delta_t,
+    r"$\delta_i$ (mm)": delta_t,
     r"$\alpha_{cr}$": a_cr
 })
 
 # Generate LaTeX table with custom formatting
-latex_table = df.to_latex(
+latex_table = df1.to_latex(
     index=False,
     float_format="%.2f",
     column_format="|c|c|c|c|c|c|c|c|c|c|",
@@ -333,14 +334,99 @@ print(r"\normalfont")
 print(r"\setlength{\tabcolsep}{8pt}")
 print(latex_table)
 ```
+
 Notes: 
 \begin{multicols}{2}
 \begin{description}
-    \item[1.]$\delta_{sh} = \frac{V_{ed}L_d}{A_dE}\cdot(\frac{L_d}{L_h})^2$  
+    \item[1.]$\delta_{sh} = \frac{V_{ed}L_d}{A_dE}\cdot(\frac{L_d}{L_h})^2$, Shear Deflection
     \item[2.]$\delta_f = \frac{\phi H_s^2}{6n}(3n^2 - 3a^2 - 3a - 1)$  
-    \item[3.]n = 9, for 9 storeys 
+    \item[3.]n = 9, for 9-storey building
     \item[4.]a = 9 - storey number (first column)
-    \item[5.]$\delta_t = \delta_{sh} + \delta_f$ 
-    \item[6.]$\alpha_{cr} = \frac{V_{ed}H_s}{N_{ed}\delta_t}$ 
+    \item[5.]$\delta_i = \delta_{sh} + \delta_f$, Interstorey deflection
+    \item[6.]$\alpha_{cr} = \frac{V_{ed}H_s}{N_{ed}\delta_t}$, EC3 Clause 5.2.1(3) 
 \end{description}
 \end{multicols}
+
+{{< pagebreak >}}
+
+#
+# Result 2:
+```{python}
+#| output: asis
+
+# Total deflection calculation
+moment_arm2 = max(moment_arm) - moment_arm + Hs/2
+M2 = np.convolve(nodal_force, moment_arm2, mode="full")[:len(moment_arm2)]
+delta_theta = (M2*Hs*1e9)/(E*I)
+temp_list2 = np.cumsum(delta_theta[::-1])
+theta = temp_list2[::-1] 
+bending = theta*Hs*1000
+delta_total = delta_sh + bending
+temp_list3 = np.cumsum(delta_total[::-1])
+total_deflection = temp_list3[::-1]
+
+# Build one table from all result arrays.
+df2 = pd.DataFrame({
+    'Storey' : storey,
+    r'$L_{i}$ (m)': moment_arm2,
+    r"$F$ (kN)": nodal_force,
+    r'$\sum F_i L_{i}$ (kNm)': M2,
+    r"$\Delta\theta$ (/mm)": delta_theta,
+    r"$\theta$ (/mm)": theta,
+    r"$\delta_f$ (mm)": bending,
+    r"$\delta_i$ (mm)": delta_total,
+    r"$\delta_{t}$ (mm)": total_deflection
+})
+
+# Generate LaTeX table with custom formatting
+latex_table = df2.to_latex(
+    index=False,
+    float_format="%.2f",
+    column_format="|c|c|c|c|c|c|c|c|c|",
+    escape=False,
+    formatters={
+        'Storey': '{:.0f}'.format,
+        r'$L_{i}$ (m)': '{:.2f}'.format,
+        r"$F$ (kN)": '{:.2f}'.format,
+        r'$\sum F_i L_{i}$ (kNm)': '{:.2f}'.format,
+        r"$\Delta\theta$ (/mm)": '{:.3e}'.format, 
+        r"$\theta$ (/mm)": '{:.3e}'.format,       
+        r"$\delta_f$ (mm)": '{:.2f}'.format,
+        r"$\delta_i$ (mm)": '{:.2f}'.format,
+        r"$\delta_{t}$ (mm)": '{:.2f}'.format,})
+
+# Wrap with small font and tight spacing
+print(r"\normalfont")
+print(r"\setlength{\tabcolsep}{4pt}")
+print(latex_table)
+```
+Notes: 
+\begin{description}
+    \item[1.] $L_{i}$ is the moment arm 
+    \item[2.]$\Delta\theta = \frac{(\sum F_i L_i)\cdot H_s}{E\cdot I}$  
+    \item[3.]Inclination, $\theta$ = $\sum \Delta\theta$
+    \item[4.]Flexural deflection, $\delta_f$ = $\theta \cdot H_s$
+    \item[5.]Interstorey deflection, $\delta_i$ = $\delta_{sh} + \delta_f$ 
+    \item[6.]Total deflection, $\delta_t$ = $\sum \delta_i$
+\end{description}
+
+```{python}
+# Graph of deflection
+#| output: asis
+import matplotlib.pyplot as plt
+
+# Calculate elevation of each storey
+elevation = np.cumsum(Hs[::-1])[::-1]
+
+# Create figure
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.plot(total_deflection, elevation, marker='o', linewidth=2, markersize=6)
+ax.set_xlabel('Total Deflection (mm)', fontsize=12)
+ax.set_ylabel('Elevation (m)', fontsize=12)
+ax.set_title('Lateral Deflection vs Elevation', fontsize=14)
+ax.grid(True, alpha=0.3)
+ax.invert_yaxis()  # Optional: if you want ground at bottom
+
+plt.tight_layout()
+plt.show()
+```
