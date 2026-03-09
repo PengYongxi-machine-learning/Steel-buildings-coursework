@@ -63,6 +63,8 @@ format:
 
 ```{python}
 %precision 2
+# Freedom of choice parameters
+L = 54
 Ac1 = 9000
 Ac2 = 9000
 Ad = 32100
@@ -72,10 +74,10 @@ ifactor = 1.05
 wfactor = 1.5
 
 #Material properties
+import math as m
 E = 210000
 
 # Height and length of the building
-L = 54
 Hr = 4
 Hg = 6
 H = 8*Hr + Hg
@@ -92,7 +94,7 @@ qimp_f = 4.0
 qcl = 1.2
 Gtyp_f = gt_f + gs_f + gc_f + gste_f + gser_f
 Qtyp_f = qpar_f + qimp_f
-wtyp_f = dfactor * Gtyp_f + ifactor * Qtyp_f
+wtyp_f = dfactor * Gtyp_f + ifactor * Qtyp_f 
 # Dead roof
 gt_r = 1.0
 gs_r = 3.38
@@ -114,7 +116,7 @@ wk = 1.3
 \begin{description}
     \item[]$G_{tiles}$ = `{python} gt_f` $kN/m^2$
     \item[]$G_{steel}$ = `{python} gste_f` $kN/m^2$
-    \item[]$G_{cladding}$ = `{python} gc_f` $kN/m^2$
+    \item[]$G_{ceiling}$ = `{python} gc_f` $kN/m^2$
     \item[]$G_{slab}$ = `{python} gs_f` $kN/m^2$
     \item[]$G_{services}$ = `{python} gser_f` $kN/m^2$
     \item[]$Q_{partitions}$ = `{python} qpar_f` $kN/m^2$
@@ -128,22 +130,29 @@ wk = 1.3
 \begin{description}
     \item[]$G_{tiles}$ = `{python} gt_r` $kN/m^2$
     \item[]$G_{steel}$ = `{python} gste_r` $kN/m^2$
-    \item[]$G_{cladding}$ = `{python} gc_r` $kN/m^2$
+    \item[]$G_{ceiling}$ = `{python} gc_r` $kN/m^2$
     \item[]$G_{slab}$ = `{python} gs_r` $kN/m^2$
     \item[]$G_{services}$ = `{python} gser_r` $kN/m^2$
     \item[]$Q_{imposed}$ = `{python} qimp_r` $kN/m^2$
 \end{description}
 \end{multicols}
 
-# Wind Load and partial factor
+# Wind Load and load combination
 \begin{description}
     \item[]$W_k$ = `{python} wk`
-    \item[]Partial factor for Dead load = `{python} dfactor`
-    \item[]Partial factor for imposed load = `{python} ifactor`
-    \item[]Partial factor for wind load = `{python} wfactor`
+    \item[]Partial factor for Dead load, $\gamma_d$ = `{python} dfactor`
+    \item[]Partial factor for imposed load, $\gamma_i$ = `{python} ifactor`
+    \item[]Partial factor for wind load, $\gamma_w$ = `{python} wfactor`
 \end{description}
 
 {{< pagebreak >}}
+
+#
+\begin{description}
+    \item[]Load combination for floor, $W_{typ, f}$ = $\gamma_d \cdot G_{typ, f} + \gamma_i \cdot Q_{typ, f} + \gamma_w \cdot W_k$ = `{python} wtyp_f` $kN/m^2$
+    \item[]Load combination for roof, $W_{typ, r}$ = $\gamma_d \cdot G_{typ, r} + \gamma_i \cdot Q_{typ, r} + \gamma_w \cdot W_k$ = `{python} wtyp_r` $kN/m^2$
+\end{description}
+
 ```{python}
 # wind load per floor
 wtotal = wfactor*L*H*wk
@@ -154,8 +163,10 @@ wf1 = wudl*Hr
 wf2 = wudl*Hg
 
 # floor load
+Perimeter = 54+45+60+m.sqrt(15**2+54**2)
 A = (60+45)*54/2
-Fstorey = wtyp_f*A
+Fcld = qcl*H*(54+45+60+56.04)
+Fstorey = wtyp_f*A + Fcld
 EHF1 = 0.25*0.005*Fstorey
 Froof = wtyp_r*A
 EHF2 = 0.25*0.005*Froof
@@ -166,35 +177,41 @@ fg = wf2 + EHF1
 fr = wr + EHF2
 ```
 
-#
 # Wind load per floor
 \begin{description}
-    \item[]Total area of the wind face = `{python} L*H` $m^2$
-    \item[]$W_{total}$ = `{python} wtotal` $kN$
-    \item[]wind load per bracing, $F_b$ = `{python} Fb` $kN$
-    \item[]wind load per meter, $W_{udl}$ = `{python} wudl` $kN/m$
-    \item[]wind load on roof, $W_r$ = `{python} wr` $kN$
-    \item[]wind load on 4 meter floor, $W_{f1}$ = `{python} wf1` $kN$
-    \item[]wind load on 6 meter floor, $W_{f2}$ = `{python} wf2` $kN$
+    \item[]Height of the building, $H$ = `{python} H` $m$
+    \item[]Length of the building, $L$ = `{python} L` $m$
+    \item[]Total area of the wind face, $A_{wf}$ = `{python} L` $\times$ `{python} H` = `{python} L*H` $m^2$
+    \item[]Total Wind load, $W_{total}$ = $\gamma_w \times A_{wf} \times W_k$  = `{python} wtotal` $kN$
+    \item[]Wind load per bracing, $F_b$ = $W_{total}/4$ = `{python} Fb` $kN$
+    \item[]Wind load per meter, $W_{udl}$ = $F_b/H$ = `{python} wudl` $kN/m$
+    \item[]Wind load on roof, $W_r$ = $0.5 \times W_{udl} \times `{python} Hr`$ = `{python} wr` $kN$
+    \item[]Wind load on 4 meter floor, $W_{f}$ = $W_{udl} \times `{python} Hr`$ = `{python} wf1` $kN$
+    \item[]Wind load on 6 meter ground floor, $W_{g}$ = $W_{udl} \times `{python} Hg`$ = `{python} wf2` $kN$
 \end{description}
 
 # Dead and imposed load per floor
 \begin{description}
+    \item[]Perimeter of the floor = `{python} Perimeter` $m$
+    \item[]Cladding load, $F_{cladding}$ = $q_{cl} \times H \times Perimeter$ = `{python} Fcld` $kN$
     \item[]Area of floor, A = `{python} A` $m^2$
-    \item[]Total floor load, $F_{storey}$ = $W_{typ, f}\cdot A$ =`{python} Fstorey` $kN$
-    \item[]Total roof load, $F_{roof}$ = $W_{typ, r}\cdot A$ = `{python} Froof` $kN$
-    \item[]Equivalent horizontal force on floor, $EHF_1$ = `{python} EHF1` $kN$
-    \item[]Equivalent horizontal force on roof, $EHF_2$ = `{python} EHF2` $kN$
 \end{description}
 
 {{< pagebreak >}}
 
 #
+\begin{description}
+    \item[]Total floor load, $F_{storey}$ = $W_{typ, f}\cdot A + F_{cladding}$ = `{python} Fstorey` $kN$
+    \item[]Total roof load, $F_{roof}$ = $W_{typ, r}\cdot A$ = `{python} Froof` $kN$
+    \item[]Equivalent horizontal force on floor, $EHF_f$ = $F_{storey} \cdot 0.25 \cdot 0.005$ = `{python} EHF1` $kN$
+    \item[]Equivalent horizontal force on roof, $EHF_r$ = $F_{roof} \cdot 0.25 \cdot 0.005$ = `{python} EHF2` $kN$
+\end{description}
+
 # Total load per floor
 \begin{description}
-    \item[]Total load on 4 meter floor, $F_f$ = `{python} ff` $kN$
-    \item[]Total load on 6 meter floor, $F_g$ = `{python} fg` $kN$
-    \item[]Total load on roof, $F_r$ = `{python} fr` $kN$
+    \item[]Total load on 4 meter floor, $F_f$ = $W_{f} + EHF_f$ = `{python} ff` $kN$
+    \item[]Total load on 6 meter ground floor, $F_g$ = $W_{g} + EHF_f$ = `{python} fg` $kN$
+    \item[]Total load on roof, $F_r$ = $W_r + EHF_r$ = `{python} fr` $kN$
 \end{description}
 
 ```{python}
@@ -255,27 +272,30 @@ a = 9 - storey
 
 # Parameters for deflection calculation
 \begin{description}
-    \item[]Interstorey height = $H_s$ 
+    \item[]Interstorey height = $H_s$, 
+    \item[]Horizontal distance between vertical columns = $L_h$ = `{python} Lh` $m$
     \item[]Elastic modulus, $E$ = `{python} E` $MPa$
     \item[]Area of the diagonal column, $A_d$ = `{python} Ad` $mm^2$
-    \item[]Area of vertical column, $A_{c1}$ = `{python} Ac1` $mm^2$
-    \item[]Length of diagonal column at the ground floor, $L_h$ = `{python} Ld[-1]` $m$
-    \item[]Length of the diagonal column for other floors, $L_d$ = `{python} Ld[0]` $m$
-    \item[] Resultant moment, $M$ = `{python} M` $kN\cdot m$
-    \item[] Moment of inertia of the vertical column, $I$ = `{python} Ib` $\times 10^{`{python} Ie`}$ $mm^4$
-    \item[] Flexural deflection coefficient, $\phi$ =  `{python} phib` $\times 10^{`{python} phie`}$ $mm$
-    
+    \item[]Area of vertical column, $A_{c}$ = `{python} Ac1` $mm^2$
+    \item[]Length of the diagonal column of floors, $L_{d,other}$ = $\sqrt{4^2 + L_h^2} $ = `{python} Ld[0]` $m$
 \end{description}
 
 {{< pagebreak >}}
 
 #
+\begin{description}
+    \item[]Length of diagonal column of ground floor, $L_{d,ground}$ = $\sqrt{6^2 + L_h^2}`$ = `{python} Ld[-1]` $m$
+    \item[] Resultant moment, $M$ = $\sum{F_i \cdot H_i}$ =`{python} M` $kN\cdot m$
+    \item[] Moment of inertia of the vertical columns, $I$ = $0.5 \cdot A_c \cdot L_h^2$ = `{python} Ib` $\times 10^{`{python} Ie`}$ $mm^4$
+    \item[] Flexural deflection coefficient, $\phi$ = $\frac{M}{EI}$ = `{python} phib` $\times 10^{`{python} phie`}$ $mm$
+\end{description}
 
+# Result 1:
 ```{python}
 #| output: asis
 import pandas as pd
 n = len(storey)
-delta_sh = total_shear*Ld*1e6/(Ad*E)*(Ld/Hs)
+delta_sh = total_shear*Ld*1e6/(Ad*E)*(Ld/Lh)
 delta_f = 1e6*(phi*Hs**2)/(6*n)*(3*n**2 - 3*a**2 - 3*a - 1)
 delta_t = delta_sh + delta_f
 a_cr = (total_shear*Hs*1e3)/(total_load*delta_t)
@@ -304,6 +324,15 @@ latex_table = df.to_latex(
 print(r"\normalfont")
 print(r"\setlength{\tabcolsep}{8pt}")
 print(latex_table)
-
 ```
-Note: $\alpha_{cr} = \frac{V_{ed}H_s}{N_{ed}\delta_t}$
+Notes: 
+\begin{multicols}{2}
+\begin{description}
+    \item[1.]$\delta_{sh} = \frac{V_{ed}L_d}{A_dE}\cdot(\frac{L_d}{L_h})^2$  
+    \item[2.]$\delta_f = \frac{\phi H_s^2}{6n}(3n^2 - 3a^2 - 3a - 1)$  
+    \item[3.]n = 9, for 9 storeys 
+    \item[4.]a = 9 - storey number
+    \item[5.]$\delta_t = \delta_{sh} + \delta_f$ 
+    \item[6.]$\alpha_{cr} = \frac{V_{ed}H_s}{N_{ed}\delta_t}$ 
+\end{description}
+\end{multicols}
