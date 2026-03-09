@@ -410,23 +410,20 @@ Notes:
     \item[6.]Total deflection, $\delta_t$ = $\sum \delta_i$
 \end{description}
 
+{{< pagebreak >}}
+
+#
 ```{python}
 # Graph of deflection
 #| output: asis
 import matplotlib.pyplot as plt
-
-# Calculate elevation of each storey
-elevation = np.cumsum(Hs[::-1])[::-1]
-
-# Create figure
+plt.rcParams['font.family'] = 'Times New Roman'
 fig, ax = plt.subplots(figsize=(8, 6))
-ax.plot(total_deflection, elevation, marker='o', linewidth=2, markersize=6)
+ax.plot(total_deflection, moment_arm, marker='o', linewidth=2, markersize=6)
 ax.set_xlabel('Total Deflection (mm)', fontsize=12)
 ax.set_ylabel('Elevation (m)', fontsize=12)
 ax.set_title('Lateral Deflection vs Elevation', fontsize=14)
 ax.grid(True, alpha=0.3)
-ax.invert_yaxis()  # Optional: if you want ground at bottom
-
 plt.tight_layout()
 plt.show()
-```
+```     
