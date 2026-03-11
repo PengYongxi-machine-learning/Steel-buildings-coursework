@@ -47,11 +47,11 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Truss Sizing and Connection Calculations}
+                \centerline{Diagonal Members of Brace Calculations}
                 \vspace*{1mm}
             } \\ \cline{2-5}
-            & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 29/03/2023} \\ \cline{3-5}
-            & & \textbf{Checked by} \quad & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
+            & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
+            & & \textbf{Checked by} Vincent Chan \quad & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
             \end{tabularx}
             \egroup
           }
@@ -67,6 +67,9 @@ import math
 section = '356 x 406x 287'
 lt = math.sqrt(6000**2+8250**2)
 lc = math.sqrt(4000**2+8250**2)
+Ned = 1611
+Nted = 2107
+area_reduction = 0.9
 # setup
 %precision 2
 import pandas as pd
@@ -124,6 +127,7 @@ else:
     ay = 0.70
     az = 0.70
 ```
+
 #
 # Effective length of column about y-y
 
@@ -169,20 +173,28 @@ c2 = cf/tf
 {{< pagebreak >}}
 
 #
+# Length of critical diagonal columns
+\begin{description}
+  \item[]Length of compressive critical diagonal column, $L_{c}$ = $\sqrt{6000^2 + 8250^2}$ = `{python} lc` mm
+  \item[]Length of tensile critical diagonal column, $L_{t}$ = $\sqrt{4000^2 + 8250^2}$ = `{python} lt` mm
+\end{description}
+
 # Section Classification
 
+According to EN 1993-1-1:2022 Eq 5.1, $\epsilon$ = $\sqrt{\frac{235}{f_{y}}}$ = `{python} ep` 
+
+\begin{multicols}{2}
 \begin{description}
-  \item[]$\epsilon$ = $\sqrt{\frac{235}{f_{y}}}$ = `{python} ep` --- (EN 1993-1-1 :2022, Eq 5.1)
-  \item[]Web Classification: 
-  \item[]$c_{w}$ = $\frac{(b-t_{w}-2\cdot r)}{2}$ = `{python} cw`
-  \item[]$\frac{c_{w}}{t_{w}}$ = `{python} c1`
-  \item[]Class 1 criteria $\leq$ $28\epsilon$ = `{python} crw` --- (EN 1993-1-1 :2022, Table 7.3)
-  \item[]Flange Classification: 
-  \item[]$c_{f}$ = Depth between filet = `{python} cf` --- (EN 1993-1-1 :2022, Table 7.4)
-  \item[]$\frac{c_{f}}{t_{f}}$ = `{python} c2` 
-  \item[]Class 1 criteria $\leq$ $9\epsilon$ = `{python} crf` 
-  \item[]Since $\frac{c_{w}}{t_{w}}$ < $28\epsilon$ and $\frac{c_{f}}{t_{f}}$ < $9\epsilon$, the section belongs to class 1  
+  \item[]$c_{w}$ = $\frac{(b-t_{w}-2\cdot r)}{2}$ = `{python} cw`  
+  \item[] $\frac{c_{w}}{t_{w}}$ = `{python} c1`
+  \item[]Class 1 limit for web, 72 $\epsilon $ = `{python} crw`
+  \item[]$c_{f}$ = $h_{w}$ = `{python} cf` 
+  \item[]$\frac{c_{f}}{t_{f}}$ = `{python} c2`
+  \item[]Class 1 limit for flange, 9 $\epsilon$ = `{python} crf`
 \end{description}  
+\end{multicols}
+
+Since `{python} c1` < `{python} crw` and `{python} c2` < `{python} crf`, the section belongs to class 1 
  
 
 ```{python}
@@ -193,13 +205,12 @@ def buckle (Lcr, I, E, A, fy, a):
   chi = min(1/(phi + math.sqrt(phi**2 - lam**2)),1)
   return Ncr, lam, ratio, phi, chi
 
-Lcr = lc/2
+Lcr = lc
 Ncry, lamy, ratio, phiy, chiy = buckle(Lcr, Iy, E, A, fy, ay)
 Ncrz, lamz, ratio, phiz, chiz = buckle(Lcr, Iz, E, A, fy, az)
 
 chi = min([chiy,chiz])
 Nrd = chi*A*fy/1000
-Ned =3000000
 
 if Nrd >= Ned:
   symbol = '>'
@@ -212,7 +223,7 @@ else:
 # Buckling resistance about y-y axis
 
 \begin{description}
-  \item[]$L_{cr,y}$ = `{python} Lcr` mm
+  \item[]$L_{cr,y}$ = $L_c$ =`{python} Lcr` mm
   \item[]$N_{cr,y}$ = $\frac{\pi^{2}\cdot E\cdot I_{y}}{{L_{cr,y}}^{2}}$ = `{python} Ncry` kN
   \item[]$\lambda_{y}$ =  $\sqrt{\frac{N_{Rk}}{N_{cr,y}}}$ = $\sqrt{\frac{A\cdot f_{y}}{N_{cr,y}}}$ = `{python} lamy` --- (EN 1993-1-1 :2022, Eq 8.69)
   \item[]$\frac{h}{b}$ = `{python} ratio` < 1.2
@@ -246,20 +257,18 @@ else:
 # Buckling resistance
 \begin{description}
   \item[]$\chi$ = min($\chi_{y},\chi_{z}$) = `{python} chi`
-  \item[]$N_{RD}$ = $\chi\cdot A\cdot f_{y}$ = `{python} Nrd` kN --- (EN 1993-1-1 :2022, Eq 8.68)
-  \item[]Maximum axial compressive force is `{python} Ned` kN.
-  \item[]Since $N_{RD} `{python} symbol` N_{ED}$, `{python} outputn`
+  \item[]$N_{rd}$ = $\chi\cdot A\cdot f_{y}$ = `{python} Nrd` kN --- (EN 1993-1-1 :2022, Eq 8.68)
+  \item[]$N_{ed}$ = `{python} Ned` kN.
+  \item[]Therefore `{python} outputn`
 \end{description}
 
 
 ```{python}
-gamma1 = 1.0
-gamma0 = 1.25
-area_reduction = 0.9
-Nplrd = A*fy/gamma1/1000
-Nurd = area_reduction*A*fu/gamma0/1000
+gamma0 = 1.0
+gamma1 = 1.25
+Nplrd = A*fy/gamma0/1000
+Nurd = area_reduction*A*fu/gamma1/1000
 Ntrd = min(Nplrd, Nurd)
-Nted = 3000000
 if Ntrd > Nted:
   symbol = '>'
   outputt='the section is safe in tension'
@@ -273,11 +282,11 @@ else:
 \begin{description}
   \item[]Gross area tension resistance :
   \item[]$N_{pl,RD}$ = $\frac{A\cdot f_{y}}{\gamma_{1}}$ = `{python} Nplrd` kN --- (EN 1993-1-1 :2022, Eq 8.14)
-  \item[]Assume the net area is 90\% of the gross area and smooth holes,
-  \item[]k = 1
+  \item[]Assume the net area is 70\% of the gross area and smooth holes, k = 1
   \item[]Net area tension resistance :
-  \item[]$N_{u,RD}$ = `{python} area_reduction`$\frac{k\cdot A_{net}\cdot f_{u}}{\gamma_{0}}$ = `{python} Nurd` kN --- (EN 1993-1-1 :2022, Eq 8.15)
-  \item[]Maximum axial tensile force is `{python} Nted` kN.
-  \item[]Since $N_{t,RD} `{python} symbol` N_{t,ED}$, `{python} outputt`
+  \item[]$N_{u,RD}$ = `{python} area_reduction` $\cdot\frac{k\cdot A_{net}\cdot f_{u}}{\gamma_{0}}$ = `{python} Nurd` kN --- (EN 1993-1-1 :2022, Eq 8.15)
+  \item[]$N_{t,rd}$ = min($N_{pl,RD}$, $N_{u,RD}$) = `{python} Ntrd` kN
+  \item[]$N_{ed}$ = `{python} Nted` kN.
+  \item[]Therefore `{python} outputt`
 \end{description}
 
