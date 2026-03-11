@@ -48,7 +48,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{ WE Bracing LC3 - Lateral Deflection Calculation }
+                \centerline{ NS Bracing LC3 - Lateral Deflection Calculation }
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -65,7 +65,7 @@ format:
 %precision 2
 import numpy as np
 # Freedom of choice parameters
-direction = 'WE'
+direction = 'NS'
 load_case = 3
 nbrace = 4
 
@@ -92,7 +92,7 @@ elif load_case == 3:
     wfactor = 1.5
 
 # Horizontal distance between vertical columns
-if direction == 'NS':
+if direction == 'WE':
     Lh = 13.5
     L = 60
 else:

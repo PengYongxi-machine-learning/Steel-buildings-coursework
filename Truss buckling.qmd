@@ -63,9 +63,10 @@ format:
 
 ```{python}
 # Define variables
-section = '356 x 406x 634'
-length = 6000
-
+import math
+section = '356 x 406x 287'
+lt = math.sqrt(6000**2+8250**2)
+lc = math.sqrt(4000**2+8250**2)
 # setup
 %precision 2
 import pandas as pd
@@ -192,7 +193,7 @@ def buckle (Lcr, I, E, A, fy, a):
   chi = min(1/(phi + math.sqrt(phi**2 - lam**2)),1)
   return Ncr, lam, ratio, phi, chi
 
-Lcr = length/2
+Lcr = lc/2
 Ncry, lamy, ratio, phiy, chiy = buckle(Lcr, Iy, E, A, fy, ay)
 Ncrz, lamz, ratio, phiz, chiz = buckle(Lcr, Iz, E, A, fy, az)
 
