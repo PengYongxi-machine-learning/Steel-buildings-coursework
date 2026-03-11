@@ -48,7 +48,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{ NS Bracing - Lateral Deflection Calculation }
+                \centerline{ WE Bracing LC3 - Lateral Deflection Calculation }
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -66,6 +66,7 @@ format:
 import numpy as np
 # Freedom of choice parameters
 direction = 'WE'
+load_case = 3
 nbrace = 4
 
 # Vertical column sections, list start from top to bottom
@@ -74,10 +75,21 @@ Ac45 = '305 x 305x 198'
 Ac67 = '305 x 305x 137'
 Ac89 = '305 x 305x 97'
 Ac = np.array([12300, 12300, 17400, 17400, 25200, 25200, 36600, 36600, 36600])
-section_diag = '203 x 203x 52'
-dfactor = 1.35
-ifactor = 1.05
-wfactor = 1.5
+section_diag = '356 x 406x 287'
+
+# Define load factors based on load case
+if load_case == 1:
+    dfactor = 1.35
+    ifactor = 1.50
+    wfactor = 0.75
+elif load_case == 2:
+    dfactor = 1.35
+    ifactor = 1.05
+    wfactor = 1.5
+elif load_case == 3:
+    dfactor = 1.0
+    ifactor = 0.0
+    wfactor = 1.5
 
 # Horizontal distance between vertical columns
 if direction == 'NS':
@@ -191,9 +203,9 @@ Perimeter = 54+45+60+math.sqrt(15**2+54**2)
 A = (60+45)*54/2
 Fcld = qcl*H*(54+45+60+56.04)
 Fstorey = wtyp_f*A + Fcld
-EHF1 = 0.25*0.005*Fstorey
+EHF1 = 0.005*Fstorey/nbrace
 Froof = wtyp_r*A
-EHF2 = 0.25*0.005*Froof
+EHF2 = 0.005*Froof/nbrace
 
 #load per floor
 ff = wf1 + EHF1
@@ -216,14 +228,14 @@ fr = wr + EHF2
 {{< pagebreak >}}
 
 #
-# Dead and imposed load per floor
+# Equivalent horizontal force:
 \begin{description}
     \item[]Perimeter of floor, P = `{python} Perimeter` $m$ | Area of floor, A = `{python} A` $m^2$
     \item[]Cladding load, $F_{cladding}$ = $q_{cl} \times H \times P$ = `{python} Fcld` $kN$
     \item[]Total floor load, $F_{storey}$ = $W_{typ, f}\cdot A + F_{cladding}$ = `{python} Fstorey` $kN$
     \item[]Total roof load, $F_{roof}$ = $W_{typ, r}\cdot A$ = `{python} Froof` $kN$
-    \item[]Equivalent horizontal force on floor, $EHF_f$ = $F_{storey} \cdot 0.25 \cdot 0.005$ = `{python} EHF1` $kN$
-    \item[]Equivalent horizontal force on roof, $EHF_r$ = $F_{roof} \cdot 0.25 \cdot 0.005$ = `{python} EHF2` $kN$
+    \item[]Equivalent horizontal force on floor, $EHF_f$ = $\frac{F_{storey}  \times 0.005}{n_{brace}}$ = `{python} EHF1` $kN$
+    \item[]Equivalent horizontal force on roof, $EHF_r$ = $\frac{F_{roof} \times 0.005}{n_{brace}}$ = `{python} EHF2` $kN$
 \end{description}
 
 # Total load per floor
@@ -279,17 +291,13 @@ for i in range(1, 10):
     load_initial += Fstorey/nbrace
 total_load = np.array(Total_load)
 
-# Diagonal column geometry
+# Inter storey height and Diagonal column geometry
 Hs = np.array([4,4,4,4,4,4,4,4,6])
 Ld = np.sqrt(Hs**2 + Lh**2)
-tem_list = np.cumsum(Hs[::-1])
 
-# Moment
-moment_arm = tem_list[::-1]
-M = np.sum(total_shear * moment_arm)
+# moment of inertia and storey height
+storey_height = np.cumsum(Hs[::-1])[::-1]
 I = Ac*(Lh*1e3)**2/2
-phi =M*1e6/(E*I)
-a = 9 - storey
 ```
 
 {{< pagebreak >}}
@@ -301,17 +309,15 @@ a = 9 - storey
     \item[] Area of diagonal column, $A_d$ = `{python} Ad` $mm^2$
     \item[]Length of the diagonal column of floors, $L_{d,other}$ = $\sqrt{4^2 + L_h^2} $ = `{python} Ld[0]` $m$
     \item[]Length of diagonal column of ground floor, $L_{d,ground}$ = $\sqrt{6^2 + L_h^2}`$ = `{python} Ld[-1]` $m$
-    \item[] Resultant moment, $M$ = $\sum{F_i \cdot H_i}$ =`{python} M` $kN\cdot m$
 \end{description}
 
 ```{python}
 #| output: asis
 df = pd.DataFrame({
     'Storey' : storey,
-    'Storey Height (m)': moment_arm,
+    'Storey Height (m)': storey_height,
     r"$A_c (mm^2)$": Ac,
-    r"$I (mm^4)$": I,
-    r"$\phi (kN)$": phi})
+    r"$I (mm^4)$": I})
 
 # Generate LaTeX table with custom formatting
 latex_table = df.to_latex(
@@ -323,104 +329,48 @@ latex_table = df.to_latex(
         'Storey': '{:.0f}'.format,
         'Storey Height (m)': '{:.0f}'.format,
         r"$A_c (mm^2)$": '{:.2f}'.format,
-        r"$I (mm^4)$": '{:.3e}'.format,
-        r"$\phi (kN)$": '{:.3e}'.format})
+        r"$I (mm^4)$": '{:.3e}'.format})
 
-print(r"\begin{center}")
 print(r"\normalfont")
 print(r"\setlength{\tabcolsep}{12pt}")
 print(latex_table)
-print(r"\end{center}")
+
 ```
+
 \begin{description}
     \item[]Notes: 
     \item[1.]$I$ = $0.5 \cdot A_c \cdot L_h^2$
-    \item[2.]$\phi$ = $\frac{M}{EI}$
 \end{description}
 
 {{< pagebreak >}}
 
 #
-# Method 1:
-```{python}
-#| output: asis
-n = len(storey)
-delta_sh = total_shear*Ld*1e6/(Ad*E)*(Ld/Lh)
-delta_f = 1e6*(phi*Hs**2)/(6*n)*(3*n**2 - 3*a**2 - 3*a - 1)
-delta_t = delta_sh + delta_f
-a_cr = (total_shear*Hs*1e3)/(total_load*delta_t)
-# Build one table from all result arrays.
-df1 = pd.DataFrame({
-    'Storey' : storey,
-    r"$H_s$ (m)": Hs,
-    r"$F$ (kN)": nodal_force,
-    r"$V_{ed}$ (kN)": total_shear,
-    r"$N_{ed}$ (kN)": total_load,
-    r"$\delta_{sh}$ (mm)": delta_sh,
-    r"$\delta_f$ (mm)": delta_f,
-    r"$\delta_i$ (mm)": delta_t,
-    r"$\alpha_{cr}$": a_cr
-})
-
-# Generate LaTeX table with custom formatting
-latex_table = df1.to_latex(
-    index=False,
-    float_format="%.2f",
-    column_format="|c|c|c|c|c|c|c|c|c|c|",
-    escape=False)
-
-# Wrap with small font and tight spacing
-print(r"\normalfont")
-print(r"\setlength{\tabcolsep}{8pt}")
-print(latex_table)
-```
-
-Notes: 
-\begin{description}
-    \item[1.] Shear Deflection, $\delta_{sh} = \frac{V_{ed}L_d}{A_dE}\cdot(\frac{L_d}{L_h})^2$
-    \item[2.]Flexural Deflection, $\delta_f = \frac{\phi H_s^2}{6n}(3n^2 - 3a^2 - 3a - 1)$  
-    \item[3.]n = 9, for 9-storey building
-    \item[4.]a = 9 - storey number
-    \item[5.]Total deflection, $\delta_i = \delta_{sh} + \delta_f$
-    \item[6.]$\alpha_{cr} = \frac{V_{ed}H_s}{N_{ed}\delta_t}$ --- EC3 Clause 5.2.1(3) 
-\end{description}
-
-{{< pagebreak >}}
-
-#
-# Method 2:
+# Flexural deflection calculation:
 ```{python}
 #| output: asis
 
 # Total deflection calculation
-moment_arm2 = max(moment_arm) - moment_arm + Hs/2
-M2 = np.convolve(nodal_force, moment_arm2, mode="full")[:len(moment_arm2)]
-delta_theta = (M2*Hs*1e9)/(E*I)
-temp_list2 = np.cumsum(delta_theta[::-1])
-theta = temp_list2[::-1] 
+moment_arm = max(storey_height) - storey_height + Hs/2
+M = np.convolve(nodal_force, moment_arm, mode="full")[:len(moment_arm)]
+delta_theta = (M*Hs*1e9)/(E*I)
+theta = np.cumsum(delta_theta[::-1])[::-1] 
 bending = theta*Hs*1000
-delta_total = delta_sh + bending
-temp_list3 = np.cumsum(delta_total[::-1])
-total_deflection = temp_list3[::-1]
 
 # Build one table from all result arrays.
 df2 = pd.DataFrame({
     'Storey' : storey,
-    r'$L_{i}$ (m)': moment_arm2,
+    r'$L_{i}$ (m)': moment_arm,
     r"$F$ (kN)": nodal_force,
-    r'$\sum F_i L_{i}$ (kNm)': M2,
+    r'$\sum F_i L_{i}$ (kNm)': M,
     r"$\Delta\theta$ (/mm)": delta_theta,
     r"$\theta$ (/mm)": theta,
-    r"$\delta_f$ (mm)": bending,
-    r"$\delta_i$ (mm)": delta_total,
-    r"$\delta_{t}$ (mm)": total_deflection
-})
+    r"$\delta_f$ (mm)": bending})
 
 # Generate LaTeX table with custom formatting
 latex_table = df2.to_latex(
     index=False,
     float_format="%.2f",
-    column_format="|c|c|c|c|c|c|c|c|c|",
+    column_format="|c|c|c|c|c|c|c|",
     escape=False,
     formatters={
         'Storey': '{:.0f}'.format,
@@ -429,23 +379,115 @@ latex_table = df2.to_latex(
         r'$\sum F_i L_{i}$ (kNm)': '{:.2f}'.format,
         r"$\Delta\theta$ (/mm)": '{:.3e}'.format, 
         r"$\theta$ (/mm)": '{:.3e}'.format,       
-        r"$\delta_f$ (mm)": '{:.2f}'.format,
-        r"$\delta_i$ (mm)": '{:.2f}'.format,
-        r"$\delta_{t}$ (mm)": '{:.2f}'.format,})
+        r"$\delta_f$ (mm)": '{:.2f}'.format})
 
 # Wrap with small font and tight spacing
 print(r"\normalfont")
-print(r"\setlength{\tabcolsep}{4pt}")
+print(r"\setlength{\tabcolsep}{12pt}")
 print(latex_table)
 ```
+
 Notes: 
 \begin{description}
     \item[1.] $L_{i}$ is the moment arm 
     \item[2.]$\Delta\theta = \frac{(\sum F_i L_i)\cdot H_s}{E\cdot I}$  
     \item[3.]Inclination, $\theta$ = $\sum \Delta\theta$
     \item[4.]Flexural deflection, $\delta_f$ = $\theta \cdot H_s$
-    \item[5.]Interstorey deflection, $\delta_i$ = $\delta_{sh} + \delta_f$ 
-    \item[6.]Total deflection, $\delta_t$ = $\sum \delta_i$
+\end{description}
+
+{{< pagebreak >}}
+
+#
+# Amplification factor calculation:
+```{python}
+#| output: asis
+delta_sh = total_shear*Ld*1e6/(Ad*E)*(Ld/Lh)
+delta_storey = delta_sh + bending
+a_cr = (total_shear*Hs*1e3)/(total_load*delta_storey)
+amplification_factor = 1/(1- 1/np.min(a_cr))
+
+# Build one table from all result arrays.
+df1 = pd.DataFrame({
+    'Storey' : storey,
+    r"$H_s$ (m)": Hs,
+    r"$F$ (kN)": nodal_force,
+    r"$H_{ed}$ (kN)": total_shear,
+    r"$V_{ed}$ (kN)": total_load,
+    r"$\delta_{sh}$ (mm)": delta_sh,
+    r"$\delta_f$ (mm)": bending,
+    r"$\delta_i$ (mm)": delta_storey,
+    r"$\alpha_{cr}$": a_cr})
+
+# Generate LaTeX table with custom formatting
+latex_table = df1.to_latex(
+    index=False,
+    float_format="%.2f",
+    column_format="|c|c|c|c|c|c|c|c|c|",
+    escape=False)
+
+# Wrap with small font and tight spacing
+print(r"\normalfont")
+print(r"\setlength{\tabcolsep}{6pt}")
+print(latex_table)
+```
+
+Notes: 
+\begin{description}
+    \item[1.] Shear Deflection, $\delta_{sh} = \frac{H_{ed}L_d}{A_dE}\cdot(\frac{L_d}{L_h})^2$
+    \item[2.]Interstorey deflection, $\delta_i$ = $\delta_{sh} + \delta_f$ 
+    \item[3.]$\alpha_{cr} = \frac{H_{ed}H_s}{V_{ed}\delta_i}$ --- EC3 Clause 5.2.1(3) 
+    \item[4.]Amplification factor, $\beta = \frac{1}{1 - \frac{1}{\min(\alpha_{cr})}}$ = `{python} amplification_factor`
+\end{description}
+
+{{< pagebreak >}}
+
+#
+# Total deflection calculation after amplification:
+```{python}
+#| output: asis
+
+# Amplified nodal force and total shear
+nodal_am = nodal_force*amplification_factor
+total_shear_am = total_shear*amplification_factor
+# Flexural deflection after amplification
+M_am = np.convolve(nodal_am, moment_arm, mode="full")[:len(moment_arm)]
+delta_theta_am = (M_am*Hs*1e9)/(E*I)
+theta_am =  np.cumsum(delta_theta_am[::-1])[::-1] 
+bending_am = theta_am*Hs*1000
+# Shear deflection and interstorey deflection after amplification
+delta_sh_am = total_shear_am*Ld*1e6/(Ad*E)*(Ld/Lh)
+delta_storey_am = delta_sh_am + bending_am
+# Total deflection after amplification, $\delta_{t}$ = $\sum \delta_i$
+delta_total_am = np.cumsum(delta_storey_am[::-1])[::-1]
+
+df1 = pd.DataFrame({
+    'Storey' : storey,
+    r"$H_s$ (m)": Hs,
+    r"$F_{amp}$ (kN)": nodal_am,
+    r"$H_{ed}$ (kN)": total_shear_am,
+    r"$V_{ed}$ (kN)": total_load,
+    r"$\delta_{sh}$ (mm)": delta_sh_am,
+    r"$\delta_f$ (mm)": bending_am,
+    r"$\delta_i$ (mm)": delta_storey_am,
+    r"$\delta_{t}$ (mm)": delta_total_am})
+
+# Generate LaTeX table with custom formatting
+latex_table = df1.to_latex(
+    index=False,
+    float_format="%.2f",
+    column_format="|c|c|c|c|c|c|c|c|c|",
+    escape=False)
+
+# Wrap with small font and tight spacing
+print(r"\normalfont")
+print(r"\setlength{\tabcolsep}{6pt}")
+print(latex_table)
+```
+
+Notes:
+\begin{description}
+    \item[1.]Amplified Nodal force, $F_{amp}$ = $\beta \cdot F$
+    \item[4.]Total deflection, $\delta_t$ = $\sum \delta_i$
 \end{description}
 
 {{< pagebreak >}}
@@ -457,8 +499,8 @@ Notes:
 import matplotlib.pyplot as plt
 plt.rcParams['font.family'] = 'Times New Roman'
 fig, ax = plt.subplots(figsize=(8, 6))
-ax.scatter(total_deflection, moment_arm, color='black', s=50, label='Deflection Points')
-ax.plot(total_deflection, moment_arm, linewidth=2, alpha=0.7, label='Deflection Curve')
+ax.scatter(delta_total_am, storey_height, color='black', s=50, label='Deflection Points')
+ax.plot(delta_total_am, storey_height, linewidth=2, alpha=0.7, label='Deflection Curve')
 ax.set_xlabel('Total Deflection (mm)', fontsize=12)
 ax.set_ylabel('Elevation (m)', fontsize=12)
 ax.set_title('Lateral Deflection vs Elevation', fontsize=14)
