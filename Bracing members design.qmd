@@ -47,7 +47,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Diagonal Members of Brace Calculations}
+                \centerline{Bracing Members Calculations}
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -67,9 +67,11 @@ import math
 section = '356 x 406x 287'
 lt = math.sqrt(6000**2+8250**2)
 lc = math.sqrt(4000**2+8250**2)
-Ned = 1611
-Nted = 2107
-area_reduction = 0.9
+Nedd = 1611
+Nedv = 3008
+Ntedd = 2107
+Ntedv = 4247
+area_reduction = 0.7
 # setup
 %precision 2
 import pandas as pd
@@ -212,11 +214,9 @@ Ncrz, lamz, ratio, phiz, chiz = buckle(Lcr, Iz, E, A, fy, az)
 chi = min([chiy,chiz])
 Nrd = chi*A*fy/1000
 
-if Nrd >= Ned:
-  symbol = '>'
+if Nrd > max(Nedd, Nedv):
   outputn='the section is safe in compression'
 else:
-  symbol = '<'
   outputn='the section is not safe in compression'
 ```
 
@@ -258,7 +258,8 @@ else:
 \begin{description}
   \item[]$\chi$ = min($\chi_{y},\chi_{z}$) = `{python} chi`
   \item[]$N_{rd}$ = $\chi\cdot A\cdot f_{y}$ = `{python} Nrd` kN --- (EN 1993-1-1 :2022, Eq 8.68)
-  \item[]$N_{ed}$ = `{python} Ned` kN.
+  \item[]$N_{ed}$ for diagonal members = `{python} Nedd` kN.
+  \item[]$N_{ed}$ for vertical members = `{python} Nedv` kN.
   \item[]Therefore `{python} outputn`
 \end{description}
 
@@ -269,15 +270,13 @@ gamma1 = 1.25
 Nplrd = A*fy/gamma0/1000
 Nurd = area_reduction*A*fu/gamma1/1000
 Ntrd = min(Nplrd, Nurd)
-if Ntrd > Nted:
-  symbol = '>'
+if Ntrd > max(Ntedd, Ntedv):
   outputt='the section is safe in tension'
 else:
-  symbol = '<'
   outputt='the section is not safe in tension'
 ```
 
-# Tension resistance
+# Tension resistance of diagonal members
 
 \begin{description}
   \item[]Gross area tension resistance :
@@ -286,7 +285,8 @@ else:
   \item[]Net area tension resistance :
   \item[]$N_{u,RD}$ = `{python} area_reduction` $\cdot\frac{k\cdot A_{net}\cdot f_{u}}{\gamma_{0}}$ = `{python} Nurd` kN --- (EN 1993-1-1 :2022, Eq 8.15)
   \item[]$N_{t,rd}$ = min($N_{pl,RD}$, $N_{u,RD}$) = `{python} Ntrd` kN
-  \item[]$N_{ed}$ = `{python} Nted` kN.
+  \item[]$N_{t,ed}$ for diagonal members = `{python} Ntedd` kN.
+  \item[]$N_{t,ed}$ for vertical members = `{python} Ntedv` kN.
   \item[]Therefore `{python} outputt`
 \end{description}
 
