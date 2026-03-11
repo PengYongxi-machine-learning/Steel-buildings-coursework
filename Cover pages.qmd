@@ -1,0 +1,82 @@
+---
+title: "Steel Building Design"
+format: pdf
+---
+
+```{=latex}
+\newpage
+\vspace*{\fill}
+\begin{center}
+\Huge\textbf{Appendix 1} \\[0.5em]
+\Huge\textbf{Design of Primary Beams}
+\end{center}
+\vspace*{\fill}
+\newpage
+``` 
+
+```{=latex}
+\newpage
+\vspace*{\fill}
+\begin{center}
+\Huge\textbf{Appendix 2} \\[0.5em]
+\Huge\textbf{Design of Secondary Beams}
+\end{center}
+\vspace*{\fill}
+\newpage
+``` 
+
+```{=latex}
+\newpage
+\vspace*{\fill}
+\begin{center}
+\Huge\textbf{Appendix 3} \\[0.5em]
+\Huge\textbf{Design of Columns}
+\end{center}
+\vspace*{\fill}
+\newpage
+``` 
+
+```{=latex}
+\newpage
+\vspace*{\fill}
+\begin{center}
+\Huge\textbf{Appendix 4} \\[0.5em]
+\Huge\textbf{Design of Frame Deflection}
+\end{center}
+\vspace*{\fill}
+\newpage
+``` 
+
+```{=latex}
+\newpage
+\vspace*{\fill}
+\begin{center}
+\Huge\textbf{Appendix 5} \\[0.5em]
+\Huge\textbf{Design of Bracing Members}
+\end{center}
+\vspace*{\fill}
+\newpage
+``` 
+
+```{=latex}
+\newpage
+\vspace*{\fill}
+\begin{center}
+\Huge\textbf{Appendix 6} \\[0.5em]
+\Huge\textbf{Design of Connections}
+\end{center}
+\vspace*{\fill}
+\newpage
+``` 
+
+```{=latex}
+\newpage
+\vspace*{\fill}
+\begin{center}
+\Huge\textbf{Appendix 7} \\[0.5em]
+\Huge\textbf{Design of Truss Members}
+\end{center}
+\vspace*{\fill}
+\newpage
+``` 
+
