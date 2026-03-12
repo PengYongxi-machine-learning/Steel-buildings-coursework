@@ -48,7 +48,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{ NS Bracing LC3 - Lateral Deflection Calculation }
+                \centerline{ WE Bracing LC2 - Lateral Deflection Calculation }
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -65,39 +65,53 @@ format:
 %precision 2
 import numpy as np
 # Freedom of choice parameters
-direction = 'NS'
+direction = 'WE'
 load_case = 3
-nbrace = 4
 
 # Vertical column sections, list start from top to bottom
-Ac13 = '356 x 406x 287'
-Ac45 = '305 x 305x 198'
-Ac67 = '305 x 305x 137'
-Ac89 = '305 x 305x 97'
-Ac = np.array([12300, 12300, 17400, 17400, 25200, 25200, 36600, 36600, 36600])
-section_diag = '356 x 406x 287'
+if direction == 'NS':
+    Ac13 = '356 x 406x 287'
+    Ac45 = '305 x 305x 198'
+    Ac67 = '305 x 305x 137'
+    Ac89 = '305 x 305x 97'
+    Ac = np.array([12300, 12300, 17400, 17400, 25200, 25200, 36600, 36600, 36600])
+    section_diag = '356 x 406x 287'
 
-# Define load factors based on load case
+elif direction == 'WE':
+    Ac13 = '305 x 305x 283'
+    Ac45 = '305 x 305x 158'
+    Ac67 = '254 x 254x 132'
+    Ac89 = '203 x 203x 86'
+    Ac = np.array([11000, 11000, 16800, 16800, 20100, 20100, 36000, 36000, 36000])
+    section_diag = '305 x 305x 283'
+
+# Define load factors based on load case and model results
 if load_case == 1:
     dfactor = 1.35
     ifactor = 1.50
     wfactor = 0.75
+    delta_model = np.array([3.86, 7.81, 11.89, 16.94, 21.90, 27.60, 32.93, 38.69, 43.83])[::-1]
+    
 elif load_case == 2:
     dfactor = 1.35
     ifactor = 1.05
     wfactor = 1.5
+    delta_model = np.array([5.32, 10.74, 16.32, 23.24, 30.04, 37.85, 45.15, 53.04, 60.08])[::-1]
 elif load_case == 3:
     dfactor = 1.0
     ifactor = 0.0
     wfactor = 1.5
+    delta_model = np.array([4.50, 9.06, 13.77, 19.60, 25.31, 31.91, 38.07, 44.72, 50.66])[::-1]
 
 # Horizontal distance between vertical columns
 if direction == 'WE':
     Lh = 13.5
     L = 60
+    nbrace = 3
 else:
     Lh = 8.25
     L = 54
+    nbrace = 4
 
 # Selection section to determine area of vertical and diagonal columns
 import pandas as pd
@@ -404,7 +418,10 @@ Notes:
 delta_sh = total_shear*Ld*1e6/(Ad*E)*(Ld/Lh)
 delta_storey = delta_sh + bending
 a_cr = (total_shear*Hs*1e3)/(total_load*delta_storey)
-amplification_factor = 1/(1- 1/np.min(a_cr))
+if np.min(a_cr) <= 10:
+    amplification_factor = 1/(1- 1/np.min(a_cr))
+else:
+    amplification_factor = 1.0
 
 # Build one table from all result arrays.
 df1 = pd.DataFrame({
@@ -497,10 +514,11 @@ Notes:
 # Graph of deflection
 #| output: asis
 import matplotlib.pyplot as plt
+
 plt.rcParams['font.family'] = 'Times New Roman'
-fig, ax = plt.subplots(figsize=(8, 6))
-ax.scatter(delta_total_am, storey_height, color='black', s=50, label='Deflection Points')
-ax.plot(delta_total_am, storey_height, linewidth=2, alpha=0.7, label='Deflection Curve')
+fig, ax = plt.subplots(figsize=(7, 5))
+ax.plot(delta_model, storey_height, linewidth=2, color = 'brown', label='Model Deflection Curve')
+ax.plot(delta_total_am, storey_height, linewidth=2, color = 'black', label='Calculated Deflection Curve')
 ax.set_xlabel('Total Deflection (mm)', fontsize=12)
 ax.set_ylabel('Elevation (m)', fontsize=12)
 ax.set_title('Lateral Deflection vs Elevation', fontsize=14)
@@ -509,3 +527,26 @@ ax.grid(True, linestyle='--', alpha=0.5)
 plt.tight_layout()
 plt.show()
 ```     
+
+# Summary table of storey height and deflection:
+```{python}
+#| output: asis
+
+# First column contains row labels; storey values run horizontally to the right.
+cols = ['Storey'] + [f"{int(s)}" for s in storey]
+table_horizontal = pd.DataFrame([
+    ['Storey Height (m)'] + [f"{h:.0f}" for h in storey_height],
+    ['Model Deflection (mm)'] + [f"{d:.2f}" for d in delta_model],
+    ['Calculated Deflection (mm)'] + [f"{d:.2f}" for d in delta_total_am]
+], columns=cols)
+
+latex_table = table_horizontal.to_latex(
+    index=False,
+    escape=False,
+    column_format='|l|' + 'c|' * len(storey)
+)
+
+print(r"\normalfont")
+print(r"\setlength{\tabcolsep}{7pt}")
+print(latex_table)
+```
