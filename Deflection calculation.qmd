@@ -48,7 +48,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{ WE Bracing LC2 - Lateral Deflection Calculation }
+                \centerline{ WE Bracing LC3 - Lateral Deflection Calculation }
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -90,18 +90,28 @@ if load_case == 1:
     dfactor = 1.35
     ifactor = 1.50
     wfactor = 0.75
-    delta_model = np.array([3.86, 7.81, 11.89, 16.94, 21.90, 27.60, 32.93, 38.69, 43.83])[::-1]
+    if direction == 'NS':
+        delta_model = np.array([3.86, 7.81, 11.89, 16.94, 21.90, 27.60, 32.93, 38.69, 43.83])[::-1]
+    elif direction == 'WE':
+        delta_model = np.array([5.25, 8.40, 13.02, 16.42, 21.12, 24.43, 28.84, 31.15, 35.35])[::-1]
     
 elif load_case == 2:
     dfactor = 1.35
     ifactor = 1.05
     wfactor = 1.5
-    delta_model = np.array([5.32, 10.74, 16.32, 23.24, 30.04, 37.85, 45.15, 53.04, 60.08])[::-1]
+    if direction == 'NS':
+        delta_model = np.array([5.32, 10.74, 16.32, 23.24, 30.04, 37.85, 45.15, 53.04, 60.08])[::-1]
+    elif direction == 'WE':
+        delta_model = np.array([7.48, 11.81, 18.25, 23.01, 29.59, 34.22, 40.38, 44.32, 49.50])[::-1]
+
 elif load_case == 3:
     dfactor = 1.0
     ifactor = 0.0
     wfactor = 1.5
-    delta_model = np.array([4.50, 9.06, 13.77, 19.60, 25.31, 31.91, 38.07, 44.72, 50.66])[::-1]
+    if direction == 'NS':
+        delta_model = np.array([4.50, 9.06, 13.77, 19.60, 25.31, 31.91, 38.07, 44.72, 50.66])[::-1]
+    elif direction == 'WE':
+        delta_model = np.array([6.45, 10.09, 15.59, 19.56, 25.26, 29.21, 34.46, 37.83, 42.25])[::-1]
 
 # Horizontal distance between vertical columns
 if direction == 'WE':
