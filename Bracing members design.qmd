@@ -47,7 +47,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Bracing Members Calculations}
+                \centerline{WE Bracing Diagonal Members Calculations}
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -62,20 +62,55 @@ format:
 \selectfont 
 
 ```{python}
+direction = 'WE' # 'NS' or 'WE'
+
 # Define variables
 import math
-section = '356 x 406x 287'
-lt = math.sqrt(6000**2+8250**2)
-lc = math.sqrt(4000**2+8250**2)
-Nedd = 1611
-Nedv = 3008
-Ntedd = 2107
-Ntedv = 4247
+if direction == 'NS':
+  section = '356 x 406x 287'
+  lt = math.sqrt(6000**2+8250**2)
+  lc = math.sqrt(4000**2+8250**2)
+  Nc1, Nt1 = 1007, 1314
+  Nc2, Nt2 = 1378, 1819
+  Nc3, Nt3 = 1160, 1541
+  Nced = max(Nc1, Nc2, Nc3)
+  Nted = max(Nt1, Nt2, Nt3)
+
+elif direction == 'WE':
+  section = '305 x 305x 283'
+  lc = math.sqrt(6000**2+13500**2)
+  lt = math.sqrt(4000**2+13500**2)
+  Nc1, Nt1 = 1007, 1314
+  Nc2, Nt2 = 1378, 1819
+  Nc3, Nt3 = 1160, 1541
+  Nced = max(Nc1, Nc2, Nc3)
+  Nted = max(Nt1, Nt2, Nt3)
+
 area_reduction = 0.7
+```
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+# Maximum compressive and tensile axial force under 3 Load Cases
+\begin{description}
+  \item[]$N_{c,ed}$ = $\max(N_{c,LC1}, N_{c,LC2}, N_{c,LC3})$ = $\max$(`{python} Nc1`, `{python} Nc2`, `{python} Nc3`) = `{python} Nced` kN
+  \item[]$N_{t,ed}$ = $\max(N_{t,LC1}, N_{t,LC2}, N_{t,LC3})$ = $\max$(`{python} Nt1`, `{python} Nt2`, `{python} Nt3`) = `{python} Nted` kN
+\end{description}
+
+{{< pagebreak >}}
+
+```{python}
 # setup
 %precision 2
 import pandas as pd
-import math
 
 df_all = pd.read_csv('section_mm.csv')
 if df_all.columns[0] == 'Unnamed: 0':
@@ -177,8 +212,8 @@ c2 = cf/tf
 #
 # Length of critical diagonal columns
 \begin{description}
-  \item[]Length of compressive critical diagonal column, $L_{c}$ = $\sqrt{6000^2 + 8250^2}$ = `{python} lc` mm
-  \item[]Length of tensile critical diagonal column, $L_{t}$ = $\sqrt{4000^2 + 8250^2}$ = `{python} lt` mm
+  \item[]Length of compressive critical diagonal column, $L_{c}$ = `{python} lc` mm
+  \item[]Length of tensile critical diagonal column, $L_{t}$ = `{python} lt` mm
 \end{description}
 
 # Section Classification
@@ -214,7 +249,7 @@ Ncrz, lamz, ratio, phiz, chiz = buckle(Lcr, Iz, E, A, fy, az)
 chi = min([chiy,chiz])
 Nrd = chi*A*fy/1000
 
-if Nrd > max(Nedd, Nedv):
+if Nrd > Nced:
   outputn='the section is safe in compression'
 else:
   outputn='the section is not safe in compression'
@@ -257,9 +292,8 @@ else:
 # Buckling resistance
 \begin{description}
   \item[]$\chi$ = min($\chi_{y},\chi_{z}$) = `{python} chi`
-  \item[]$N_{rd}$ = $\chi\cdot A\cdot f_{y}$ = `{python} Nrd` kN --- (EN 1993-1-1 :2022, Eq 8.68)
-  \item[]$N_{ed}$ for diagonal members = `{python} Nedd` kN.
-  \item[]$N_{ed}$ for vertical members = `{python} Nedv` kN.
+  \item[]$N_{c,rd}$ = $\chi\cdot A\cdot f_{y}$ = `{python} Nrd` kN --- (EN 1993-1-1 :2022, Eq 8.68)
+  \item[]$N_{c,ed}$ = `{python} Nced` kN.
   \item[]Therefore `{python} outputn`
 \end{description}
 
@@ -270,7 +304,7 @@ gamma1 = 1.25
 Nplrd = A*fy/gamma0/1000
 Nurd = area_reduction*A*fu/gamma1/1000
 Ntrd = min(Nplrd, Nurd)
-if Ntrd > max(Ntedd, Ntedv):
+if Ntrd > Nted:
   outputt='the section is safe in tension'
 else:
   outputt='the section is not safe in tension'
@@ -285,8 +319,7 @@ else:
   \item[]Net area tension resistance :
   \item[]$N_{u,RD}$ = `{python} area_reduction` $\cdot\frac{k\cdot A_{net}\cdot f_{u}}{\gamma_{0}}$ = `{python} Nurd` kN --- (EN 1993-1-1 :2022, Eq 8.15)
   \item[]$N_{t,rd}$ = min($N_{pl,RD}$, $N_{u,RD}$) = `{python} Ntrd` kN
-  \item[]$N_{t,ed}$ for diagonal members = `{python} Ntedd` kN.
-  \item[]$N_{t,ed}$ for vertical members = `{python} Ntedv` kN.
+  \item[]$N_{t,ed}$ = `{python} Nted` kN.
   \item[]Therefore `{python} outputt`
 \end{description}
 
