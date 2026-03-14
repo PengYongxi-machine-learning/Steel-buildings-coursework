@@ -1,6 +1,4 @@
-﻿TABLE:  Story Drifts,,,,,,,,,
-Story,Output Case,Case Type,Direction,Drift,Drift/,Label,X,Y,Z
-,,,,,,,m,m,m
+﻿Story,Output Case,Case Type,Direction,Drift,Drift/,Label,X,Y,Z
 SSL 38.00mPD 9th Floor,Dead,LinStatic,X,0.000078,1/12822,172,45,13.5,38
 SSL 38.00mPD 9th Floor,Dead,LinStatic,Y,0.000076,1/13077,142,0,13.5,38
 SSL 38.00mPD 9th Floor,Wind-X,LinStatic,X,0.000057,1/17428,174,60,67.5,38
