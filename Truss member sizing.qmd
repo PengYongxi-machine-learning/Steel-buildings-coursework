@@ -1,0 +1,210 @@
+---
+jupyter: python3
+format: 
+  pdf:
+    echo: false
+    geometry:
+      - top=5mm        
+      - left=5mm
+      - right=5mm
+      - bottom=20mm
+      - headheight=35mm 
+      - headsep=5mm 
+      - includehead=true 
+    include-in-header:
+      - text: |
+          \usepackage{tabularx}
+          \usepackage{multirow}
+          \usepackage{graphicx}
+          \usepackage{xcolor}
+          \usepackage{fancyhdr}
+          \usepackage{lastpage}
+          \usepackage{multicol}
+          \usepackage{ifthen}
+
+          \pagestyle{fancy}
+          \fancyhf{} 
+          \renewcommand{\headrulewidth}{0pt}
+          \newcounter{score}
+          
+          \fancyhead[C]{
+            \noindent
+            \bgroup
+            \def\arraystretch{1.4}
+            \begin{tabularx}{\textwidth}{|p{5.5cm}|p{1.8cm}|X|p{1.2cm}|p{1.8cm}|}
+            \hline
+            \multirow{5}{5.5cm}{
+                \vspace*{1mm}
+                \includegraphics[width=4.5cm]{logo} \\
+                \fontsize{6pt}{7pt}\selectfont
+                \textbf{CIVIL \& ENVIRONMENTAL ENGINEERING,}\\
+                SKEMPTON BUILDING, IMPERIAL COLLEGE\\
+                LONDON, SOUTH KENSINGTON CAMPUS,\\
+                LONDON SW7 2AZ.\\[3mm]
+                \normalsize\textbf{CALCULATION SHEET}
+            }
+            & \textbf{Job No.} & & \textbf{Sheet} & \textbf{Ref} \\ \cline{2-5}
+            & \textbf{Job Title} & Steel Design Coursework & \multicolumn{2}{l|}{\thepage\ of \pageref{LastPage}} \\ \cline{2-5}
+            & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
+                \textbf{Subject} \newline
+                \vspace*{1mm}
+                \centerline{ Scheme A Truss Member Calculation }
+                \vspace*{1mm}
+            } \\ \cline{2-5}
+            & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
+            & & \textbf{Checked by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date}} \\ \hline
+            \end{tabularx}
+            \egroup
+          }
+---
+\Large 
+\linespread{1.4}
+\selectfont
+
+```{python}
+wee = [1,2,3,4,5,6,7,8,9,10,11,12,13]
+wef = [-11808, 1047, -259, -7840, -805, -2130, 1047, 307, 307, -7841, -804, 1521, -2094]
+wef1, wef2 = 4889.4, 4145.1
+wer = 9035
+wed = 22.31
+
+nse = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+nsf = [22324, -18561, -186, 28669, -4914, -18900, -11918, -10149, -2070, 19968, 2318, 4073, -1325, -4392, -6706, -14188]
+nsf1, nsf2, nsf3 = 3428.2, 3866.2, 2852.3
+nsd = 18.57
+```
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+# Loads and deflection at the west side of the truss
+\begin{description}
+    \item[]The column loads at 3th floor, $F_1$ = `{python} wef1` kN
+    \item[]The column loads at 4th floor, $F_2$ = `{python} wef2` kN
+    \item[]Maximum deflection along the span = `{python} wed` mm < 50 mm
+\end{description}
+
+{{< pagebreak >}}
+
+#
+#
+#
+#
+#
+#
+#
+
+# Axial forces in west side truss
+```{python}
+#| output: asis
+
+import pandas as pd
+import numpy as np
+
+# Wrap the table after a fixed number of elements so it fits the page width.
+max_elements_per_row = 6
+rows = []
+
+for start in range(0, len(wee), max_elements_per_row):
+  element_chunk = wee[start:start + max_elements_per_row]
+  force_chunk = wef[start:start + max_elements_per_row]
+  pad_count = max_elements_per_row - len(element_chunk)
+
+  rows.append(['Element'] + [f"{int(e)}" for e in element_chunk] + [''] * pad_count)
+  rows.append(['Axial force (kN)'] + [f"{f:.2f}" for f in force_chunk] + [''] * pad_count)
+
+col = ['Description'] + [f"Value {index}" for index in range(1, max_elements_per_row + 1)]
+table_horizontal = pd.DataFrame(rows, columns=col)
+
+latex_lines = [
+  r"\begin{tabular}{|l|" + "c|" * max_elements_per_row + "}",
+  r"\hline",
+  " & ".join(col) + r" \\",
+  r"\hline"
+]
+
+for row_index, row in enumerate(rows, start=1):
+  latex_lines.append(" & ".join(row) + r" \\")
+  if row_index % 2 == 0:
+    latex_lines.append(r"\hline")
+
+latex_lines.append(r"\end{tabular}")
+latex_table = "\n".join(latex_lines)
+
+print(r"\normalfont")
+print(r"\renewcommand{\arraystretch}{1.2}")
+print(r"\setlength{\tabcolsep}{11pt}")
+print(latex_table)
+```
+Note: Positive values indicate tension, negative values indicate compression.
+
+{{< pagebreak >}}
+
+#
+#
+#
+#
+#
+#
+#
+#
+# Loads and deflection at the north side of the truss
+\begin{description}
+    \item[]The column loads at 1st floor, $F_{1,1}$ = `{python} nsf1` kN
+    \item[]The column load due to reaction force from west side, $F_{1,2}$ = `{python} wer` kN
+    \item[]$F_1 = F_{1,1} + F_{1,2}$ = `{python} nsf1 + wer` kN
+    \item[]The column loads at 2nd floor, $F_2$ = `{python} nsf2` kN
+    \item[]The column loads at 3rd floor, $F_3$ = `{python} nsf3` kN
+    \item[]Maximum lateral deflection = `{python} nsd` mm < 50 mm
+\end{description}
+
+{{< pagebreak >}}
+
+#
+#
+#
+#
+#
+#
+#
+
+# Axial forces in north side truss
+```{python}
+#| output: asis
+
+# Wrap the table after a fixed number of elements so it fits the page width.
+max_elements_per_row = 6
+rows = []
+for start in range(0, len(nse), max_elements_per_row):
+  element_chunk = nse[start:start + max_elements_per_row]
+  force_chunk = nsf[start:start + max_elements_per_row]
+  pad_count = max_elements_per_row - len(element_chunk)
+
+  rows.append(['Element'] + [f"{int(e)}" for e in element_chunk] + [''] * pad_count)
+  rows.append(['Axial force (kN)'] + [f"{f:.2f}" for f in force_chunk] + [''] * pad_count)
+col1 = ['Description'] + [f"Value {index}" for index in range(1, max_elements_per_row + 1)]
+table_horizontal = pd.DataFrame(rows, columns=col1)
+latex_lines = [
+  r"\begin{tabular}{|l|" + "c|" * max_elements_per_row + "}",
+  r"\hline",
+  " & ".join(col1) + r" \\",
+  r"\hline"
+]
+for row_index, row in enumerate(rows, start=1):
+  latex_lines.append(" & ".join(row) + r" \\")
+  if row_index % 2 == 0:
+    latex_lines.append(r"\hline")
+latex_lines.append(r"\end{tabular}")
+latex_table = "\n".join(latex_lines)    
+print(r"\normalfont")
+print(r"\renewcommand{\arraystretch}{1.2}")
+print(r"\setlength{\tabcolsep}{11pt}")
+print(latex_table)
+```
+Note: Positive values indicate tension, negative values indicate compression.

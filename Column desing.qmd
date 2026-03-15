@@ -61,11 +61,11 @@ format:
 import math
 %precision 2
 # Setup
-floor = 2
+floor = 4
 section = '305 x 305x 198'
 ixp =  1   # Index for primary lx
 ixs = 1     # Index for secondary lx
-it = 1      # Scenario index
+it = 2      # Scenario index
 
 # Automation start here
 lp_list = [6000, 8250, 7500]
