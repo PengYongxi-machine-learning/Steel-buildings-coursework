@@ -48,7 +48,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{ WE LC3 - Overall Deflection Calculation }
+                \centerline{ NS Bracing LC4 - Lateral Deflection Calculation }
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -61,131 +61,112 @@ format:
 \linespread{1.4}
 \selectfont
 
-#
-#
-#
-#
-#
-#
-#
-#
 ```{python}
-load_case = 'LC2'
-direction = 'WE'
-scheme = 'A'
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
 
-# Select type based on direction
-if direction == 'NS':
-    type = 'Y'
-elif direction == 'WE':
-    type = 'X'  
+scheme = 'A'
 
-# Select model based on scheme
 if scheme == 'A':
-    model = pd.read_csv('Model_A.csv')
+    model = pd.read_excel('model_a.xlsx')
+    
 elif scheme == 'B':
-    model = pd.read_csv('Model_A.csv')
-
-# Define load factors based on load case and model results
-if load_case == 'LC1':
-    if direction == 'NS':
-        delta_model = np.array([3.86, 7.81, 11.89, 16.94, 21.90, 27.60, 32.93, 38.69, 43.83])
-    elif direction == 'WE':
-        delta_model = np.array([5.25, 8.40, 13.02, 16.42, 21.12, 24.43, 28.84, 31.15, 35.35])
+    model = pd.read_excel('model_b.xlsx')
     
-elif load_case == 'LC2':
-    if direction == 'NS':
-        delta_model = np.array([5.32, 10.74, 16.32, 23.24, 30.04, 37.85, 45.15, 53.04, 60.08])
-    elif direction == 'WE':
-        delta_model = np.array([7.48, 11.81, 18.25, 23.01, 29.59, 34.22, 40.38, 44.32, 49.50])
+typey = 'Y'
+LC1y = '1.35Gk + 1.50Qk + 0.75WkY + EHF'
+LC2y = '1.35Gk + 1.05Qk + 1.50WkY + EHF'
+LC3y = '1.0Gk + 1.50WkY + EHF'
+LC4y = '1.35Gk + 1.50Qk +EHF'
 
-elif load_case == 'LC3':
-    if direction == 'NS':
-        delta_model = np.array([4.50, 9.06, 13.77, 19.60, 25.31, 31.91, 38.07, 44.72, 50.66])
-    elif direction == 'WE':
-        delta_model = np.array([6.45, 10.09, 15.59, 19.56, 25.26, 29.21, 34.46, 37.83, 42.25])
+typex = 'X'
+LC1x = '1.35Gk + 1.50Qk + 0.75WkX + EHF'
+LC2x = '1.35Gk + 1.05Qk + 1.50WkX + EHF'
+LC3x = '1.0Gk + 1.50WkX + EHF'
+LC4x = '1.35Gk + 1.50Qk +EHF'
 
-def data_prep(df, LC1, LC2, LC3):
-    storey_height = df['Z'].unique()[::-1]
+def data_prep(df, LC1, LC2, LC3, LC4):
+    df1 = df[(df['Output Case'] == LC1)]
+    df2 = df[(df['Output Case'] == LC2)]
+    df3 = df[(df['Output Case'] == LC3)]
+    df4 = df[(df['Output Case'] == LC4)]
+    df_dict = {'LC1': df1,'LC2': df2,'LC3': df3,'LC4': df4}
+    return df_dict
 
-    df1x = df[(df['Output Case'] == LC1) & (df['Direction'] == 'X')]
-    df1y = df[(df['Output Case'] == LC1) & (df['Direction'] == 'Y')]
-
-    df2x = df[(df['Output Case'] == LC2) & (df['Direction'] == 'X')]
-    df2y = df[(df['Output Case'] == LC2) & (df['Direction'] == 'Y')]
-
-    df3x = df[(df['Output Case'] == LC3) & (df['Direction'] == 'X')]
-    df3y = df[(df['Output Case'] == LC3) & (df['Direction'] == 'Y')]
-    
-    df_dict = {'LC1': {'X': df1x, 'Y': df1y},'LC2': {'X': df2x, 'Y': df2y},'LC3': {'X': df3x, 'Y': df3y}}
-    return storey_height,df_dict
-
-def deflection(df_dict, type, load_case):    
-    df = df_dict[load_case][type].sort_values('Z', ascending=True).copy()
-    df.loc[:, 'Deflection'] = df['Drift']*df['Z']*1000
-    df.loc[:, 'Total Deflection'] = df['Deflection'][::].cumsum()
-    return df, df['Total Deflection'].to_numpy()
-
-def deflection_plot(df_dict, delta_model, type, load_case):
-    df, _ = deflection(df_dict, type, load_case)
-    
+def deflection_plot(df_dict, type):
     plt.rcParams['font.family'] = 'Times New Roman'
     fig, ax = plt.subplots(figsize=(7, 5))
-    ax.plot(df['Total Deflection'], df['Z'], label='Etabs Results')
-    ax.plot(delta_model, df['Z'], color = 'black', label='ANSYS Results')
+    for key in df_dict.keys():
+        df = df_dict[key].sort_values('Z', ascending=True)
+        ax.plot(-df['UX'], df['Z'], label=f'Etabs Results - {key}')
     ax.set_xlabel('Total Deflection (mm)')
     ax.set_ylabel('Storey Height (m)')
-
     if type == 'X':  
-        if load_case == 'LC1':
-            ax.set_title('Deflection vs Storey Height for Load Case 1 in West-East Direction')
-        elif load_case == 'LC2':
-            ax.set_title('Deflection vs Storey Height for Load Case 2 in West-East Direction')
-        elif load_case == 'LC3':
-            ax.set_title('Deflection vs Storey Height for Load Case 3 in West-East Direction')
-            
+        ax.set_title('Deflection vs Storey Height in West-East Direction')      
     elif type == 'Y':
-        if load_case == 'LC1':
-            ax.set_title('Deflection vs Storey Height for Load Case 1 in North-South Direction')
-        elif load_case == 'LC2':
-            ax.set_title('Deflection vs Storey Height for Load Case 2 in North-South Direction')
-        elif load_case == 'LC3':
-            ax.set_title('Deflection vs Storey Height for Load Case 3 in North-South Direction')
-            
+        ax.set_title('Deflection vs Storey Height in North-South Direction')
+      
     ax.grid(linestyle='--', alpha=0.7)
     plt.legend()
     plt.tight_layout()
     plt.show()
-
-LC1 = '1.35Gk + 1.05Qk + 1.50WkX + EHF'
-LC2 = '1.35Gk + 1.50Qk + 0.75WkY + EHF'
-LC3 = '1.0Gk + 1.50WkX + EHF'
-storey_height, df_dict = data_prep(model, LC1, LC2, LC3)
-_, etabs_deflection = deflection(df_dict, type = type, load_case = load_case)
 ```
+
+#
+```{python}
+# Deflection plots
+dfy = data_prep(model, LC1y, LC2y, LC3y, LC4y)
+deflection_plot(dfy, typey)
+```
+
+# Summary table for deflection values in the North-South direction
 
 ```{python}
 #| output: asis
 
-# First column contains row labels; storey values run horizontally to the right.
-cols = ['Storey Height (m)'] + [f"{int(s)}" for s in storey_height]
+# Deflection table, storey values run horizontally to the right.
+storey_heights = np.array(dfy['LC1']['Z'].to_list())
+cols = ['Storey Height (m)'] + [f"{int(s)}" for s in storey_heights]
 table_horizontal = pd.DataFrame([
-    ['Etabs Deflection (mm)'] + [f"{d:.2f}" for d in etabs_deflection],
-    ['ANSYS Deflection (mm)'] + [f"{d:.2f}" for d in delta_model]], columns=cols)
+    ['LC1 Deflection (mm)'] + [f"{-d:.2f}" for d in dfy['LC1']['UX'].to_list()],
+    ['LC2 Deflection (mm)'] + [f"{-d:.2f}" for d in dfy['LC2']['UX'].to_list()],
+    ['LC3 Deflection (mm)'] + [f"{-d:.2f}" for d in dfy['LC3']['UX'].to_list()],
+    ['LC4 Deflection (mm)'] + [f"{-d:.2f}" for d in dfy['LC4']['UX'].to_list()]], columns=cols)
 
-latex_table = table_horizontal.to_latex(index=False,escape=False,column_format='|l|' + 'c|' * len(storey_height))
+latex_table = table_horizontal.to_latex(index=False,escape=False,column_format='|l|' + 'c|' * len(storey_heights))
 
 print(r"\normalfont")
 print(r"\setlength{\tabcolsep}{7pt}")
 print(latex_table)
 ```
+
 {{< pagebreak >}}
 
 #
 ```{python}
-deflection_plot(df_dict, delta_model, type = type, load_case = load_case)
+dfx = data_prep(model, LC1x, LC2x, LC3x, LC4x)
+deflection_plot(dfx, typex)
+```
+
+# Summary table for deflection values in the West-East direction
+
+```{python}
+#| output: asis
+
+# Deflection table, storey values run horizontally to the right.
+storey_heights = np.array(dfx['LC1']['Z'].to_list())
+cols = ['Storey Height (m)'] + [f"{int(s)}" for s in storey_heights]
+table_horizontal = pd.DataFrame([
+    ['LC1 Deflection (mm)'] + [f"{-d:.2f}" for d in dfx['LC1']['UX'].to_list()],
+    ['LC2 Deflection (mm)'] + [f"{-d:.2f}" for d in dfx['LC2']['UX'].to_list()],
+    ['LC3 Deflection (mm)'] + [f"{-d:.2f}" for d in dfx['LC3']['UX'].to_list()],
+    ['LC4 Deflection (mm)'] + [f"{-d:.2f}" for d in dfx['LC4']['UX'].to_list()]], columns=cols)
+
+latex_table = table_horizontal.to_latex(index=False,escape=False,column_format='|l|' + 'c|' * len(storey_heights))
+
+print(r"\normalfont")
+print(r"\setlength{\tabcolsep}{7pt}")
+print(latex_table)
 ```
