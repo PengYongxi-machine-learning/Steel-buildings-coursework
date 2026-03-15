@@ -48,7 +48,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{ NS Bracing LC4 - Lateral Deflection Calculation }
+                \centerline{ Truss Calculation }
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -97,7 +97,7 @@ def data_prep(df, LC1, LC2, LC3, LC4):
 
 def deflection_plot(df_dict, type):
     plt.rcParams['font.family'] = 'Times New Roman'
-    fig, ax = plt.subplots(figsize=(7, 5))
+    fig, ax = plt.subplots(figsize=(6, 4))
     for key in df_dict.keys():
         df = df_dict[key].sort_values('Z', ascending=True)
         ax.plot(-df['UX'], df['Z'], label=f'Etabs Results - {key}')
@@ -116,6 +116,7 @@ def deflection_plot(df_dict, type):
 
 #
 ```{python}
+#| fig-align: center
 # Deflection plots
 dfy = data_prep(model, LC1y, LC2y, LC3y, LC4y)
 deflection_plot(dfy, typey)
@@ -138,14 +139,19 @@ table_horizontal = pd.DataFrame([
 latex_table = table_horizontal.to_latex(index=False,escape=False,column_format='|l|' + 'c|' * len(storey_heights))
 
 print(r"\normalfont")
-print(r"\setlength{\tabcolsep}{7pt}")
+print(r"\setlength{\tabcolsep}{11pt}")
 print(latex_table)
 ```
+
+\begin{description}
+    \item[Note:] The maximum deflection values is 9.47 mm, which is less than 152 mm (L/250), where L = 38000mm for building with 38 meters of height. Thus the deflection is within the acceptable limit.
+\end{description}
 
 {{< pagebreak >}}
 
 #
 ```{python}
+#| fig-align: center
 dfx = data_prep(model, LC1x, LC2x, LC3x, LC4x)
 deflection_plot(dfx, typex)
 ```
@@ -167,6 +173,10 @@ table_horizontal = pd.DataFrame([
 latex_table = table_horizontal.to_latex(index=False,escape=False,column_format='|l|' + 'c|' * len(storey_heights))
 
 print(r"\normalfont")
-print(r"\setlength{\tabcolsep}{7pt}")
+print(r"\setlength{\tabcolsep}{11pt}")
 print(latex_table)
 ```
+
+\begin{description}
+    \item[Note:] The maximum deflection values is 9.47 mm, which is less than  152 mm (L/250),  where L = 38000mm for building with 38 meters of height. Thus the deflection is within the acceptable limit.
+\end{description}
