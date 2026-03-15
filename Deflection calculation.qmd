@@ -48,7 +48,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{ WE Bracing LC3 - Lateral Deflection Calculation }
+                \centerline{ NS Bracing LC4 - Lateral Deflection Calculation }
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -65,8 +65,8 @@ format:
 %precision 2
 import numpy as np
 # Freedom of choice parameters
-direction = 'WE'
-load_case = 3
+direction = 'NS'
+load_case = 4
 
 # Vertical column sections, list start from top to bottom
 if direction == 'NS':
@@ -78,12 +78,12 @@ if direction == 'NS':
     section_diag = '356 x 406x 287'
 
 elif direction == 'WE':
-    Ac13 = '305 x 305x 283'
+    Ac13 = '356 x 406x 509'
     Ac45 = '305 x 305x 158'
     Ac67 = '254 x 254x 132'
     Ac89 = '203 x 203x 86'
-    Ac = np.array([11000, 11000, 16800, 16800, 20100, 20100, 36000, 36000, 36000])
-    section_diag = '305 x 305x 283'
+    Ac = np.array([11000, 11000, 16800, 16800, 20100, 20100, 64900, 64900, 64900])
+    section_diag = '356 x 406x 509'
 
 # Define load factors based on load case and model results
 if load_case == 1:
@@ -93,7 +93,7 @@ if load_case == 1:
     if direction == 'NS':
         delta_model = np.array([3.86, 7.81, 11.89, 16.94, 21.90, 27.60, 32.93, 38.69, 43.83])[::-1]
     elif direction == 'WE':
-        delta_model = np.array([5.25, 8.40, 13.02, 16.42, 21.12, 24.43, 28.84, 31.15, 35.35])[::-1]
+        delta_model = np.array([3.13, 4.56, 7.35, 8.77, 11.71, 13.09, 15.85, 16.88, 19.06])[::-1]
     
 elif load_case == 2:
     dfactor = 1.35
@@ -102,7 +102,7 @@ elif load_case == 2:
     if direction == 'NS':
         delta_model = np.array([5.32, 10.74, 16.32, 23.24, 30.04, 37.85, 45.15, 53.04, 60.08])[::-1]
     elif direction == 'WE':
-        delta_model = np.array([7.48, 11.81, 18.25, 23.01, 29.59, 34.22, 40.38, 44.32, 49.50])[::-1]
+        delta_model = np.array([4.49, 6.40, 10.31, 12.29, 16.41, 18.32, 22.20, 23.65, 26.70])[::-1]
 
 elif load_case == 3:
     dfactor = 1.0
@@ -111,7 +111,16 @@ elif load_case == 3:
     if direction == 'NS':
         delta_model = np.array([4.50, 9.06, 13.77, 19.60, 25.31, 31.91, 38.07, 44.72, 50.66])[::-1]
     elif direction == 'WE':
-        delta_model = np.array([6.45, 10.09, 15.59, 19.56, 25.26, 29.21, 34.46, 37.83, 42.25])[::-1]
+        delta_model = np.array([3.88, 5.48, 8.80, 10.50, 14.01, 15.65, 18.95, 20.19, 22.80])[::-1]
+
+elif load_case == 4:
+    dfactor = 1.35
+    ifactor = 1.50
+    wfactor = 0.0
+    if direction == 'NS':
+        delta_model = np.array([2.15, 4.40, 6.71, 9.58, 12.40, 15.64, 18.68, 21.96, 24.88])[::-1]
+    elif direction == 'WE':
+        delta_model = np.array([1.60, 2.44, 3.95, 4.72, 6.32, 7.07, 8.57, 9.14, 10.33])[::-1]
 
 # Horizontal distance between vertical columns
 if direction == 'WE':
