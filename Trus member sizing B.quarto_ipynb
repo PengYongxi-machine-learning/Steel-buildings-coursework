@@ -1,0 +1,434 @@
+{
+ "cells": [
+  {
+   "cell_type": "raw",
+   "id": "cacfc47f",
+   "metadata": {},
+   "source": [
+    "---\n",
+    "format:\n",
+    "  pdf:\n",
+    "    echo: false\n",
+    "    geometry:\n",
+    "      - top=5mm\n",
+    "      - left=5mm\n",
+    "      - right=5mm\n",
+    "      - bottom=20mm\n",
+    "      - headheight=35mm\n",
+    "      - headsep=5mm\n",
+    "      - includehead=true\n",
+    "    include-in-header:\n",
+    "      - text: |\n",
+    "          \\usepackage{tabularx}\n",
+    "          \\usepackage{multirow}\n",
+    "          \\usepackage{graphicx}\n",
+    "          \\usepackage{xcolor}\n",
+    "          \\usepackage{fancyhdr}\n",
+    "          \\usepackage{lastpage}\n",
+    "          \\usepackage{multicol}\n",
+    "          \\usepackage{ifthen}\n",
+    "\n",
+    "          \\pagestyle{fancy}\n",
+    "          \\fancyhf{}\n",
+    "          \\renewcommand{\\headrulewidth}{0pt}\n",
+    "          \\newcounter{score}\n",
+    "\n",
+    "          \\fancyhead[C]{\n",
+    "            \\noindent\n",
+    "            \\bgroup\n",
+    "            \\def\\arraystretch{1.4}\n",
+    "            \\begin{tabularx}{\\textwidth}{|p{5.5cm}|p{1.8cm}|X|p{1.2cm}|p{1.8cm}|}\n",
+    "            \\hline\n",
+    "            \\multirow{5}{5.5cm}{\n",
+    "                \\vspace*{1mm}\n",
+    "                \\includegraphics[width=4.5cm]{logo} \\\\\n",
+    "                \\fontsize{6pt}{7pt}\\selectfont\n",
+    "                \\textbf{CIVIL \\& ENVIRONMENTAL ENGINEERING,}\\\\\n",
+    "                SKEMPTON BUILDING, IMPERIAL COLLEGE\\\\\n",
+    "                LONDON, SOUTH KENSINGTON CAMPUS,\\\\\n",
+    "                LONDON SW7 2AZ.\\\\[3mm]\n",
+    "                \\normalsize\\textbf{CALCULATION SHEET}\n",
+    "            }\n",
+    "            & \\textbf{Job No.} & & \\textbf{Sheet} & \\textbf{Ref} \\\\ \\cline{2-5}\n",
+    "            & \\textbf{Job Title} & Steel Design Coursework & \\multicolumn{2}{l|}{\\thepage\\ of \\pageref{LastPage}} \\\\ \\cline{2-5}\n",
+    "            & \\multicolumn{4}{p{\\dimexpr\\textwidth-5.5cm-8\\tabcolsep-5\\arrayrulewidth\\relax}|}{\n",
+    "                \\textbf{Subject} \\newline\n",
+    "                \\vspace*{1mm}\n",
+    "                \\centerline{ Scheme A Truss Member Calculation }\n",
+    "                \\vspace*{1mm}\n",
+    "            } \\\\ \\cline{2-5}\n",
+    "            & \\multirow{2}{*}{\\textbf{Client}} & \\textbf{Made by} \\quad  Pablo Peng & \\multicolumn{2}{l|}{\\textbf{Date} \\quad 03/03/2026} \\\\ \\cline{3-5}\n",
+    "            & & \\textbf{Checked by} \\quad  Pablo Peng & \\multicolumn{2}{l|}{\\textbf{Date}} \\\\ \\hline\n",
+    "            \\end{tabularx}\n",
+    "            \\egroup\n",
+    "          }\n",
+    "---"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "80222fef",
+   "metadata": {},
+   "source": [
+    "\\Large \n",
+    "\\linespread{1.4}\n",
+    "\\selectfont"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "16b6e828",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "wee = [1,2,3,4,5,6,7,8,9,10,11,12,13]\n",
+    "wef = [-11808, 1047, -259, -7840, -805, -2130, 1047, 307, 307, -7841, -804, 1521, -2094]\n",
+    "wef1, wef2 = 4889.4, 4145.1\n",
+    "wer = 9035\n",
+    "wed = 22.31\n",
+    "\n",
+    "nse = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]\n",
+    "nsf = [22324, -18561, -186, 28669, -4914, -18900, -11918, -10149, -2070, 19968, 2318, 4073, -1325, -4392, -6706, -14188]\n",
+    "nsf1, nsf2, nsf3 = 3428.2, 3866.2, 2852.3\n",
+    "nsd = 18.57"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "6aa9dab5",
+   "metadata": {
+    "user_expressions": [
+     {
+      "expression": "wef1",
+      "result": {
+       "data": {
+        "text/plain": "4889.4"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "wef2",
+      "result": {
+       "data": {
+        "text/plain": "4145.1"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "wed",
+      "result": {
+       "data": {
+        "text/plain": "22.31"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     }
+    ]
+   },
+   "source": [
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "# Loads and deflection at the west side of the truss\n",
+    "\\begin{description}\n",
+    "    \\item[]The column loads at 3th floor, $F_1$ = `{python} wef1` kN\n",
+    "    \\item[]The column loads at 4th floor, $F_2$ = `{python} wef2` kN\n",
+    "    \\item[]Maximum deflection along the span = `{python} wed` mm < 50 mm\n",
+    "\\end{description}\n",
+    "\n",
+    "{{< pagebreak >}}\n",
+    "\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "\n",
+    "# Axial forces in west side truss"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "fcb92337",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\\normalfont\n",
+      "\\renewcommand{\\arraystretch}{1.2}\n",
+      "\\setlength{\\tabcolsep}{11pt}\n",
+      "\\begin{tabular}{|l|c|c|c|c|c|c|}\n",
+      "\\hline\n",
+      "Description & Value 1 & Value 2 & Value 3 & Value 4 & Value 5 & Value 6 \\\\\n",
+      "\\hline\n",
+      "Element & 1 & 2 & 3 & 4 & 5 & 6 \\\\\n",
+      "Axial force (kN) & -11808.00 & 1047.00 & -259.00 & -7840.00 & -805.00 & -2130.00 \\\\\n",
+      "\\hline\n",
+      "Element & 7 & 8 & 9 & 10 & 11 & 12 \\\\\n",
+      "Axial force (kN) & 1047.00 & 307.00 & 307.00 & -7841.00 & -804.00 & 1521.00 \\\\\n",
+      "\\hline\n",
+      "Element & 13 &  &  &  &  &  \\\\\n",
+      "Axial force (kN) & -2094.00 &  &  &  &  &  \\\\\n",
+      "\\hline\n",
+      "\\end{tabular}\n"
+     ]
+    }
+   ],
+   "source": [
+    "#| output: asis\n",
+    "\n",
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "\n",
+    "# Wrap the table after a fixed number of elements so it fits the page width.\n",
+    "max_elements_per_row = 6\n",
+    "rows = []\n",
+    "\n",
+    "for start in range(0, len(wee), max_elements_per_row):\n",
+    "  element_chunk = wee[start:start + max_elements_per_row]\n",
+    "  force_chunk = wef[start:start + max_elements_per_row]\n",
+    "  pad_count = max_elements_per_row - len(element_chunk)\n",
+    "\n",
+    "  rows.append(['Element'] + [f\"{int(e)}\" for e in element_chunk] + [''] * pad_count)\n",
+    "  rows.append(['Axial force (kN)'] + [f\"{f:.2f}\" for f in force_chunk] + [''] * pad_count)\n",
+    "\n",
+    "col = ['Description'] + [f\"Value {index}\" for index in range(1, max_elements_per_row + 1)]\n",
+    "table_horizontal = pd.DataFrame(rows, columns=col)\n",
+    "\n",
+    "latex_lines = [\n",
+    "  r\"\\begin{tabular}{|l|\" + \"c|\" * max_elements_per_row + \"}\",\n",
+    "  r\"\\hline\",\n",
+    "  \" & \".join(col) + r\" \\\\\",\n",
+    "  r\"\\hline\"\n",
+    "]\n",
+    "\n",
+    "for row_index, row in enumerate(rows, start=1):\n",
+    "  latex_lines.append(\" & \".join(row) + r\" \\\\\")\n",
+    "  if row_index % 2 == 0:\n",
+    "    latex_lines.append(r\"\\hline\")\n",
+    "\n",
+    "latex_lines.append(r\"\\end{tabular}\")\n",
+    "latex_table = \"\\n\".join(latex_lines)\n",
+    "\n",
+    "print(r\"\\normalfont\")\n",
+    "print(r\"\\renewcommand{\\arraystretch}{1.2}\")\n",
+    "print(r\"\\setlength{\\tabcolsep}{11pt}\")\n",
+    "print(latex_table)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "606fb075",
+   "metadata": {
+    "user_expressions": [
+     {
+      "expression": "nsf1",
+      "result": {
+       "data": {
+        "text/plain": "3428.2"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "wer",
+      "result": {
+       "data": {
+        "text/plain": "9035"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "nsf1 + wer",
+      "result": {
+       "data": {
+        "text/plain": "12463.2"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "nsf2",
+      "result": {
+       "data": {
+        "text/plain": "3866.2"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "nsf3",
+      "result": {
+       "data": {
+        "text/plain": "2852.3"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     },
+     {
+      "expression": "nsd",
+      "result": {
+       "data": {
+        "text/plain": "18.57"
+       },
+       "metadata": {},
+       "status": "ok"
+      }
+     }
+    ]
+   },
+   "source": [
+    "Note: Positive values indicate tension, negative values indicate compression.\n",
+    "\n",
+    "{{< pagebreak >}}\n",
+    "\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "# Loads and deflection at the north side of the truss\n",
+    "\\begin{description}\n",
+    "    \\item[]The column loads at 1st floor, $F_{1,1}$ = `{python} nsf1` kN\n",
+    "    \\item[]The column load due to reaction force from west side, $F_{1,2}$ = `{python} wer` kN\n",
+    "    \\item[]$F_1 = F_{1,1} + F_{1,2}$ = `{python} nsf1 + wer` kN\n",
+    "    \\item[]The column loads at 2nd floor, $F_2$ = `{python} nsf2` kN\n",
+    "    \\item[]The column loads at 3rd floor, $F_3$ = `{python} nsf3` kN\n",
+    "    \\item[]Maximum lateral deflection = `{python} nsd` mm < 50 mm\n",
+    "\\end{description}\n",
+    "\n",
+    "{{< pagebreak >}}\n",
+    "\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "#\n",
+    "\n",
+    "# Axial forces in north side truss"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "170a3a98",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\\normalfont\n",
+      "\\renewcommand{\\arraystretch}{1.2}\n",
+      "\\setlength{\\tabcolsep}{11pt}\n",
+      "\\begin{tabular}{|l|c|c|c|c|c|c|}\n",
+      "\\hline\n",
+      "Description & Value 1 & Value 2 & Value 3 & Value 4 & Value 5 & Value 6 \\\\\n",
+      "\\hline\n",
+      "Element & 1 & 2 & 3 & 4 & 5 & 6 \\\\\n",
+      "Axial force (kN) & 22324.00 & -18561.00 & -186.00 & 28669.00 & -4914.00 & -18900.00 \\\\\n",
+      "\\hline\n",
+      "Element & 7 & 8 & 9 & 10 & 11 & 12 \\\\\n",
+      "Axial force (kN) & -11918.00 & -10149.00 & -2070.00 & 19968.00 & 2318.00 & 4073.00 \\\\\n",
+      "\\hline\n",
+      "Element & 13 & 14 & 15 & 16 &  &  \\\\\n",
+      "Axial force (kN) & -1325.00 & -4392.00 & -6706.00 & -14188.00 &  &  \\\\\n",
+      "\\hline\n",
+      "\\end{tabular}\n"
+     ]
+    }
+   ],
+   "source": [
+    "#| output: asis\n",
+    "\n",
+    "# Wrap the table after a fixed number of elements so it fits the page width.\n",
+    "max_elements_per_row = 6\n",
+    "rows = []\n",
+    "for start in range(0, len(nse), max_elements_per_row):\n",
+    "  element_chunk = nse[start:start + max_elements_per_row]\n",
+    "  force_chunk = nsf[start:start + max_elements_per_row]\n",
+    "  pad_count = max_elements_per_row - len(element_chunk)\n",
+    "\n",
+    "  rows.append(['Element'] + [f\"{int(e)}\" for e in element_chunk] + [''] * pad_count)\n",
+    "  rows.append(['Axial force (kN)'] + [f\"{f:.2f}\" for f in force_chunk] + [''] * pad_count)\n",
+    "col1 = ['Description'] + [f\"Value {index}\" for index in range(1, max_elements_per_row + 1)]\n",
+    "table_horizontal = pd.DataFrame(rows, columns=col1)\n",
+    "latex_lines = [\n",
+    "  r\"\\begin{tabular}{|l|\" + \"c|\" * max_elements_per_row + \"}\",\n",
+    "  r\"\\hline\",\n",
+    "  \" & \".join(col1) + r\" \\\\\",\n",
+    "  r\"\\hline\"\n",
+    "]\n",
+    "for row_index, row in enumerate(rows, start=1):\n",
+    "  latex_lines.append(\" & \".join(row) + r\" \\\\\")\n",
+    "  if row_index % 2 == 0:\n",
+    "    latex_lines.append(r\"\\hline\")\n",
+    "latex_lines.append(r\"\\end{tabular}\")\n",
+    "latex_table = \"\\n\".join(latex_lines)    \n",
+    "print(r\"\\normalfont\")\n",
+    "print(r\"\\renewcommand{\\arraystretch}{1.2}\")\n",
+    "print(r\"\\setlength{\\tabcolsep}{11pt}\")\n",
+    "print(latex_table)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "7c3399db",
+   "metadata": {},
+   "source": [
+    "Note: Positive values indicate tension, negative values indicate compression."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3",
+   "path": "C:\\Users\\MSI-NB\\AppData\\Roaming\\Python\\share\\jupyter\\kernels\\python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.13"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
