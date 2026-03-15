@@ -62,16 +62,26 @@ format:
 \selectfont
 
 ```{python}
-wee = [1,2,3,4,5,6,7,8,9,10,11,12,13]
-wef = [-11808, 1047, -259, -7840, -805, -2130, 1047, 307, 307, -7841, -804, 1521, -2094]
-wef1, wef2 = 4889.4, 4145.1
-wer = 9035
-wed = 22.31
+weet = [1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10]
+weft = [-2465, 6362, -4318, -2655, -2468, -1168, 2160, -3.16, -4034, 2160]
+weeb = [2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 2.10]
+weefb = [-2073, 5349, -3631, -2232, -2075, -482, 1816, -3.04, -3391, 1914]
+wee = weet + weeb
+wef = weft + weefb
+wef1t, wef2t = 2656, 2656
+wef1b, wef2b = 2233, 2233
+wert, werb = 2061, 1733
+wed = 49.98
 
-nse = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
-nsf = [22324, -18561, -186, 28669, -4914, -18900, -11918, -10149, -2070, 19968, 2318, 4073, -1325, -4392, -6706, -14188]
-nsf1, nsf2, nsf3 = 3428.2, 3866.2, 2852.3
-nsd = 18.57
+nset = [1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8]
+nsft = [-2655, 11.82, 3284, -1986, -3449, 2001, 4345, -4612]
+nseb = [2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8]
+nsfb = [-2901, 13.16, 3588, -2170, -4385, 2188, 5517, -5503]
+nse = nset + nseb
+nsf = nsft + nsfb
+nsf1t, nsf2t = 606, 824
+nsf1b, nsf2b = 1181, 1521
+nsd = 7.75
 ```
 #
 #
@@ -85,14 +95,13 @@ nsd = 18.57
 #
 # Loads and deflection at the west side of the truss
 \begin{description}
-    \item[]The column loads at 3th floor, $F_1$ = `{python} wef1` kN
-    \item[]The column loads at 4th floor, $F_2$ = `{python} wef2` kN
+    \item[]The column loads at 6th floor, $F_{1,1}$ = $F_{1,2}$ = `{python} wef1t` kN
+    \item[]The column loads at 3rd floor, $F_{2,1}$ = $F_{2,2}$ = `{python} wef1b` kN
     \item[]Maximum deflection along the span = `{python} wed` mm < 50 mm
 \end{description}
 
 {{< pagebreak >}}
 
-#
 #
 #
 #
@@ -116,7 +125,7 @@ for start in range(0, len(wee), max_elements_per_row):
   force_chunk = wef[start:start + max_elements_per_row]
   pad_count = max_elements_per_row - len(element_chunk)
 
-  rows.append(['Element'] + [f"{int(e)}" for e in element_chunk] + [''] * pad_count)
+  rows.append(['Element'] + [f"{float(e)}" for e in element_chunk] + [''] * pad_count)
   rows.append(['Axial force (kN)'] + [f"{f:.2f}" for f in force_chunk] + [''] * pad_count)
 
 col = ['Description'] + [f"Value {index}" for index in range(1, max_elements_per_row + 1)]
@@ -152,16 +161,17 @@ Note: Positive values indicate tension, negative values indicate compression.
 #
 #
 #
-#
-#
 # Loads and deflection at the north side of the truss
 \begin{description}
-    \item[]The column loads at 1st floor, $F_{1,1}$ = `{python} nsf1` kN
-    \item[]The column load due to reaction force from west side, $F_{1,2}$ = `{python} wer` kN
-    \item[]$F_1 = F_{1,1} + F_{1,2}$ = `{python} nsf1 + wer` kN
-    \item[]The column loads at 2nd floor, $F_2$ = `{python} nsf2` kN
-    \item[]The column loads at 3rd floor, $F_3$ = `{python} nsf3` kN
-    \item[]Maximum lateral deflection = `{python} nsd` mm < 50 mm
+    \item[]The corner column loads at 8th floor, $F_{1,1,a}$ = `{python} nsf1t` kN
+    \item[]The reaction force from west side truss at 8th floor, $F_{1,1,b}$ = `{python} wert` kN
+    \item[]$F_{1,1} = F_{1,1,a} + F_{1,1,b}$ = `{python} nsf1t + wert` kN
+    \item[]The perimeter column loads at 8th floor, $F_{1,2}$ = `{python} nsf2t` kN
+    \item[]The corner column loads at 5th floor, $F_{2,1,a}$ = `{python} nsf1b` kN
+    \item[]The reaction force from west side truss at 5th floor, $F_{2,1,b}$ = `{python} werb` kN
+    \item[]$F_{2,1} = F_{2,1,a} + F_{2,1,b}$ = `{python} nsf1b + werb` kN
+    \item[]The perimeter column loads at 5th floor, $F_{2,2}$ = `{python} nsf2b` kN
+    \item[]Maximum deflection = `{python} nsd` mm < 50 mm
 \end{description}
 
 {{< pagebreak >}}
@@ -186,7 +196,7 @@ for start in range(0, len(nse), max_elements_per_row):
   force_chunk = nsf[start:start + max_elements_per_row]
   pad_count = max_elements_per_row - len(element_chunk)
 
-  rows.append(['Element'] + [f"{int(e)}" for e in element_chunk] + [''] * pad_count)
+  rows.append(['Element'] + [f"{float(e)}" for e in element_chunk] + [''] * pad_count)
   rows.append(['Axial force (kN)'] + [f"{f:.2f}" for f in force_chunk] + [''] * pad_count)
 col1 = ['Description'] + [f"Value {index}" for index in range(1, max_elements_per_row + 1)]
 table_horizontal = pd.DataFrame(rows, columns=col1)
