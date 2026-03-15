@@ -48,7 +48,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Floor 8 - Right Top Edge Design of Columns}
+                \centerline{Floor 2 - Left Corner Design of Columns}
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -61,10 +61,10 @@ format:
 import math
 %precision 2
 # Setup
-floor = 8
-section = '254 x 254x 73'
-ixp =  3    # Index for primary lx
-ixs = 5     # Index for secondary lx
+floor = 2
+section = '305 x 305x 198'
+ixp =  1   # Index for primary lx
+ixs = 1     # Index for secondary lx
 it = 1      # Scenario index
 
 # Automation start here
@@ -349,7 +349,7 @@ elif Type == 'Internal':
   Mzed = (s_Ved_f - s_Ved_f)*ecc_z*1e-3
 elif Type == 'Perimeter2':
   BC = 5
-  Ned = nfloor*s_Ved_f + s_Ved_r + 2*nfloor*s_Ved_f + 2*p_Ved_r
+  Ned = nfloor*p_Ved_f + p_Ved_r + 2*nfloor*s_Ved_f + 2*s_Ved_r
   Myed = p_Ved_f*ecc_y*1e-3
   Mzed = (s_Ved_f - s_Ved_f)*ecc_z*1e-3
 else:
@@ -367,14 +367,14 @@ else:
 
 \setcounter{score}{`{python} int(BC)`}
 
-\ifthenelse{\value{score}=2}{
+\ifthenelse{\value{score} = 2}{
 \begin{description}
   \item[]Reaction forces for beams connected to edge column, 
   \item[]Secondary beam due to floor load, $V_{ed,sf}$ =  `{python} s_Ved_f` kN
   \item[]Secondary beam due to roof load, $V_{ed,sr}$ = `{python} s_Ved_r` kN
   \item[]Primary beam due to floor load, $V_{ed,pf}$ = `{python} p_Ved_f` kN
   \item[]Primary beam due to roof load, $V_{ed,pr}$  = `{python} p_Ved_r` kN
-  \item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\cdot (V_{ed,pf} + V_{ed,sf}) + V_{ed,sr} + V_{ed,pr}$ = `{python} Ned` kN
+  \item[]Design axial load, $N_{ed}$ = `{python} nfloor`$\cdot (V_{ed,pf} + V_{ed,sf}) + V_{ed,sr} + V_{ed,pr}$ = `{python} Ned` kN
   \item[]Design moment about y-axis, $M_{y}$ = $V_{ed,pf} \cdot e_{y}$ = `{python} Myed` kNm
   \item[]Design moment about z-axis, $M_{z}$ = $V_{ed,sf} \cdot e_{z}$ = `{python} Mzed` kNm
 \end{description}
@@ -386,7 +386,7 @@ else:
   \item[]Secondary beam due to roof load, $V_{ed,sr}$ = `{python} s_Ved_r` kN
   \item[]Primary beam due to floor load, $V_{ed,pf}$ = `{python} p_Ved_f` kN
   \item[]Primary beam due to roof load, $V_{ed,pr}$  = `{python} p_Ved_r` kN
-  \item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\cdot (V_{ed,pf} + 2\cdot V_{ed,pf}) + V_{ed,pr} + V_{ed,sr}$ = `{python} Ned` kN
+  \item[]Design axial load, $N_{ed} = `{python} nfloor`\cdot (V_{ed,pf} + 2\cdot V_{ed,pf}) + V_{ed,pr} + V_{ed,sr}$ = `{python} Ned` kN
   \item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,sf} - V_{ed,sf}) \cdot e_{y}$ = `{python} Myed` kNm
   \item[]Design moment about z-axis, $M_{z}$ = $V_{ed,pf} \cdot e_{z}$ = `{python} Mzed` kNm
 \end{description}
@@ -398,7 +398,7 @@ else:
   \item[]Secondary beam due to roof load, $V_{ed,sr}$ = `{python} s_Ved_r` kN
   \item[]Primary beam due to floor load, $V_{ed,pf}$ = `{python} p_Ved_f` kN
   \item[]Primary beam due to roof load, $V_{ed,pr}$  = `{python} p_Ved_r` kN
-  \item[]Design axial load, $N_{ed}$ = $2`{python} nfloor`\cdot(V_{ed,pf} + V_{ed,sf}) + 2V_{ed,pr} + 2V_{ed,sr}$ = `{python} Ned` kN
+  \item[]Design axial load, $N_{ed}$ = $2\cdot`{python} nfloor`\cdot(V_{ed,pf} + V_{ed,sf}) + 2V_{ed,pr} + 2V_{ed,sr}$ = `{python} Ned` kN
   \item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,sf} - V_{ed,sf}) \cdot e_{y}$ = `{python} Myed` kNm
   \item[]Design moment about z-axis, $M_{z}$ = $(V_{ed,pf} - V_{ed,pf}) \cdot e_{z}$ = `{python} Mzed` kNm
 \end{description}
@@ -411,7 +411,7 @@ else:
   \item[]Secondary beam due to roof load, $V_{ed,sr}$ = `{python} s_Ved_r` kN
   \item[]Primary beam due to floor load, $V_{ed,pf}$ = `{python} p_Ved_f` kN
   \item[]Primary beam due to roof load, $V_{ed,pr}$  = `{python} p_Ved_r` kN
-  \item[]Design axial load, $N_{ed}$ = $2`{python} nfloor`\cdot (V_{ed,sf} + V_{ed,pf}) + V_{ed,sr} + V_{ed,pr}$ = `{python} Ned` kN
+  \item[]Design axial load, $N_{ed}$ = $`{python} nfloor`\cdot (2\cdot V_{ed,sf} + V_{ed,pf}) + 2V_{ed,sr} + V_{ed,pr}$ = `{python} Ned` kN
   \item[]Design moment about y-axis, $M_{y}$ = $(V_{ed,sf}- V_{ed,sf})\cdot e_{y}$ = `{python} Myed` kNm
   \item[]Design moment about z-axis, $M_{z}$ = $V_{ed,pf}\cdot e_{z}$ = `{python} Mzed` kNm
 \end{description}
