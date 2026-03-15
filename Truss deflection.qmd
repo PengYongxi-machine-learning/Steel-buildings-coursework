@@ -48,7 +48,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{ Scheme B - Truss Deflection Check }
+                \centerline{ Scheme B - Truss Deflection Analysis}
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad  Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -146,7 +146,8 @@ print(latex_table)
 ```
 
 \begin{description}
-    \item[Note:] The maximum deflection values is `{python} maxd` mm, which is less than 152 mm (L/250), where L = 38000mm for building with 38 meters of height. Thus the deflection is within the acceptable limit.
+    \item[Note:] 
+    \item[1.] The maximum truss deflection value is `{python} maxd` mm, which is within the limit of 50 mm.
 \end{description}
 
 {{< pagebreak >}}
@@ -180,5 +181,6 @@ print(latex_table)
 ```
 
 \begin{description}
-    \item[Note:] The maximum deflection values is `{python} maxd` mm, which is less than  152 mm (L/250),  where L = 38000mm for building with 38 meters of height. Thus the deflection is within the acceptable limit.
+    \item[Note:] 
+    \item[1.] The maximum truss deflection value is `{python} maxd` mm, which is within the limit of 50 mm.
 \end{description}
