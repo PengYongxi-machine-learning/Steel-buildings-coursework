@@ -73,18 +73,20 @@ if direction == 'NS':
   Nc1, Nt1 = 1007, 1314
   Nc2, Nt2 = 1378, 1819
   Nc3, Nt3 = 1160, 1541
-  Nced = max(Nc1, Nc2, Nc3)
-  Nted = max(Nt1, Nt2, Nt3)
+  Nc4, Nt4 = 572, 728
+  Nced = max(Nc1, Nc2, Nc3, Nc4)
+  Nted = max(Nt1, Nt2, Nt3, Nt4)
 
 elif direction == 'WE':
-  section = '305 x 305x 283'
+  section = '356 x 406x 509'
   lc = math.sqrt(6000**2+13500**2)
   lt = math.sqrt(4000**2+13500**2)
-  Nc1, Nt1 = 1007, 1314
-  Nc2, Nt2 = 1378, 1819
-  Nc3, Nt3 = 1160, 1541
-  Nced = max(Nc1, Nc2, Nc3)
-  Nted = max(Nt1, Nt2, Nt3)
+  Nc1, Nt1 = 2097, 1446
+  Nc2, Nt2 = 2942, 2021
+  Nc3, Nt3 = 2513, 1724
+  Nc4, Nt4 = 1129, 785
+  Nced = max(Nc1, Nc2, Nc3, Nc4)
+  Nted = max(Nt1, Nt2, Nt3, Nt4)
 
 area_reduction = 0.7
 ```
@@ -101,8 +103,8 @@ area_reduction = 0.7
 
 # Maximum compressive and tensile axial force under 3 Load Cases
 \begin{description}
-  \item[]$N_{c,ed}$ = $\max(N_{c,LC1}, N_{c,LC2}, N_{c,LC3})$ = $\max$(`{python} Nc1`, `{python} Nc2`, `{python} Nc3`) = `{python} Nced` kN
-  \item[]$N_{t,ed}$ = $\max(N_{t,LC1}, N_{t,LC2}, N_{t,LC3})$ = $\max$(`{python} Nt1`, `{python} Nt2`, `{python} Nt3`) = `{python} Nted` kN
+  \item[]$N_{c,ed}$ = $\max(N_{c,LC1}, N_{c,LC2}, N_{c,LC3}, N_{c,LC4})$ = $\max$(`{python} Nc1`, `{python} Nc2`, `{python} Nc3`, `{python} Nc4`) = `{python} Nced` kN
+  \item[]$N_{t,ed}$ = $\max(N_{t,LC1}, N_{t,LC2}, N_{t,LC3}, N_{t,LC4})$ = $\max$(`{python} Nt1`, `{python} Nt2`, `{python} Nt3`, `{python} Nt4`) = `{python} Nted` kN
 \end{description}
 
 {{< pagebreak >}}
