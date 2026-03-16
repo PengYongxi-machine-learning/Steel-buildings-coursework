@@ -47,7 +47,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{WE Bracing Diagonal Members Calculations}
+                \centerline{Scheme A North Diagonal Members Calculations}
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -62,32 +62,16 @@ format:
 \selectfont 
 
 ```{python}
-direction = 'WE' # 'NS' or 'WE'
 
 # Define variables
 import math
-if direction == 'NS':
-  section = '356 x 406x 287'
-  lt = math.sqrt(6000**2+8250**2)
-  lc = math.sqrt(4000**2+8250**2)
-  Nc1, Nt1 = 1007, 1314
-  Nc2, Nt2 = 1378, 1819
-  Nc3, Nt3 = 1160, 1541
-  Nc4, Nt4 = 572, 728
-  Nced = max(Nc1, Nc2, Nc3, Nc4)
-  Nted = max(Nt1, Nt2, Nt3, Nt4)
-
-elif direction == 'WE':
-  section = '356 x 406x 509'
-  lc = math.sqrt(6000**2+13500**2)
-  lt = math.sqrt(4000**2+13500**2)
-  Nc1, Nt1 = 2097, 1446
-  Nc2, Nt2 = 2942, 2021
-  Nc3, Nt3 = 2513, 1724
-  Nc4, Nt4 = 1129, 785
-  Nced = max(Nc1, Nc2, Nc3, Nc4)
-  Nted = max(Nt1, Nt2, Nt3, Nt4)
-
+section = '356 x 406x 990'
+lt = math.sqrt(4000**2 + 13500**2)
+lc = math.sqrt(8000**2 + 13500**2)
+Nc_list = [7840, 7841] 
+Nt_list = [1521]
+Nced = max(Nc_list)
+Nted = max(Nt_list)
 area_reduction = 0.7
 ```
 #
@@ -101,10 +85,10 @@ area_reduction = 0.7
 #
 #
 
-# Maximum compressive and tensile axial force under 3 Load Cases
+# Maximum compressive and tensile axial force
 \begin{description}
-  \item[]$N_{c,ed}$ = $\max(N_{c,LC1}, N_{c,LC2}, N_{c,LC3}, N_{c,LC4})$ = $\max$(`{python} Nc1`, `{python} Nc2`, `{python} Nc3`, `{python} Nc4`) = `{python} Nced` kN
-  \item[]$N_{t,ed}$ = $\max(N_{t,LC1}, N_{t,LC2}, N_{t,LC3}, N_{t,LC4})$ = $\max$(`{python} Nt1`, `{python} Nt2`, `{python} Nt3`, `{python} Nt4`) = `{python} Nted` kN
+  \item[]$N_{c,ed}$ = $\max$`{python} Nc_list` = `{python} Nced` kN
+  \item[]$N_{t,ed}$ = $\max$`{python} Nt_list` = `{python} Nted` kN
 \end{description}
 
 {{< pagebreak >}}
@@ -171,8 +155,8 @@ else:
 # Effective length of column about y-y
 
 \begin{description}
-  \item[]Ultimate strength, $f_{u}$ = `{python} fu` $N\cdot mm^{-2}$  
-  \item[]Yield strength, $f_{y}$ = `{python} fy` $N \cdot mm^{-2}$  
+  \item[]Ultimate strength, $f_{u}$ = `{python} fy` $N\cdot mm^{-2}$  
+  \item[]Yield strength, $f_{y}$ = `{python} fu` $N \cdot mm^{-2}$  
   \item[]Young's modulus, $E$ = `{python} E` $N\cdot mm^{-2}$  
 \end{description}
 
@@ -263,14 +247,14 @@ else:
   \item[]$L_{cr,y}$ = $L_c$ =`{python} Lcr` mm
   \item[]$N_{cr,y}$ = $\frac{\pi^{2}\cdot E\cdot I_{y}}{{L_{cr,y}}^{2}}$ = `{python} Ncry` kN
   \item[]$\lambda_{y}$ =  $\sqrt{\frac{N_{Rk}}{N_{cr,y}}}$ = $\sqrt{\frac{A\cdot f_{y}}{N_{cr,y}}}$ = `{python} lamy` --- (EN 1993-1-1 :2022, Eq 8.69)
-  \item[]$\frac{h}{b}$ = `{python} ratio` < 1.2
+  \item[]$\frac{h}{b}$ = `{python} ratio` > 1.2
 \end{description}
 
 {{< pagebreak >}}
 
 #
 \begin{description}
-  \item[]$t_{f}$ = `{python} tf` mm < 100~mm
+  \item[]$t_{f}$ = `{python} tf` mm > 100 mm
   \item[]Use buckling curve B,  $\alpha_{y}$ = `{python} ay` --- (EN 1993-1-1 :2022, Table 8.2)
   \item[]$\phi_{y}$ = $0.5 \cdot (1 + \alpha_{y} \cdot (\lambda_{y} - 0.2) + {\lambda_{y}}^{2})$ = `{python} phiy` --- (EN 1993-1-1 :2022, Eq 8.74)
   \item[]$\chi_{y}$ = $\frac{1}{\phi_{y} + \sqrt{{\phi_{y}}^{2} - {\lambda_{y}}^{2}}}$ = `{python} chiy` --- (EN 1993-1-1 :2022, Eq 8.73)
@@ -281,8 +265,8 @@ else:
   \item[]$L_{cr,z}$ = `{python} Lcr` mm
   \item[]$N_{cr,z}$ = $\frac{\pi^{2}\cdot E\cdot I_{z}}{{L_{cr,z}}^{2}}$ = `{python} Ncrz` kN
   \item[]$\lambda_{z}$ = $\sqrt{\frac{N_{Rk}}{N_{cr,z}}}$ = $\sqrt{\frac{A\cdot f_{y}}{N_{cr,z}}}$ = `{python} lamz` --- (EN 1993-1-1 :2022, Eq 8.69)
-  \item[]$\frac{h}{b}$ = `{python} ratio` < 1.2
-  \item[]$t_{f}$ = `{python} tf` mm < 100~mm
+  \item[]$\frac{h}{b}$ = `{python} ratio` > 1.2
+  \item[]$t_{f}$ = `{python} tf` mm > 100 mm
   \item[]Use buckling curve C,  $\alpha_{z}$ = `{python} az` --- (EN 1993-1-1 :2022, Table 8.2)
   \item[]$\phi_{z}$ = $0.5 \cdot (1 + \alpha_{z} \cdot (\lambda_{z} - 0.2) + {\lambda_{z}}^{2})$ = `{python} phiz` --- (EN 1993-1-1 :2022, Eq 8.74)
   \item[]$\chi_{z}$ = $\frac{1}{\phi_{z} + \sqrt{{\phi_{z}}^{2} - {\lambda_{z}}^{2}}}$ = `{python} chiz` --- (EN 1993-1-1 :2022, Eq 8.73)

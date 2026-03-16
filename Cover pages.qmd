@@ -58,12 +58,13 @@ format: pdf
 \newpage
 ``` 
 
+
 ```{=latex}
 \newpage
 \vspace*{\fill}
 \begin{center}
 \Huge\textbf{Appendix 6} \\[0.5em]
-\Huge\textbf{Design of Connections}
+\Huge\textbf{Design of Scheme A}
 \end{center}
 \vspace*{\fill}
 \newpage
@@ -74,9 +75,19 @@ format: pdf
 \vspace*{\fill}
 \begin{center}
 \Huge\textbf{Appendix 7} \\[0.5em]
-\Huge\textbf{Design of Truss Members}
+\Huge\textbf{Design of Scheme B}
 \end{center}
 \vspace*{\fill}
 \newpage
 ``` 
 
+```{=latex}
+\newpage
+\vspace*{\fill}
+\begin{center}
+\Huge\textbf{Appendix 8} \\[0.5em]
+\Huge\textbf{Design of Connections}
+\end{center}
+\vspace*{\fill}
+\newpage
+``` 

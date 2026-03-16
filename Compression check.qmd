@@ -47,7 +47,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{WE Bracing Diagonal Members Calculations}
+                \centerline{Scheme B North Column Members Calculations}
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -62,33 +62,13 @@ format:
 \selectfont 
 
 ```{python}
-direction = 'WE' # 'NS' or 'WE'
 
 # Define variables
 import math
-if direction == 'NS':
-  section = '356 x 406x 287'
-  lt = math.sqrt(6000**2+8250**2)
-  lc = math.sqrt(4000**2+8250**2)
-  Nc1, Nt1 = 1007, 1314
-  Nc2, Nt2 = 1378, 1819
-  Nc3, Nt3 = 1160, 1541
-  Nc4, Nt4 = 572, 728
-  Nced = max(Nc1, Nc2, Nc3, Nc4)
-  Nted = max(Nt1, Nt2, Nt3, Nt4)
-
-elif direction == 'WE':
-  section = '356 x 406x 509'
-  lc = math.sqrt(6000**2+13500**2)
-  lt = math.sqrt(4000**2+13500**2)
-  Nc1, Nt1 = 2097, 1446
-  Nc2, Nt2 = 2942, 2021
-  Nc3, Nt3 = 2513, 1724
-  Nc4, Nt4 = 1129, 785
-  Nced = max(Nc1, Nc2, Nc3, Nc4)
-  Nted = max(Nt1, Nt2, Nt3, Nt4)
-
-area_reduction = 0.7
+section = '305 x 305x 158'
+lc = 4000
+Nc_list = [3499, 4385] 
+Nced = max(Nc_list)
 ```
 #
 #
@@ -101,10 +81,9 @@ area_reduction = 0.7
 #
 #
 
-# Maximum compressive and tensile axial force under 3 Load Cases
+# Maximum compressive and tensile axial force
 \begin{description}
-  \item[]$N_{c,ed}$ = $\max(N_{c,LC1}, N_{c,LC2}, N_{c,LC3}, N_{c,LC4})$ = $\max$(`{python} Nc1`, `{python} Nc2`, `{python} Nc3`, `{python} Nc4`) = `{python} Nced` kN
-  \item[]$N_{t,ed}$ = $\max(N_{t,LC1}, N_{t,LC2}, N_{t,LC3}, N_{t,LC4})$ = $\max$(`{python} Nt1`, `{python} Nt2`, `{python} Nt3`, `{python} Nt4`) = `{python} Nted` kN
+  \item[]$N_{c,ed}$ = $\max$`{python} Nc_list` = `{python} Nced` kN
 \end{description}
 
 {{< pagebreak >}}
@@ -215,7 +194,6 @@ c2 = cf/tf
 # Length of critical diagonal columns
 \begin{description}
   \item[]Length of compressive critical diagonal column, $L_{c}$ = `{python} lc` mm
-  \item[]Length of tensile critical diagonal column, $L_{t}$ = `{python} lt` mm
 \end{description}
 
 # Section Classification
@@ -263,14 +241,12 @@ else:
   \item[]$L_{cr,y}$ = $L_c$ =`{python} Lcr` mm
   \item[]$N_{cr,y}$ = $\frac{\pi^{2}\cdot E\cdot I_{y}}{{L_{cr,y}}^{2}}$ = `{python} Ncry` kN
   \item[]$\lambda_{y}$ =  $\sqrt{\frac{N_{Rk}}{N_{cr,y}}}$ = $\sqrt{\frac{A\cdot f_{y}}{N_{cr,y}}}$ = `{python} lamy` --- (EN 1993-1-1 :2022, Eq 8.69)
-  \item[]$\frac{h}{b}$ = `{python} ratio` < 1.2
 \end{description}
 
 {{< pagebreak >}}
 
 #
 \begin{description}
-  \item[]$t_{f}$ = `{python} tf` mm < 100~mm
   \item[]Use buckling curve B,  $\alpha_{y}$ = `{python} ay` --- (EN 1993-1-1 :2022, Table 8.2)
   \item[]$\phi_{y}$ = $0.5 \cdot (1 + \alpha_{y} \cdot (\lambda_{y} - 0.2) + {\lambda_{y}}^{2})$ = `{python} phiy` --- (EN 1993-1-1 :2022, Eq 8.74)
   \item[]$\chi_{y}$ = $\frac{1}{\phi_{y} + \sqrt{{\phi_{y}}^{2} - {\lambda_{y}}^{2}}}$ = `{python} chiy` --- (EN 1993-1-1 :2022, Eq 8.73)
@@ -281,16 +257,11 @@ else:
   \item[]$L_{cr,z}$ = `{python} Lcr` mm
   \item[]$N_{cr,z}$ = $\frac{\pi^{2}\cdot E\cdot I_{z}}{{L_{cr,z}}^{2}}$ = `{python} Ncrz` kN
   \item[]$\lambda_{z}$ = $\sqrt{\frac{N_{Rk}}{N_{cr,z}}}$ = $\sqrt{\frac{A\cdot f_{y}}{N_{cr,z}}}$ = `{python} lamz` --- (EN 1993-1-1 :2022, Eq 8.69)
-  \item[]$\frac{h}{b}$ = `{python} ratio` < 1.2
-  \item[]$t_{f}$ = `{python} tf` mm < 100~mm
   \item[]Use buckling curve C,  $\alpha_{z}$ = `{python} az` --- (EN 1993-1-1 :2022, Table 8.2)
   \item[]$\phi_{z}$ = $0.5 \cdot (1 + \alpha_{z} \cdot (\lambda_{z} - 0.2) + {\lambda_{z}}^{2})$ = `{python} phiz` --- (EN 1993-1-1 :2022, Eq 8.74)
   \item[]$\chi_{z}$ = $\frac{1}{\phi_{z} + \sqrt{{\phi_{z}}^{2} - {\lambda_{z}}^{2}}}$ = `{python} chiz` --- (EN 1993-1-1 :2022, Eq 8.73)
 \end{description}
 
-{{< pagebreak >}}
-
-#
 # Buckling resistance
 \begin{description}
   \item[]$\chi$ = min($\chi_{y},\chi_{z}$) = `{python} chi`
@@ -298,30 +269,3 @@ else:
   \item[]$N_{c,ed}$ = `{python} Nced` kN.
   \item[]Therefore `{python} outputn`
 \end{description}
-
-
-```{python}
-gamma0 = 1.0
-gamma1 = 1.25
-Nplrd = A*fy/gamma0/1000
-Nurd = area_reduction*A*fu/gamma1/1000
-Ntrd = min(Nplrd, Nurd)
-if Ntrd > Nted:
-  outputt='the section is safe in tension'
-else:
-  outputt='the section is not safe in tension'
-```
-
-# Tension resistance of diagonal members
-
-\begin{description}
-  \item[]Gross area tension resistance :
-  \item[]$N_{pl,RD}$ = $\frac{A\cdot f_{y}}{\gamma_{1}}$ = `{python} Nplrd` kN --- (EN 1993-1-1 :2022, Eq 8.14)
-  \item[]Assume the net area is 70\% of the gross area and smooth holes, k = 1
-  \item[]Net area tension resistance :
-  \item[]$N_{u,RD}$ = `{python} area_reduction` $\cdot\frac{k\cdot A_{net}\cdot f_{u}}{\gamma_{0}}$ = `{python} Nurd` kN --- (EN 1993-1-1 :2022, Eq 8.15)
-  \item[]$N_{t,rd}$ = min($N_{pl,RD}$, $N_{u,RD}$) = `{python} Ntrd` kN
-  \item[]$N_{t,ed}$ = `{python} Nted` kN.
-  \item[]Therefore `{python} outputt`
-\end{description}
-
