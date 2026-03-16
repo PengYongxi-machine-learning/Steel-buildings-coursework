@@ -47,7 +47,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Scheme B North Diagonal Members Calculations}
+                \centerline{Scheme A North Diagonal Members Calculations}
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -66,7 +66,7 @@ format:
 # Define variables
 import math
 section = '356 x 406x 509'
-Nt_list = [3284, 4345, 3588, 5517]
+Nt_list = [7472]
 Nted = max(Nt_list)
 area_reduction = 0.7
 ```
@@ -147,7 +147,7 @@ else:
 ```
 
 #
-# Effective length of column about y-y
+# Material Properties
 
 \begin{description}
   \item[]Ultimate strength, $f_{u}$ = `{python} fu` $N\cdot mm^{-2}$  

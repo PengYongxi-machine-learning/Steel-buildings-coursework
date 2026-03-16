@@ -65,9 +65,9 @@ format:
 
 # Define variables
 import math
-section = '305 x 305x 158'
-lc = 4000
-Nc_list = [3499, 4385] 
+section = '356 x 406x 677'
+lc = math.sqrt(4000**2 + 8250**2)
+Nc_list = [14535] 
 Nced = max(Nc_list)
 ```
 #
@@ -147,7 +147,7 @@ else:
 ```
 
 #
-# Effective length of column about y-y
+# Material Properties
 
 \begin{description}
   \item[]Ultimate strength, $f_{u}$ = `{python} fu` $N\cdot mm^{-2}$  

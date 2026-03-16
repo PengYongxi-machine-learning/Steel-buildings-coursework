@@ -47,7 +47,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Scheme B North Beam Members Calculations}
+                \centerline{Scheme A North Beam Members Calculations}
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -65,9 +65,9 @@ format:
 
 # Define variables
 import math
-section = '457 x 191x 161'
+section = '1016 x 305x 494'
 lc = 6000
-Nc_list = [4612, 5503] 
+Nc_list = [18538, 19427] 
 Nced = max(Nc_list)
 ```
 #
@@ -147,7 +147,7 @@ else:
 ```
 
 #
-# Effective length of column about y-y
+# Material Properties
 
 \begin{description}
   \item[]Ultimate strength, $f_{u}$ = `{python} fu` $N\cdot mm^{-2}$  
@@ -222,7 +222,6 @@ else:
   outputn='the section is not safe in compression'
 ```
 
-#
 # Compression resistance
 \begin{description}
   \item[]$N_{c,rd}$ = $A\cdot f_{y}$ = `{python} Nrd` kN --- (EN 1993-1-1 :2022, Eq 8.68)
