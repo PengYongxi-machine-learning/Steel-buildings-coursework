@@ -7,7 +7,18 @@ format: pdf
 \newpage
 \vspace*{\fill}
 \begin{center}
-\Huge\textbf{Appendix 1} \\[0.5em]
+\Huge\textbf{Appendix A} \\[0.5em]
+\Huge\textbf{Drawings}
+\end{center}
+\vspace*{\fill}
+\newpage
+``` 
+
+```{=latex}
+\newpage
+\vspace*{\fill}
+\begin{center}
+\Huge\textbf{Appendix B} \\[0.5em]
 \Huge\textbf{Design of Primary Beams}
 \end{center}
 \vspace*{\fill}
@@ -18,7 +29,7 @@ format: pdf
 \newpage
 \vspace*{\fill}
 \begin{center}
-\Huge\textbf{Appendix 2} \\[0.5em]
+\Huge\textbf{Appendix C} \\[0.5em]
 \Huge\textbf{Design of Secondary Beams}
 \end{center}
 \vspace*{\fill}
@@ -29,7 +40,7 @@ format: pdf
 \newpage
 \vspace*{\fill}
 \begin{center}
-\Huge\textbf{Appendix 3} \\[0.5em]
+\Huge\textbf{Appendix D} \\[0.5em]
 \Huge\textbf{Design of Columns}
 \end{center}
 \vspace*{\fill}
@@ -40,7 +51,7 @@ format: pdf
 \newpage
 \vspace*{\fill}
 \begin{center}
-\Huge\textbf{Appendix 4} \\[0.5em]
+\Huge\textbf{Appendix E} \\[0.5em]
 \Huge\textbf{Design of Frame Deflection}
 \end{center}
 \vspace*{\fill}
@@ -51,7 +62,7 @@ format: pdf
 \newpage
 \vspace*{\fill}
 \begin{center}
-\Huge\textbf{Appendix 5} \\[0.5em]
+\Huge\textbf{Appendix F} \\[0.5em]
 \Huge\textbf{Design of Bracing Members}
 \end{center}
 \vspace*{\fill}
@@ -63,7 +74,7 @@ format: pdf
 \newpage
 \vspace*{\fill}
 \begin{center}
-\Huge\textbf{Appendix 6} \\[0.5em]
+\Huge\textbf{Appendix G} \\[0.5em]
 \Huge\textbf{Design of Scheme A}
 \end{center}
 \vspace*{\fill}
@@ -74,7 +85,7 @@ format: pdf
 \newpage
 \vspace*{\fill}
 \begin{center}
-\Huge\textbf{Appendix 7} \\[0.5em]
+\Huge\textbf{Appendix H} \\[0.5em]
 \Huge\textbf{Design of Scheme B}
 \end{center}
 \vspace*{\fill}
@@ -85,7 +96,7 @@ format: pdf
 \newpage
 \vspace*{\fill}
 \begin{center}
-\Huge\textbf{Appendix 8} \\[0.5em]
+\Huge\textbf{Appendix I} \\[0.5em]
 \Huge\textbf{Design of Connections}
 \end{center}
 \vspace*{\fill}

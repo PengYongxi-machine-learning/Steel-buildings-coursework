@@ -47,7 +47,7 @@ format:
             & \multicolumn{4}{p{\dimexpr\textwidth-5.5cm-8\tabcolsep-5\arrayrulewidth\relax}|}{
                 \textbf{Subject} \newline
                 \vspace*{1mm}
-                \centerline{Scheme B North Column Members Calculations}
+                \centerline{Scheme A South Diagonal Members Calculations}
                 \vspace*{1mm}
             } \\ \cline{2-5}
             & \multirow{2}{*}{\textbf{Client}} & \textbf{Made by} \quad Pablo Peng & \multicolumn{2}{l|}{\textbf{Date} \quad 03/03/2026} \\ \cline{3-5}
@@ -65,10 +65,9 @@ format:
 
 # Define variables
 import math
-section = '356 x 406x 677'
-lc = math.sqrt(4000**2 + 8250**2)
-Nc_list = [14535] 
-Nced = max(Nc_list)
+section = '356 x 406x 340'
+lc = math.sqrt(8250**2 + 4000**2)
+Nced = 5116
 ```
 #
 #
@@ -81,9 +80,9 @@ Nced = max(Nc_list)
 #
 #
 
-# Maximum compressive and tensile axial force
+# Maximum compressive axial force
 \begin{description}
-  \item[]$N_{c,ed}$ = $\max$`{python} Nc_list` = `{python} Nced` kN
+  \item[]$N_{c,ed}$ = `{python} Nced` kN
 \end{description}
 
 {{< pagebreak >}}
